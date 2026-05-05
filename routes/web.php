@@ -10,3 +10,4 @@ Route::get('/dashboard', fn() => view('user.dashboard'))->name('dashboard');
 Route::get('/enviadas', fn() => view('user.enviadas'))->name('enviadas');
 Route::get('/recibidas', fn() => view('user.recibidas'))->name('recibidas');
 Route::get('/documentos', fn() => view('user.documentos'))->name('documentos');
+Route::get('/reportes', fn() => view('user.reportes'))->name('dashboard');

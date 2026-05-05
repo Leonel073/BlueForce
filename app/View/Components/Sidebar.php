@@ -14,6 +14,7 @@ class Sidebar extends Component
             ['name' => 'Inicio', 'route' => 'dashboard', 'icon' => 'bi-house'],
             ['name' => 'Enviadas', 'route' => 'enviadas', 'icon' => 'bi-send'],
             ['name' => 'Recibidas', 'route' => 'recibidas', 'icon' => 'bi-inbox'],
+            ['name' => 'Reportes', 'route' => 'recibidas', 'icon' => 'bi-inbox'],
             ['name' => 'Documentos', 'route' => 'documentos', 'icon' => 'bi-file-earmark'],
         ];
     }

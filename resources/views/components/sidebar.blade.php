@@ -1,29 +1,18 @@
-<div class="d-flex flex-column h-100">
+<div class="nav-section">
+    <div class="nav-section-label">Principal</div>
 
-    <!-- MENÚ -->
-    <ul class="nav flex-column">
-        @foreach ($menu as $item)
-            <li class="nav-item">
-                <a href="{{ route($item['route']) }}"
-                   class="nav-link d-flex align-items-center 
-                   {{ request()->routeIs($item['route']) ? 'active' : '' }}">
+    <a href="{{ route('dashboard') }}"
+       class="nav-link {{ request()->routeIs('dashboard') ? 'active' : '' }}"
+       data-label="Dashboard">
+        <span class="nav-icon"><i class="bi bi-grid-fill"></i></span>
+        <span class="nav-label-text">Dashboard</span>
+    </a>
 
-                    <i class="bi {{ $item['icon'] }}"></i>
-
-                    <span class="ms-2 text-label">
-                        {{ $item['name'] }}
-                    </span>
-                </a>
-            </li>
-        @endforeach
-    </ul>
-
-    <!-- USUARIO ABAJO -->
-    <div class="mt-auto">
-        <hr class="text-secondary">
-
-        <strong>{{ auth()->user()->name ?? 'Usuario' }}</strong><br>
-        <small>{{ auth()->user()->email ?? '' }}</small>
-    </div>
-
+    <a href="{{ route('documentos') }}"
+       class="nav-link {{ request()->routeIs('reportes*') ? 'active' : '' }}"
+       data-label="Reportes">
+        <span class="nav-icon"><i class="bi bi-bar-chart-fill"></i></span>
+        <span class="nav-label-text">Reportes</span>
+        <span class="nav-badge">3</span>
+    </a>
 </div>
