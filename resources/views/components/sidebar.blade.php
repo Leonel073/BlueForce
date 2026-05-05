@@ -17,5 +17,44 @@
         
     </a>
 
+
+
+
     <!-- <span class="nav-badge">3</span> para pdoer hacer funcionalidad de notificacion -->
+</div>
+<div class="nav-section">
+    <div class="nav-section-label">Correspondencia</div>
+
+    <a href="#"
+       class="nav-link"
+       data-label="Enviadas">
+        <span class="nav-icon"><i class="bi bi-send-fill"></i></span>
+        <span class="nav-label-text">Enviadas</span>
+    </a>
+
+    <a href="#"
+       class="nav-link"
+       data-label="Recibidas">
+        <span class="nav-icon"><i class="bi bi-inbox-fill"></i></span>
+        <span class="nav-label-text">Recibidas</span>
+    </a>
+</div>
+
+<!-- ⚙️ CONFIGURACIÓN -->
+<div class="nav-section">
+    <div class="nav-section-label">Configuración</div>
+
+    <a href="#"
+       class="nav-link"
+       data-label="Reportes">
+        <span class="nav-icon"><i class="bi bi-bar-chart-fill"></i></span>
+        <span class="nav-label-text">Reportes</span>
+    </a>
+
+<a href="{{ route('configuracion') }}"
+   class="nav-link {{ request()->routeIs('configuracion') ? 'active' : '' }}"
+   data-label="Configuración">
+    <span class="nav-icon"><i class="bi bi-gear-fill"></i></span>
+    <span class="nav-label-text">Configuración</span>
+</a>
 </div>

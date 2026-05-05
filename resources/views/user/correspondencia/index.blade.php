@@ -4,24 +4,51 @@
 
 @section('content')
 
+<style>
+.bg-mi-fondo {
+    background-color: #0b295b;
+    color: white;
+}
+
+.btn-mi-amarillo {
+    background-color: #d3af37;
+    color: #0b295b;
+    border: none;
+}
+.btn-mi-azul {
+    background-color: #0b295b;
+    color: white;
+    border: none;
+}
+
+.btn-mi-verde:hover {
+    background-color: #146c43;
+}
+
+.text-mi-azul {
+    color:  #0b295b;
+}
+</style>
+
+
 <div class="container-fluid">
 
-    <!-- 🔝 HEADER -->
-    <div class="d-flex justify-content-between align-items-center mb-3">
+    <!--  HEADER -->
+    <div class=" text-mi-azul d-flex justify-content-between align-items-center mb-3">
         <div>
             <h3 class="fw-bold">Gestión de Documentos</h3>
             <small class="text-muted">Administra todos los documentos del sistema</small>
         </div>
 
-        <a href="{{ route('documento.create') }}" class="btn btn-warning shadow">
-            ⬆ Subir Documento
+        <a href="{{ route('documento.create') }}" class="btn btn-mi-amarillo shadow text-mi-azul">
+            Subir Documento
         </a>
     </div>
 
-    <!-- 🔎 BUSCADOR -->
+    <!--  BUSCADOR -->
     <div class="card shadow-sm mb-4">
         <div class="card-body d-flex gap-2">
-            <input type="text" name="buscar" class="form-control" placeholder="🔍 Buscar documentos...">
+            <input type="text" name="buscar" class="form-control" placeholder=" Buscar documentos...">
 
             <select name="estado" class="form-select w-auto">
                 <option value="">Estado</option>
@@ -36,7 +63,7 @@
         </div>
     </div>
 
-    <!-- 📊 CARDS -->
+    <!-- tarjetas -->
     <div class="row mb-4">
 
         <div class="col-md-3">
@@ -78,7 +105,7 @@
     <!-- 📄 TABLA -->
     <div class="card shadow">
 
-        <div class="card-header bg-primary text-white fw-bold">
+        <div class="card-header bg-mi-fondo text-white fw-bold">
             Biblioteca de Documentos
         </div>
 
@@ -120,7 +147,14 @@
                             <td>{{ $doc->urgencia->nombre ?? '-' }}</td>
 
                             <td>{{ \Carbon\Carbon::parse($doc->fecha)->format('d/m/Y') }}</td>
+<!-- editar esto sigue teniendo errores-->
+                            <td>
+                                <a href="{{ route('documento.show', $doc->idDocumento) }}" 
+                                   class="btn btn-sm btn-mi-azul">Ver</a>
 
+                                <a href="{{ route('documento.edit', $doc->idDocumento) }}" 
+                                   class="btn btn-sm btn-mi-amarillo">Editar</a>
+                            </td>
 
                         </tr>
                     @empty

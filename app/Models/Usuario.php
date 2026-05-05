@@ -27,9 +27,24 @@ class Usuario extends Authenticatable
         'contrasena'
     ];
 
-
+    // 🔐 Laravel usará este campo como password
     public function getAuthPassword()
     {
         return $this->contrasena;
     }
+
+    // 👤 Campo de autenticación
+    public function username()
+    {
+        return 'correo';
+    }
+    public function getAuthIdentifierName()
+{
+    return 'idUsuario';
+}
+public function persona()
+{
+    return $this->belongsTo(Persona::class, 'idPersona');
+}
+
 }

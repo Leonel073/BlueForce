@@ -3,10 +3,30 @@
 @section('title', 'Nuevo Documento')
 
 @section('content')
+<style>
+.bg-mi-fondo {
+    background-color: #0b295b;
+    color: white;
+}
+
+.btn-mi-amarillo {
+    background-color: #d3af37;
+    color: white;
+    border: none;
+}
+
+.btn-mi-verde:hover {
+    background-color: #146c43;
+}
+
+.text-mi-verde {
+    color: #0f5132;
+}
+</style>
 
 <div class="container">
 
-    <h3 class="mb-4 fw-bold">📄 Registrar Documento</h3>
+    <h3 class="mb-4 fw-bold">Registrar Documento</h3>
 
     <!-- ERRORES -->
     @if ($errors->any())

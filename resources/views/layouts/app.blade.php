@@ -74,18 +74,17 @@ body { background: #f1f5f9; font-family: system-ui, sans-serif; }
 /* ── LOGO ── */
 .sidebar-logo {
     display: flex;
-    align-items: center;
-    gap: 12px;
+    flex-direction: column; /* 👈 CLAVE */
+    align-items: center;    /* 👈 CENTRAR */
+    gap: 6px;
     padding: 20px 14px 16px;
     border-bottom: 1px solid rgba(255,255,255,0.07);
-    overflow: hidden;
     text-decoration: none;
-    transition: padding var(--transition), gap var(--transition);
 }
 .logo-icon-wrap {
-    width: 42px; min-width: 42px; height: 42px;
+    width: 42fr; min-width: 42fr; height: 42fr;
     border-radius: 11px;
-    background: linear-gradient(135deg, #ffc107 0%, #ff9800 100%);
+    background: linear-gradient(135deg, #ffffff 0%, #ffffff 100%);
     display: flex; align-items: center; justify-content: center;
     box-shadow: 0 0 0 1px rgba(255,193,7,0.3), 0 4px 14px rgba(255,193,7,0.25);
     transition: transform var(--transition), box-shadow var(--transition);
@@ -99,7 +98,7 @@ body { background: #f1f5f9; font-family: system-ui, sans-serif; }
 }
 .logo-icon-wrap:hover {
     transform: scale(1.06);
-    box-shadow: 0 0 0 2px rgba(255,193,7,0.6), 0 6px 18px rgba(255,193,7,0.35);
+    box-shadow: 0 0 0 2px rgba(255, 193, 7, 0.9), 0 6px 18px rgba(255,193,7,0.35);
 }
 .logo-text-wrap {
     overflow: hidden;
@@ -108,12 +107,12 @@ body { background: #f1f5f9; font-family: system-ui, sans-serif; }
     white-space: nowrap;
 }
 .logo-name {
-    font-size: 14px; font-weight: 600;
+    font-size: 20px; font-weight: 600;
     color: #f1f5f9;
     letter-spacing: 0.02em;
 }
 .logo-tagline {
-    font-size: 11px;
+    font-size: 15px;
     color: var(--text-muted);
 }
 
@@ -402,15 +401,19 @@ body.sidebar-collapsed .main-content {
             <i class="bi bi-chevron-left" style="font-size:10px;"></i>
         </div>
 
-        <a href="{{ url('/') }}" class="sidebar-logo">
-            <div class="logo-icon-wrap">
-                <img src="{{ asset('images/LogoEmpresa.png') }}" alt="Logo">
-            </div>
-            <div class="logo-text-wrap">
-                <div class="logo-name">MiEmpresa</div>
-                <div class="logo-tagline">Sistema de Gestión</div>
-            </div>
-        </a>
+   <a href="{{ url('/') }}" class="sidebar-logo flex-column text-center">
+    
+    <div class="logo-text-wrap">
+        <div class="logo-name">EPAB</div>
+        <hr>
+        <div class="logo-tagline">Sistema de Gestión SISGED</div>
+    </div>
+
+    <div class="logo-icon-wrap mt-2">
+        <img src="{{ asset('images/LogoEmpresa.png') }}" alt="Logo">
+    </div>
+
+</a>
 
         <nav class="sidebar-nav">
             <x-sidebar />
