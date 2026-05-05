@@ -1,0 +1,45 @@
+<x-guest-layout>
+    <h2 class="text-xl font-bold text-center text-gray-800 mb-6">REGISTRO DE PERSONAL</h2>
+
+    <form method="POST" action="{{ route('register') }}">
+        @csrf
+
+        <!-- Nombre -->
+        <div>
+            <x-input-label for="name" value="Grado y Nombre Completo" />
+            <x-text-input id="name" class="block mt-1 w-full" type="text" name="name" :value="old('name')" required autofocus autocomplete="name" placeholder="Ej: TN. Juan Perez" />
+            <x-input-error :messages="$errors->get('name')" class="mt-2" />
+        </div>
+
+        <!-- Email -->
+        <div class="mt-4">
+            <x-input-label for="email" value="Correo Electrónico Institucional" />
+            <x-text-input id="email" class="block mt-1 w-full" type="email" name="email" :value="old('email')" required autocomplete="username" placeholder="ejemplo@armada.mil.bo" />
+            <x-input-error :messages="$errors->get('email')" class="mt-2" />
+        </div>
+
+        <!-- Password -->
+        <div class="mt-4">
+            <x-input-label for="password" value="Contraseña" />
+            <x-text-input id="password" class="block mt-1 w-full" type="password" name="password" required autocomplete="new-password" />
+            <x-input-error :messages="$errors->get('password')" class="mt-2" />
+        </div>
+
+        <!-- Confirm Password -->
+        <div class="mt-4">
+            <x-input-label for="password_confirmation" value="Confirmar Contraseña" />
+            <x-text-input id="password_confirmation" class="block mt-1 w-full" type="password" name="password_confirmation" required autocomplete="new-password" />
+            <x-input-error :messages="$errors->get('password_confirmation')" class="mt-2" />
+        </div>
+
+        <div class="flex items-center justify-between mt-6">
+            <a class="underline text-sm text-gray-600 hover:text-blue-900 rounded-md focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500" href="{{ route('login') }}">
+                ¿Ya está registrado?
+            </a>
+
+            <x-primary-button class="ms-4 bg-blue-900 hover:bg-blue-800">
+                REGISTRAR USUARIO
+            </x-primary-button>
+        </div>
+    </form>
+</x-guest-layout>
