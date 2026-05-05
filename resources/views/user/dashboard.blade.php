@@ -25,7 +25,7 @@
     <div class="col-md-4">
         <div class="card p-3 shadow-sm">
             <h5>Documentos</h5>
-            <a href="{{ route('documentos') }}" class="btn btn-primary">Ver</a>
+            <a href="{{ route('documentos.show') }}" class="btn btn-primary">Ver</a>
         </div>
     </div>
 
