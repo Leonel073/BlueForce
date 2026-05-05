@@ -9,10 +9,13 @@
     </a>
 
     <a href="{{ route('documentos') }}"
-       class="nav-link {{ request()->routeIs('reportes*') ? 'active' : '' }}"
-       data-label="Reportes">
-        <span class="nav-icon"><i class="bi bi-bar-chart-fill"></i></span>
-        <span class="nav-label-text">Reportes</span>
-        <span class="nav-badge">3</span>
+       class="nav-link {{ request()->routeIs('documentos*') ? 'active' : '' }}"
+       data-label="documentos">
+        <span class="nav-icon"><i class="bi bi-file-text"></i></span>
+        <span class="nav-label-text">Documentos</span>
+       
+        
     </a>
+
+    <!-- <span class="nav-badge">3</span> para pdoer hacer funcionalidad de notificacion -->
 </div>
