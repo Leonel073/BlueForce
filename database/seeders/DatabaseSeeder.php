@@ -22,6 +22,9 @@ class DatabaseSeeder extends Seeder
         EstadoDocumentoSeeder::class,
         NivelUrgenciaSeeder::class,
         PersonaSeeder::class,
+        RolSeeder::class,
+        EstadoUsuarioSeeder::class,
+        UsuarioSeeder::class,
         ]);
     }
 }
