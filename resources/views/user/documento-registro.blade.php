@@ -274,9 +274,9 @@
                     <button type="submit" class="btn btn-success w-100 mb-2" style="background: linear-gradient(90deg, #0d1b2a, #1b263b);">
                         <i class="bi bi-check-circle"></i> Guardar Documento
                     </button>
-                    <a href="{{ route('dashboard') }}" class="btn btn-outline-secondary w-100">
-                        <i class="bi bi-arrow-left"></i> Cancelar
-                    </a>
+                   <a href="{{ Auth::user()->idRol == 1 ? route('admin.dashboard') : route('user.dashboard') }}" class="btn btn-outline-secondary w-100">
+    <i class="bi bi-arrow-left"></i> Cancelar
+</a>
                 </div>
             </div>
         </div>

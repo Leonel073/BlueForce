@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>@yield('title')</title>
+<title>@yield('title', 'BlueForce')</title>
 
 <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
 <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons/font/bootstrap-icons.css" rel="stylesheet">
@@ -74,15 +74,15 @@ body { background: #f1f5f9; font-family: system-ui, sans-serif; }
 /* ── LOGO ── */
 .sidebar-logo {
     display: flex;
-    flex-direction: column; /* 👈 CLAVE */
-    align-items: center;    /* 👈 CENTRAR */
+    flex-direction: column;
+    align-items: center;
     gap: 6px;
     padding: 20px 14px 16px;
     border-bottom: 1px solid rgba(255,255,255,0.07);
     text-decoration: none;
 }
 .logo-icon-wrap {
-    width: 42fr; min-width: 42fr; height: 42fr;
+    width: 42px; min-width: 42px; height: 42px;
     border-radius: 11px;
     background: linear-gradient(135deg, #ffffff 0%, #ffffff 100%);
     display: flex; align-items: center; justify-content: center;
@@ -152,7 +152,7 @@ body { background: #f1f5f9; font-family: system-ui, sans-serif; }
     margin-bottom: 2px;
     position: relative;
     white-space: nowrap;
-    overflow: visible;  /* visible para el tooltip */
+    overflow: visible;
 }
 .nav-link::before {
     content: '';
@@ -188,18 +188,6 @@ body { background: #f1f5f9; font-family: system-ui, sans-serif; }
     max-width: 160px;
     white-space: nowrap;
 }
-.nav-badge {
-    margin-left: auto;
-    background: rgba(255,193,7,0.15);
-    color: var(--accent);
-    font-size: 10px; font-weight: 600;
-    padding: 2px 7px;
-    border-radius: 10px;
-    transition: opacity var(--transition), max-width var(--transition);
-    overflow: hidden;
-    max-width: 40px;
-    flex-shrink: 0;
-}
 
 /* ── USER ── */
 .sidebar-user {
@@ -213,7 +201,6 @@ body { background: #f1f5f9; font-family: system-ui, sans-serif; }
     gap: 10px;
     padding: 8px 10px;
     border-radius: 8px;
-    cursor: pointer;
     transition: background var(--transition), padding var(--transition), gap var(--transition);
     overflow: hidden;
     text-decoration: none;
@@ -238,74 +225,23 @@ body { background: #f1f5f9; font-family: system-ui, sans-serif; }
 /* ═══════════════════════════════════════
    ESTADO COLAPSADO (desktop)
 ═══════════════════════════════════════ */
-.sidebar.collapsed {
-    width: var(--sidebar-collapsed);
-    min-width: var(--sidebar-collapsed);
-}
-
-/* Ocultar textos */
+.sidebar.collapsed { width: var(--sidebar-collapsed); min-width: var(--sidebar-collapsed); }
 .sidebar.collapsed .logo-text-wrap,
 .sidebar.collapsed .nav-label-text,
-.sidebar.collapsed .nav-badge,
-.sidebar.collapsed .user-info {
-    opacity: 0;
-    max-width: 0;
-    overflow: hidden;
-    pointer-events: none;
-}
-
-/* Ocultar etiquetas de sección */
-.sidebar.collapsed .nav-section-label {
-    opacity: 0;
-    max-height: 0;
-    padding-top: 0;
-    padding-bottom: 0;
-    pointer-events: none;
-}
-
-/* Centrar todo en el sidebar colapsado */
-.sidebar.collapsed .sidebar-logo {
-    justify-content: center;
-    padding-left: 0;
-    padding-right: 0;
-    gap: 0;
-}
-.sidebar.collapsed .nav-link {
-    justify-content: center;
-    padding-left: 0;
-    padding-right: 0;
-    gap: 0;
-}
-.sidebar.collapsed .user-btn {
-    justify-content: center;
-    padding-left: 0;
-    padding-right: 0;
-    gap: 0;
-}
-
-/* Tooltip al colapsar */
+.sidebar.collapsed .user-info { opacity: 0; max-width: 0; overflow: hidden; pointer-events: none; }
+.sidebar.collapsed .nav-section-label { opacity: 0; max-height: 0; padding-top: 0; padding-bottom: 0; pointer-events: none; }
+.sidebar.collapsed .sidebar-logo,
+.sidebar.collapsed .nav-link,
+.sidebar.collapsed .user-btn { justify-content: center; padding-left: 0; padding-right: 0; gap: 0; }
 .sidebar.collapsed .nav-link::after {
     content: attr(data-label);
-    position: absolute;
-    left: calc(var(--sidebar-collapsed) - 4px);
-    top: 50%;
+    position: absolute; left: calc(var(--sidebar-collapsed) - 4px); top: 50%;
     transform: translateY(-50%) translateX(4px);
-    background: #1e293b;
-    color: #f1f5f9;
-    font-size: 12px;
-    padding: 5px 10px;
-    border-radius: 6px;
-    white-space: nowrap;
-    box-shadow: 0 4px 12px rgba(0,0,0,0.3);
-    pointer-events: none;
-    z-index: 200;
-    opacity: 0;
-    transition: opacity 0.15s ease, transform 0.15s ease;
+    background: #1e293b; color: #f1f5f9; font-size: 12px; padding: 5px 10px;
+    border-radius: 6px; white-space: nowrap; box-shadow: 0 4px 12px rgba(0,0,0,0.3);
+    pointer-events: none; z-index: 200; opacity: 0; transition: opacity 0.15s ease, transform 0.15s ease;
 }
-.sidebar.collapsed .nav-link:hover::after {
-    opacity: 1;
-    transform: translateY(-50%) translateX(10px);
-}
+.sidebar.collapsed .nav-link:hover::after { opacity: 1; transform: translateY(-50%) translateX(10px); }
 
 /* ── CONTENIDO ── */
 .main-content {
@@ -315,71 +251,30 @@ body { background: #f1f5f9; font-family: system-ui, sans-serif; }
     transition: margin-left var(--transition);
     min-width: 0;
 }
-body.sidebar-collapsed .main-content {
-    margin-left: var(--sidebar-collapsed);
-}
+body.sidebar-collapsed .main-content { margin-left: var(--sidebar-collapsed); }
 
 /* ── OVERLAY MÓVIL ── */
-.sidebar-overlay {
-    display: none;
-    position: fixed;
-    inset: 0;
-    background: rgba(0,0,0,0.5);
-    z-index: 99;
-    backdrop-filter: blur(2px);
-}
+.sidebar-overlay { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.5); z-index: 99; backdrop-filter: blur(2px); }
 .sidebar-overlay.active { display: block; animation: fadeIn 0.2s ease; }
 @keyframes fadeIn { from{opacity:0} to{opacity:1} }
 
 /* ── RESPONSIVE MÓVIL ── */
 @media (max-width: 992px) {
-    .sidebar {
-        transform: translateX(-100%);
-        width: var(--sidebar-w) !important;
-        min-width: var(--sidebar-w) !important;
-    }
+    .sidebar { transform: translateX(-100%); width: var(--sidebar-w) !important; min-width: var(--sidebar-w) !important; }
     .sidebar.mobile-open { transform: translateX(0); }
     .main-content { margin-left: 0 !important; }
     .sidebar-toggle { display: none; }
-
-    /* En móvil siempre mostrar textos */
-    .sidebar.mobile-open .logo-text-wrap,
-    .sidebar.mobile-open .nav-label-text,
-    .sidebar.mobile-open .nav-badge,
-    .sidebar.mobile-open .user-info { 
-        opacity: 1; 
-        max-width: 200px; 
-    }
-    .sidebar.mobile-open .nav-section-label {
-        opacity: 1;
-        max-height: 30px;
-    }
-    .sidebar.mobile-open .sidebar-logo,
-    .sidebar.mobile-open .nav-link,
-    .sidebar.mobile-open .user-btn {
-        justify-content: flex-start;
-        padding-left: 10px;
-        padding-right: 10px;
-        gap: 10px;
-    }
+    .sidebar.mobile-open .logo-text-wrap, .sidebar.mobile-open .nav-label-text, .sidebar.mobile-open .user-info { opacity: 1; max-width: 200px; }
+    .sidebar.mobile-open .nav-section-label { opacity: 1; max-height: 30px; }
+    .sidebar.mobile-open .sidebar-logo, .sidebar.mobile-open .nav-link, .sidebar.mobile-open .user-btn { justify-content: flex-start; padding-left: 10px; padding-right: 10px; gap: 10px; }
 }
 
 /* ── HAMBURGUESA ── */
 .btn-sidebar-mobile {
-    position: fixed;
-    top: 14px; left: 14px;
-    z-index: 98;
-    width: 40px; height: 40px;
-    background: #1b263b;
-    border: none;
-    border-radius: 10px;
-    color: var(--accent);
-    display: none;
-    align-items: center; justify-content: center;
-    font-size: 18px;
-    cursor: pointer;
-    box-shadow: 0 2px 12px rgba(0,0,0,0.25);
-    transition: background 0.2s;
+    position: fixed; top: 14px; left: 14px; z-index: 98; width: 40px; height: 40px;
+    background: #1b263b; border: none; border-radius: 10px; color: var(--accent);
+    display: none; align-items: center; justify-content: center; font-size: 18px;
+    cursor: pointer; box-shadow: 0 2px 12px rgba(0,0,0,0.25); transition: background 0.2s;
 }
 .btn-sidebar-mobile:hover { background: #243554; }
 @media (max-width: 992px) { .btn-sidebar-mobile { display: flex; } }
@@ -396,41 +291,43 @@ body.sidebar-collapsed .main-content {
 <div class="app-layout">
 
     <aside class="sidebar" id="sidebar">
-
         <div class="sidebar-toggle" id="desktopToggle" onclick="toggleDesktop()" title="Colapsar">
             <i class="bi bi-chevron-left" style="font-size:10px;"></i>
         </div>
 
-   <a href="{{ url('/') }}" class="sidebar-logo flex-column text-center">
-    
-    <div class="logo-text-wrap">
-        <div class="logo-name">EPAB</div>
-        <hr>
-        <div class="logo-tagline">Sistema de Gestión SISGED</div>
-    </div>
-
-    <div class="logo-icon-wrap mt-2">
-        <img src="{{ asset('images/LogoEmpresa.png') }}" alt="Logo">
-    </div>
-
-</a>
+        <a href="{{ url('/') }}" class="sidebar-logo flex-column text-center">
+            <div class="logo-text-wrap">
+                <div class="logo-name">EPAB</div>
+                <hr class="w-100 my-1 opacity-25">
+                <div class="logo-tagline">Sistema de Gestión SISGED</div>
+            </div>
+            <div class="logo-icon-wrap mt-2">
+                <img src="{{ asset('images/LogoEmpresa.png') }}" alt="Logo">
+            </div>
+        </a>
 
         <nav class="sidebar-nav">
-            <x-sidebar />
+            @include('components.sidebar_updated')
         </nav>
 
         <div class="sidebar-user">
-            <a href="#" class="user-btn">
+            <div class="user-btn">
                 <div class="user-avatar">
                     {{ strtoupper(substr(auth()->user()->name ?? 'U', 0, 2)) }}
                 </div>
                 <div class="user-info">
                     <div class="user-name">{{ auth()->user()->name ?? 'Usuario' }}</div>
-                    <div class="user-role">{{ auth()->user()->role ?? 'Sistema' }}</div>
+                    <div class="user-role">{{ auth()->user()->idRol == 1 ? 'Administrador' : 'Usuario' }}</div>
                 </div>
-            </a>
+            </div>
+            <!-- Integración del Botón de Cerrar Sesión -->
+            <form method="POST" action="{{ route('logout') }}" class="mt-2 text-center" style="padding: 0 5px;">
+                @csrf
+                <button type="submit" class="btn btn-outline-danger btn-sm w-100" style="border-radius: 8px;">
+                    <i class="bi bi-box-arrow-left"></i> <span class="nav-label-text">Salir</span>
+                </button>
+            </form>
         </div>
-
     </aside>
 
     <main class="main-content">
@@ -450,7 +347,6 @@ function toggleDesktop() {
     localStorage.setItem('sidebarCollapsed', sidebar.classList.contains('collapsed'));
 }
 
-// Restaurar estado guardado
 if (localStorage.getItem('sidebarCollapsed') === 'true') {
     sidebar.classList.add('collapsed');
     document.body.classList.add('sidebar-collapsed');

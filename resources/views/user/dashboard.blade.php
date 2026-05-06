@@ -1,6 +1,6 @@
 @extends('layouts.app')
 
-@section('title', 'Dashboard')
+@section('title', 'Dashboard Usuario')
 
 @section('content')
 
@@ -9,23 +9,24 @@
 <div class="row mt-4">
 
     <div class="col-md-4">
-        <div class="card p-3 shadow-sm">
+        <div class="card p-3 shadow-sm border-0">
             <h5>Enviadas</h5>
-            <a href="{{ route('enviadas') }}" class="btn btn-primary">Ver</a>
+            <a href="{{ route('enviadas') }}" class="btn btn-primary mt-2">Ver</a>
         </div>
     </div>
 
     <div class="col-md-4">
-        <div class="card p-3 shadow-sm">
+        <div class="card p-3 shadow-sm border-0">
             <h5>Recibidas</h5>
-            <a href="{{ route('recibidas') }}" class="btn btn-primary">Ver</a>
+            <a href="{{ route('recibidas') }}" class="btn btn-primary mt-2">Ver</a>
         </div>
     </div>
 
     <div class="col-md-4">
-        <div class="card p-3 shadow-sm">
+        <div class="card p-3 shadow-sm border-0">
             <h5>Documentos</h5>
-            <a href="{{ route('documentos') }}" class="btn btn-primary">Ver</a>
+            <!-- Aquí aplicamos la corrección de la ruta -->
+            <a href="{{ route('documentos.show') }}" class="btn btn-primary mt-2">Ver</a>
         </div>
     </div>
 

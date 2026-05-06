@@ -122,8 +122,8 @@ class DocumentoController extends Controller
             });
 
             // Redirigir con mensaje de éxito
-            return redirect()->route('documentos')
-                ->with('success', 'Documento registrado correctamente con código de ruta: ' . $validated['codigo_ruta']);
+            return redirect()->route('documentos.show')
+                    ->with('success', 'Documento registrado correctamente con código de ruta: ' . $validated['codigo_ruta']);
 
         } catch (\Exception $e) {
             return redirect()->back()

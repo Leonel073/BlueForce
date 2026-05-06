@@ -13,6 +13,7 @@ class DatabaseSeeder extends Seeder
             TipoDocumentoSeeder::class,
             EstadoDocumentoSeeder::class,
             NivelUrgenciaSeeder::class,
+            UserSeeder::class,
         ]);
     }
 }

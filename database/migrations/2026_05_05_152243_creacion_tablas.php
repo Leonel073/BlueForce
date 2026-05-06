@@ -60,20 +60,6 @@ class CreacionTablas extends Migration
         });
 
         // ==============================
-        // USUARIO
-        // ==============================
-
-        Schema::create('USUARIO', function (Blueprint $table) {
-            $table->id('idUsuario');
-            $table->unsignedBigInteger('idPersona')->unique();
-            $table->string('correo',150)->unique();
-            $table->string('contrasena',255);
-            $table->unsignedBigInteger('idRol')->nullable();
-            $table->unsignedBigInteger('idEstadoUsuario')->nullable();
-            $table->boolean('activo')->default(true);
-        });
-
-        // ==============================
         // CORRESPONDENCIA
         // ==============================
 
@@ -163,7 +149,7 @@ class CreacionTablas extends Migration
         // FOREIGN KEYS (AL FINAL)
         // ==============================
 
-        Schema::table('USUARIO', function (Blueprint $table) {
+        Schema::table('users', function (Blueprint $table) {
             $table->foreign('idPersona')->references('idPersona')->on('PERSONA');
             $table->foreign('idRol')->references('idRol')->on('ROL');
             $table->foreign('idEstadoUsuario')->references('idEstadoUsuario')->on('ESTADO_USUARIO');
@@ -173,7 +159,7 @@ class CreacionTablas extends Migration
             $table->foreign('idTipoDocumento')->references('idTipoDocumento')->on('TIPO_DOCUMENTO');
             $table->foreign('idEstado')->references('idEstado')->on('ESTADO_DOCUMENTO');
             $table->foreign('idUrgencia')->references('idUrgencia')->on('NIVEL_URGENCIA');
-            $table->foreign('idUsuario')->references('idUsuario')->on('USUARIO');
+            $table->foreign('idUsuario')->references('id')->on('users');
             $table->foreign('idRemitente')->references('idPersona')->on('PERSONA');
         });
 
@@ -183,14 +169,14 @@ class CreacionTablas extends Migration
         });
 
         Schema::table('AUDITORIA', function (Blueprint $table) {
-            $table->foreign('idUsuario')->references('idUsuario')->on('USUARIO');
+            $table->foreign('idUsuario')->references('id')->on('users');
         });
 
         Schema::table('DERIVACION', function (Blueprint $table) {
             $table->foreign('idDocumento')->references('idDocumento')->on('CORRESPONDENCIA');
             $table->foreign('idDepartamentoOrigen')->references('idDepartamento')->on('DEPARTAMENTO');
             $table->foreign('idDepartamentoDestino')->references('idDepartamento')->on('DEPARTAMENTO');
-            $table->foreign('idUsuarioAsignado')->references('idUsuario')->on('USUARIO');
+            $table->foreign('idUsuarioAsignado')->references('id')->on('users');
         });
 
         Schema::table('SEGUIMIENTO', function (Blueprint $table) {
@@ -216,7 +202,9 @@ class CreacionTablas extends Migration
         Schema::dropIfExists('AUDITORIA');
         Schema::dropIfExists('CORRESPONDENCIA_DESTINATARIO');
         Schema::dropIfExists('CORRESPONDENCIA');
-        Schema::dropIfExists('USUARIO');
+        
+        // Se elimina la referencia a USUARIO
+
         Schema::dropIfExists('PERSONA');
         Schema::dropIfExists('TIPO_DOCUMENTO');
         Schema::dropIfExists('NIVEL_URGENCIA');
