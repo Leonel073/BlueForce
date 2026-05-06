@@ -5,7 +5,7 @@
 @section('content')
 
 <div class="container-fluid">
-    <h2 class="mb-4">📄 Registro de Documentos</h2>
+    <h2 class="mb-4">Registro de Documentos</h2>
 
     {{-- MENSAJE DE ÉXITO --}}
     @if(session('success'))

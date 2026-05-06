@@ -12,5 +12,6 @@ Route::get('/enviadas', fn() => view('user.enviadas'))->name('enviadas');
 Route::get('/recibidas', fn() => view('user.recibidas'))->name('recibidas');
 
 // MÓDULO DE REGISTRO DOCUMENTAL
-Route::get('/documentos', [DocumentoController::class, 'show'])->name('documentos.show');
+Route::get('/documentos', [DocumentoController::class, 'index'])->name('documentos');
+Route::get('/documentos/crear', [DocumentoController::class, 'show'])->name('documentos.crear');
 Route::post('/documentos', [DocumentoController::class, 'store'])->name('documentos.store');

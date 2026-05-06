@@ -15,6 +15,18 @@ use Illuminate\Support\Facades\DB;
 class DocumentoController extends Controller
 {
     /**
+     * Listar todos los documentos
+     */
+    public function index()
+    {
+        $documentos = Correspondencia::with(['tipoDocumento', 'estado', 'urgencia', 'remitente'])->get();
+        
+        return view('user.correspondencia.index', [
+            'documentos' => $documentos,
+        ]);
+    }
+
+    /**
      * Mostrar el formulario de registro documental
      */
     public function show()
@@ -110,7 +122,7 @@ class DocumentoController extends Controller
             });
 
             // Redirigir con mensaje de éxito
-            return redirect()->route('documentos.show')
+            return redirect()->route('documentos')
                 ->with('success', 'Documento registrado correctamente con código de ruta: ' . $validated['codigo_ruta']);
 
         } catch (\Exception $e) {
