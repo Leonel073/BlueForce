@@ -2,6 +2,7 @@
 
 use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\DocumentoController; // <-- AQUÍ IMPORTAMOS TU CONTROLADOR
+use App\Http\Controllers\Admin\UsuarioController;//creacion vista usuario
 use Illuminate\Support\Facades\Route;
 
 Route::get('/', function () {
@@ -47,12 +48,44 @@ Route::middleware('auth')->group(function () {
 });
 
 
+
+/*Rutas creadas por ludwin si es necesario unir luego con lo demas */
 Route::middleware(['auth'])->group(function () {
 
     Route::get('/user/configuracion', function () {
         return view('user.configuracion');
     })->name('user.configuracion');
 
+});
+Route::middleware(['auth'])->group(function () {
+
+    // Rutas para el módulo de Usuarios (solo para Admin)
+    Route::get('/admin/usuarios', [UsuarioController::class, 'index'])
+    ->name('admin.usuarios');
+    //busqueda de usuarios  por id
+    Route::get('/admin/usuarios/{id}', [UsuarioController::class, 'show'])
+    ->name('admin.usuarios.show');
+    //seguimiento profundo de usuario 
+    Route::get(
+        '/admin/documentos/{id}',
+        [DocumentoController::class, 'detalle']
+    )->name('admin.documentos.detalle');
+    //actualizacion de usuarios por admin
+    Route::put(
+        '/admin/usuarios/{id}/toggle',
+        [UsuarioController::class, 'toggle']
+    )->name('admin.usuarios.toggle');
+    //obtener datos
+    //actualizar usuarios mediante admins
+            Route::get(
+            '/admin/usuarios/{id}/edit',
+            [UsuarioController::class, 'edit']
+        )->name('admin.usuarios.edit');
+
+        Route::put(
+            '/admin/usuarios/{id}',
+            [UsuarioController::class, 'update']
+        )->name('admin.usuarios.update');
 });
 
 require __DIR__.'/auth.php';

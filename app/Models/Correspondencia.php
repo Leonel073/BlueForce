@@ -61,4 +61,21 @@ class Correspondencia extends Model
     {
         return $this->hasMany(CorrespondenciaDestinatario::class, 'idDocumento', 'idDocumento');
     }
+
+    /*Creacion para poder usar datos del usuario */
+    public function usuario()
+    {
+    return $this->belongsTo(User::class, 'idUsuario');
+    }
+    public function correspondencias()
+    {
+        return $this->hasMany(
+            Correspondencia::class,
+            'idUsuario'
+        );
+    }
+    public function seguimientos()
+    {
+    return $this->hasMany(Seguimiento::class, 'idDocumento', 'idDocumento');
+    }
 }

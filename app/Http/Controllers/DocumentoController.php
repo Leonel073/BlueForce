@@ -11,6 +11,7 @@ use App\Models\EstadoDocumento;
 use App\Models\Departamento;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Auth;
 
 class DocumentoController extends Controller
 {
@@ -96,16 +97,20 @@ class DocumentoController extends Controller
                 $idEstado = $estadoRecibido ? $estadoRecibido->idEstado : 1;
 
                 // 3. CREAR LA CORRESPONDENCIA
-                $correspondencia = Correspondencia::create([
-                    'cite' => $validated['codigo_ruta'],
-                    'asunto' => $validated['asunto'],
-                    'fecha' => now(),
-                    'idTipoDocumento' => $validated['tipo_documento'],
-                    'idEstado' => $idEstado,
-                    'idUrgencia' => $validated['nivel_urgencia'],
-                    'idRemitente' => $persona->idPersona,
-                    'activo' => true,
-                ]);
+                    $correspondencia = Correspondencia::create([
+                'cite' => $validated['codigo_ruta'],
+                'asunto' => $validated['asunto'],
+                'fecha' => now(),
+
+                'idTipoDocumento' => $validated['tipo_documento'],
+                'idEstado' => $idEstado,
+                'idUrgencia' => $validated['nivel_urgencia'],
+
+                'idUsuario' => Auth::id(),
+
+                'idRemitente' => $persona->idPersona,
+                'activo' => true,
+            ]);
 
                 // 4. CREAR UN SOLO DESTINATARIO (el departamento seleccionado)
                 CorrespondenciaDestinatario::create([
@@ -131,4 +136,21 @@ class DocumentoController extends Controller
                 ->with('error', 'Error al registrar el documento: ' . $e->getMessage());
         }
     }
+
+    public function detalle($id)
+{
+    $documento = Correspondencia::with([
+        'usuario',
+        'tipoDocumento',
+        'estado',
+        'urgencia',
+        'remitente',
+        'seguimientos'
+    ])->findOrFail($id);
+
+    return view(
+        'admin.documentos.detalle',
+        compact('documento')
+    );
+}
 }

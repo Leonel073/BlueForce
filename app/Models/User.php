@@ -24,6 +24,7 @@ class User extends Authenticatable
         'password',
         'idPersona',
         'idRol',    
+        'activo',
     ];
 
     /**
@@ -47,5 +48,24 @@ class User extends Authenticatable
             'email_verified_at' => 'datetime',
             'password' => 'hashed',
         ];
+    }
+
+    /* Creacion para poder usar correspondencia*/
+    public function correspondencias()
+    {
+        return $this->hasMany(
+            \App\Models\Correspondencia::class,
+            'idUsuario',
+            'id'
+        );
+    }
+    /* Creacion para poder usar persona */
+    public function persona()
+    {
+        return $this->belongsTo(
+            Persona::class,
+            'idPersona',
+            'idPersona'
+        );
     }
 }

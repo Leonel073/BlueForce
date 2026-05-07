@@ -14,6 +14,14 @@
         <span class="nav-icon"><i class="bi bi-file-text"></i></span>
         <span class="nav-label-text">Documentos</span>
     </a>
+    @if(Auth::user()->idRol == 1)
+    <a href="{{ route('admin.usuarios') }}"
+       class="nav-link {{ request()->routeIs('usuarios*') ? 'active' : '' }}"
+       data-label="Usuarios">
+        <span class="nav-icon"><i class="bi bi-people-fill"></i></span>
+        <span class="nav-label-text">Usuarios</span>
+    </a>
+@endif
 </div>
 
 <div class="nav-section">
