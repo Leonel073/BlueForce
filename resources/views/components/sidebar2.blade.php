@@ -44,8 +44,8 @@
         <span class="nav-label-text">Reportes</span>
     </a>
 
-    <a href="#"
-       class="nav-link"
+   <a href="{{ route('user.configuracion') }}"
+       class="nav-link {{ request()->routeIs('user.configuracion') ? 'active' : '' }}"
        data-label="Configuración">
         <span class="nav-icon"><i class="bi bi-gear-fill"></i></span>
         <span class="nav-label-text">Configuración</span>
