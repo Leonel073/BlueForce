@@ -43,25 +43,25 @@
 
                         <tr>
 
-                            <th class="text-white">
+                            <th class="text-dark">
 
                                 Departamento
 
                             </th>
 
-                            <th class="text-white">
+                            <th class="text-dark">
 
                                 Documentos Recibidos
 
                             </th>
 
-                            <th class="text-white">
+                            <th class="text-dark">
 
                                 Documentos Enviados
 
                             </th>
 
-                            <th class="text-white">
+                            <th class="text-dark">
 
                                 Movimiento Total
 

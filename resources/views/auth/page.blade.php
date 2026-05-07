@@ -117,11 +117,12 @@
                         <i class="bi bi-box-arrow-in-right"></i> Iniciar Sesión
                     </a>
 
+                    <!--
                     @if (Route::has('register'))
                         <a href="{{ route('register') }}" class="btn btn-custom-secondary w-100">
                             <i class="bi bi-person-plus"></i> Registrarse
                         </a>
-                    @endif
+                    @endif-->
                 @endauth
             @endif
         </div>

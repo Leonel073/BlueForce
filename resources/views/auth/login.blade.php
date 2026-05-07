@@ -62,13 +62,13 @@
             <button type="submit" class="btn btn-custom w-100">
                 <i class="bi bi-box-arrow-in-right"></i> Ingresar al Sistema
             </button>
-            
+            <!--
             @if (Route::has('register'))
                 <div class="text-center mt-3">
                     <span class="text-muted small">¿No tienes cuenta?</span> 
                     <a href="{{ route('register') }}" class="text-muted-custom fw-bold">Regístrate aquí</a>
                 </div>
-            @endif
+            @endif -->
         </form>
     </div>
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
