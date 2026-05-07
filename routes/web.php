@@ -7,7 +7,9 @@ use Illuminate\Support\Facades\Route;
 Route::get('/', function () {
     return view('welcome');
 });
-
+Route::get('/page', function () {
+    return view('auth.page');
+})->name('page');
 // Ruta para el Administrador (conecta a resources/views/admin/dashboard.blade.php)
 Route::get('/admin/dashboard', function () {
     return view('admin.dashboard');
