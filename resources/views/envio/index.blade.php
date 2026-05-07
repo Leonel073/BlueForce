@@ -4,6 +4,32 @@
 
 @section('content')
 
+<style>
+.bg-mi-fondo {
+    background-color: #0b295b;
+    color: white;
+}
+
+.btn-mi-amarillo {
+    background-color: #d3af37;
+    color: #0b295b;
+    border: none;
+}
+.btn-mi-azul {
+    background-color: #0b295b;
+    color: white;
+    border: none;
+}
+
+.btn-mi-verde:hover {
+    background-color: #146c43;
+}
+
+.text-mi-azul {
+    color:  #0b295b;
+}
+</style>
+
 <div class="container-fluid py-4">
 
     {{-- ENCABEZADO --}}
@@ -27,6 +53,9 @@
                     Gestión y control documental enviado
 
                 </p>
+                <a href="{{ route('documentos.crear') }}" class="btn btn-mi-amarillo shadow text-mi-azul">
+            Subir Documento
+        </a>
 
             </div>
 

@@ -65,12 +65,23 @@
 
     </a>
 
-    <a href="{{ route('recibidas') }}"
-       class="nav-link {{ request()->routeIs('recibidas') ? 'active' : '' }}"
-       data-label="Recibidas">
-        <span class="nav-icon"><i class="bi bi-inbox-fill"></i></span>
-        <span class="nav-label-text">Recibidas</span>
-    </a>
+   <a href="{{ route('admin.reportes.index') }}"
+   class="nav-link {{ request()->routeIs('admin.reportes.*') ? 'active' : '' }}"
+   data-label="Reportes">
+
+    <span class="nav-icon">
+
+        <i class="bi bi-bar-chart-fill"></i>
+
+    </span>
+
+    <span class="nav-label-text">
+
+        Reportes
+
+    </span>
+
+</a>
 </div>
 
 <div class="nav-section">

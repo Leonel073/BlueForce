@@ -83,4 +83,7 @@ class Derivacion extends Model
             'id'
         );
     }
+
+
+    
 }

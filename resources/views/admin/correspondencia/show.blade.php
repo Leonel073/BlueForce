@@ -431,7 +431,7 @@
 
             {{-- ACCIONES --}}
             <div class="card border-0 shadow-sm rounded-4">
-
+                <!-- 
                 <div class="card-header text-white rounded-top-4"
                      style="background-color:#D9A23D; color:#0B2D59;">
 
@@ -442,7 +442,7 @@
                     </h5>
 
                 </div>
-
+                
                 <div class="card-body d-grid gap-3">
 
                     <button class="btn text-white rounded-3"
@@ -478,7 +478,7 @@
 
                     </button>
 
-                </div>
+                </div> BOTONES DE ACCIÓN  colocar despues -->
                 
             </div>
 

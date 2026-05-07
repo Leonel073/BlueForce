@@ -8,6 +8,9 @@ use App\Http\Controllers\Admin\UsuarioController;
 use App\Http\Controllers\UserDashboardController;
 use App\Http\Controllers\Admin\CorespondenciaController;
 use App\Http\Controllers\EnvioController;
+
+
+use App\Http\Controllers\Admin\ReporteController;
 /*
 |--------------------------------------------------------------------------
 | RUTAS PÚBLICAS
@@ -195,6 +198,34 @@ Route::middleware(['auth'])->group(function () {
     [\App\Http\Controllers\Admin\CorrespondenciaController::class, 'derivar']
 )->name('admin.correspondencia.derivar');
 
+
+
+        /*
+        |-----------------------------------
+        | REPORTES
+        |-----------------------------------
+        */
+    
+        Route::get(
+            '/admin/reportes',
+            [ReporteController::class, 'index']
+        )->name('admin.reportes.index');
+
+        //reporte de usuarios 
+        Route::get(
+        '/admin/reportes/usuarios',
+        [ReporteController::class, 'usuarios']
+    )->name('admin.reportes.usuarios');
+    //reporte de departamentos  
+    Route::get(
+    '/admin/reportes/departamentos',
+    [ReporteController::class, 'departamentos']
+)->name('admin.reportes.departamentos');
+    //reporte de derivaciones
+    Route::get(
+        '/admin/reportes/derivaciones',
+        [ReporteController::class, 'derivaciones']
+    )->name('admin.reportes.derivaciones');
 });
 
 Route::middleware(['auth'])->group(function () {
