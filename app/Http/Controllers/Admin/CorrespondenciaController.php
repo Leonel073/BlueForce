@@ -9,7 +9,9 @@ use App\Models\Correspondencia;
 use App\Models\EstadoDocumento;
 use App\Models\NivelUrgencia;
 use App\Models\User;
-
+use App\Models\Departamento;
+use App\Models\Derivacion;
+use App\Models\Seguimiento;
 class CorrespondenciaController extends Controller
 {
     public function index(Request $request)
@@ -153,19 +155,113 @@ class CorrespondenciaController extends Controller
     }
 
     public function show($id)
-{
-    $documento = Correspondencia::with([
-        'usuario',
-        'estado',
-        'urgencia',
-        'tipoDocumento',
-        'remitente',
-        'seguimientos'
-    ])->findOrFail($id);
+        {
+                    $documento = Correspondencia::with([
+                    'usuario',
+                    'estado',
+                    'urgencia',
+                    'tipoDocumento',
+                    'remitente',
+                    'seguimientos',
+                    'derivaciones.departamentoOrigen',
+                    'derivaciones.departamentoDestino',
+                    'derivaciones.usuarioAsignado',
+                ])->findOrFail($id);
+                $departamentos = Departamento::all();
 
-    return view(
-        'admin.correspondencia.show',
-        compact('documento')
+                $usuarios = User::where('activo', 1)->get();
+
+            return view(
+                'admin.correspondencia.show',
+                compact(
+            'documento',
+            'departamentos',
+            'usuarios'
+        )
+            );
+
+
+            
+        }
+        public function derivar(Request $request, $id)
+{
+    $request->validate([
+
+        'idDepartamentoDestino' => 'required',
+
+    ]);
+
+    $documento = Correspondencia::findOrFail($id);
+
+    /*
+    |--------------------------------------------------------------------------
+    | OBTENER ÚLTIMO ORDEN
+    |--------------------------------------------------------------------------
+    */
+
+    $ultimoOrden = Derivacion::where(
+        'idDocumento',
+        $id
+    )->max('orden');
+
+    $nuevoOrden = $ultimoOrden
+        ? $ultimoOrden + 1
+        : 1;
+
+    /*
+    |--------------------------------------------------------------------------
+    | CREAR DERIVACIÓN
+    |--------------------------------------------------------------------------
+    */
+
+    Derivacion::create([
+
+        'idDocumento' => $id,
+
+        'orden' => $nuevoOrden,
+
+        'idDepartamentoOrigen' => 1,
+
+        'idDepartamentoDestino'
+            => $request->idDepartamentoDestino,
+
+        'idUsuarioAsignado'
+            => $request->idUsuarioAsignado,
+
+        'instruccion'
+            => $request->instruccion,
+
+        'fechaEnvio' => now(),
+
+        'activo' => true,
+
+    ]);
+
+    /*
+    |--------------------------------------------------------------------------
+    | REGISTRAR SEGUIMIENTO
+    |--------------------------------------------------------------------------
+    */
+
+    Seguimiento::create([
+
+        'idDocumento' => $id,
+
+        'fecha' => now(),
+
+        'ubicacion'
+            => 'Documento derivado',
+
+        'idEstado'
+            => $documento->idEstado,
+
+        'activo' => true,
+
+    ]);
+
+    return back()->with(
+        'success',
+        'Documento derivado correctamente.'
     );
 }
 }

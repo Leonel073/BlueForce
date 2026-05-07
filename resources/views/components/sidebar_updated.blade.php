@@ -33,12 +33,36 @@
 
 <div class="nav-section">
     <div class="nav-section-label">Correspondencia</div>
+        <a href="{{ route('envios.bandeja') }}"
+        class="nav-link {{ request()->routeIs('envios.bandeja') ? 'active' : '' }}"
+        data-label="Mi Bandeja">
 
-    <a href="{{ route('enviadas') }}"
-       class="nav-link {{ request()->routeIs('enviadas') ? 'active' : '' }}"
-       data-label="Enviadas">
-        <span class="nav-icon"><i class="bi bi-send-fill"></i></span>
-        <span class="nav-label-text">Enviadas</span>
+            <span class="nav-icon">
+
+                <i class="bi bi-inbox-fill"></i>
+
+            </span>
+
+            <span class="nav-label-text">
+
+                Mi Bandeja
+
+            </span>
+
+        </a>
+    </a>
+    <a href="{{ route('envios.index') }}"
+    class="nav-link {{ request()->routeIs('envios.*') ? 'active' : '' }}"
+    data-label="Enviadas">
+
+        <span class="nav-icon">
+            <i class="bi bi-send-fill"></i>
+        </span>
+
+        <span class="nav-label-text">
+            Enviadas
+        </span>
+
     </a>
 
     <a href="{{ route('recibidas') }}"

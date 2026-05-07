@@ -12,6 +12,10 @@ use App\Models\Departamento;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Auth;
+use App\Http\Requests\ProfileUpdateRequest;
+use Illuminate\Http\RedirectResponse;
+use Illuminate\Support\Facades\Redirect;
+use Illuminate\View\View;
 
 class DocumentoController extends Controller
 {
@@ -20,7 +24,7 @@ class DocumentoController extends Controller
      */
    public function index()
 {
-    $usuario = auth()->user();
+    $usuario = Auth::user();
 
     // DOCUMENTOS
     $documentos = Correspondencia::with([

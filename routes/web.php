@@ -6,7 +6,8 @@ use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\DocumentoController;
 use App\Http\Controllers\Admin\UsuarioController;
 use App\Http\Controllers\UserDashboardController;
-use App\Http\Controllers\CorespondenciaController;
+use App\Http\Controllers\Admin\CorespondenciaController;
+use App\Http\Controllers\EnvioController;
 /*
 |--------------------------------------------------------------------------
 | RUTAS PÚBLICAS
@@ -180,16 +181,54 @@ Route::middleware(['auth'])->group(function () {
     [\App\Http\Controllers\Admin\CorrespondenciaController::class, 'index']
 
 
-)->name('admin.correspondencia');
+    )->name('admin.correspondencia');
 
     //documentacion detallado 
     Route::get(
     '/admin/correspondencia/{id}',
     [\App\Http\Controllers\Admin\CorrespondenciaController::class, 'show']
-)->name('admin.correspondencia.show');
+    )->name('admin.correspondencia.show');
+
+    //derivacion por admin 
+    Route::post(
+    '/admin/correspondencia/{id}/derivar',
+    [\App\Http\Controllers\Admin\CorrespondenciaController::class, 'derivar']
+)->name('admin.correspondencia.derivar');
 
 });
 
+Route::middleware(['auth'])->group(function () {
+
+    /*
+    |--------------------------------------------------------------------------
+    | MÓDULO ENVÍOS
+    |--------------------------------------------------------------------------
+    */
+
+    Route::get(
+        '/envios',
+        [EnvioController::class, 'index']
+    )->name('envios.index');
+
+    //bandehja
+    Route::get(
+    '/mi-bandeja',
+    [EnvioController::class, 'bandeja']
+)->name('envios.bandeja');
+
+
+
+    //formulario derivar
+Route::get(
+    '/envios/{id}/derivar',
+    [EnvioController::class, 'derivarForm']
+)->name('envios.derivar.form');
+//guardar derivacion
+Route::post(
+    '/envios/{id}/derivar',
+    [EnvioController::class, 'derivar']
+)->name('envios.derivar');
+});
 
 /*
 |--------------------------------------------------------------------------

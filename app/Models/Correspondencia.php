@@ -78,4 +78,59 @@ class Correspondencia extends Model
     {
     return $this->hasMany(Seguimiento::class, 'idDocumento', 'idDocumento');
     }
+
+    public function derivaciones()
+{
+    return $this->hasMany(
+        Derivacion::class,
+        'idDocumento',
+        'idDocumento'
+    );
+
+    
+    }
+    public function usuarioActual()
+{
+    /*
+    |--------------------------------------------------------------------------
+    | OBTENER ÚLTIMA DERIVACIÓN
+    |--------------------------------------------------------------------------
+    */
+
+    $ultimaDerivacion = $this->derivaciones()
+        ->orderByDesc('orden')
+        ->first();
+
+    /*
+    |--------------------------------------------------------------------------
+    | SI EXISTE DERIVACIÓN
+    |--------------------------------------------------------------------------
+    */
+
+    if ($ultimaDerivacion &&
+        $ultimaDerivacion->idUsuarioAsignado) {
+
+        return User::find(
+            $ultimaDerivacion->idUsuarioAsignado
+        );
+    }
+
+    /*
+    |--------------------------------------------------------------------------
+    | SI NO EXISTE DERIVACIÓN
+    |--------------------------------------------------------------------------
+    */
+
+    return $this->usuario;
+    }
+    public function puedeDerivar($usuarioId)
+    {
+        $usuarioActual = $this->usuarioActual();
+
+        if (!$usuarioActual) {
+            return false;
+        }
+
+        return $usuarioActual->id == $usuarioId;
+    }
 }

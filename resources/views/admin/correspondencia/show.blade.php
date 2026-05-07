@@ -205,8 +205,172 @@
                 </div>
 
             </div>
+            {{-- DERIVACIONES --}}
+<div class="card border-0 shadow-sm rounded-4 mt-4">
+
+    <div class="card-header text-white rounded-top-4"
+         style="background-color:#D9A23D; color:#0B2D59;">
+
+        <h5 class="mb-0">
+
+            Flujo de Derivaciones
+
+        </h5>
+
+    </div>
+
+    <div class="card-body">
+
+        @forelse($documento->derivaciones as $derivacion)
+
+            <div class="border rounded-4 p-3 mb-3">
+
+                <div class="row align-items-center">
+
+                    {{-- ORIGEN --}}
+                    <div class="col-md-3">
+
+                        <small class="text-muted">
+
+                            Departamento Origen
+
+                        </small>
+
+                        <h6 class="fw-bold mb-0">
+
+                            {{ $derivacion->departamentoOrigen->nombre ?? 'N/A' }}
+
+                        </h6>
+
+                    </div>
+
+                    {{-- FLECHA --}}
+                    <div class="col-md-1 text-center">
+
+                        <i class="bi bi-arrow-right-circle-fill"
+                           style="font-size:1.5rem; color:#0B2D59;"></i>
+
+                    </div>
+
+                    {{-- DESTINO --}}
+                    <div class="col-md-3">
+
+                        <small class="text-muted">
+
+                            Departamento Destino
+
+                        </small>
+
+                        <h6 class="fw-bold mb-0">
+
+                            {{ $derivacion->departamentoDestino->nombre ?? 'N/A' }}
+
+                        </h6>
+
+                    </div>
+
+                    {{-- USUARIO --}}
+                    <div class="col-md-3">
+
+                        <small class="text-muted">
+
+                            Usuario Asignado
+
+                        </small>
+
+                        <h6 class="fw-bold mb-0">
+
+                            {{ $derivacion->usuarioAsignado->name ?? 'Sin asignar' }}
+
+                        </h6>
+
+                    </div>
+
+                    {{-- ORDEN --}}
+                    <div class="col-md-2 text-center">
+
+                        <span class="badge rounded-pill px-3 py-2"
+                              style="background-color:#2E608C;">
+
+                            Paso {{ $derivacion->orden }}
+
+                        </span>
+
+                    </div>
+
+                </div>
+
+                {{-- INSTRUCCIÓN --}}
+                @if($derivacion->instruccion)
+
+                    <div class="mt-3 p-3 rounded-3"
+                         style="background-color:#F5F7FA;">
+
+                        <strong>Instrucción:</strong>
+
+                        <br>
+
+                        {{ $derivacion->instruccion }}
+
+                    </div>
+
+                @endif
+
+                {{-- FECHAS --}}
+                <div class="row mt-3">
+
+                    <div class="col-md-6">
+
+                        <small class="text-muted">
+
+                            Fecha Envío
+
+                        </small>
+
+                        <div>
+
+                            {{ $derivacion->fechaEnvio }}
+
+                        </div>
+
+                    </div>
+
+                    <div class="col-md-6">
+
+                        <small class="text-muted">
+
+                            Fecha Recepción
+
+                        </small>
+
+                        <div>
+
+                            {{ $derivacion->fechaRecepcion ?? 'Pendiente' }}
+
+                        </div>
+
+                    </div>
+
+                </div>
+
+            </div>
+
+        @empty
+
+            <div class="alert alert-warning mb-0">
+
+                No existen derivaciones registradas.
+
+            </div>
+
+        @endforelse
+
+    </div>
+
+</div>
 
         </div>
+        
 
 
         {{-- PANEL LATERAL --}}
@@ -263,7 +427,7 @@
                 </div>
 
             </div>
-
+            
 
             {{-- ACCIONES --}}
             <div class="card border-0 shadow-sm rounded-4">
@@ -315,7 +479,7 @@
                     </button>
 
                 </div>
-
+                
             </div>
 
         </div>
