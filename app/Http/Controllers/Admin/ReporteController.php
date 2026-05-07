@@ -11,6 +11,7 @@ use App\Models\User;
 use App\Models\Derivacion;
 use App\Models\EstadoDocumento;
 use App\Models\Departamento;
+use Barryvdh\DomPDF\Facade\Pdf;
 
 class ReporteController extends Controller
 {
@@ -262,6 +263,94 @@ class ReporteController extends Controller
             'derivaciones',
             'departamentos'
         )
+    );
+}
+public function derivacionesPDF(Request $request)
+{
+    $query = Derivacion::with([
+
+        'documento',
+        'departamentoOrigen',
+        'departamentoDestino',
+        'usuarioAsignado'
+
+    ]);
+
+    /*
+    |--------------------------------------------------------------------------
+    | FILTROS
+    |--------------------------------------------------------------------------
+    */
+
+    if ($request->filled('documento')) {
+
+        $documento = $request->documento;
+
+        $query->whereHas('documento', function ($q) use ($documento) {
+
+            $q->where('cite', 'like', "%{$documento}%")
+              ->orWhere('asunto', 'like', "%{$documento}%");
+
+        });
+    }
+
+    if ($request->filled('origen')) {
+
+        $query->where(
+            'idDepartamentoOrigen',
+            $request->origen
+        );
+    }
+
+    if ($request->filled('destino')) {
+
+        $query->where(
+            'idDepartamentoDestino',
+            $request->destino
+        );
+    }
+
+    if ($request->filled('fecha_inicio')) {
+
+        $query->whereDate(
+            'fechaEnvio',
+            '>=',
+            $request->fecha_inicio
+        );
+    }
+
+    if ($request->filled('fecha_fin')) {
+
+        $query->whereDate(
+            'fechaEnvio',
+            '<=',
+            $request->fecha_fin
+        );
+    }
+
+    /*
+    |--------------------------------------------------------------------------
+    | RESULTADOS
+    |--------------------------------------------------------------------------
+    */
+
+    $derivaciones = $query
+        ->latest('idDerivacion')
+        ->get();
+
+    /*
+    |--------------------------------------------------------------------------
+    | PDF
+    |--------------------------------------------------------------------------
+    */
+
+    $pdf = Pdf::loadView(
+        'admin.reportes.pdf.derivaciones',
+        compact('derivaciones')
+    );
+
+    return $pdf->download(
+        'reporte-derivaciones.pdf'
     );
 }
 }

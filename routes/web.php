@@ -8,6 +8,8 @@ use App\Http\Controllers\Admin\UsuarioController;
 use App\Http\Controllers\UserDashboardController;
 use App\Http\Controllers\Admin\CorespondenciaController;
 use App\Http\Controllers\EnvioController;
+use App\Http\Controllers\Admin\DashboardController;
+use App\Http\Controllers\User\CorrespondenciaController as UserCorrespondenciaController;
 
 
 use App\Http\Controllers\Admin\ReporteController;
@@ -51,6 +53,7 @@ Route::middleware(['auth', 'verified'])->group(function () {
     | DOCUMENTOS
     |-----------------------------------
     */
+    
 
     // LISTADO
     Route::get(
@@ -70,6 +73,18 @@ Route::middleware(['auth', 'verified'])->group(function () {
         [DocumentoController::class, 'store']
     )->name('documentos.store');
 
+
+    /*Correspondencia */
+    Route::get(
+    '/user/correspondencia',
+    [UserCorrespondenciaController::class, 'index']
+)->name('user.correspondencia');
+
+    //derivacion de documentacion envio
+    Route::get(
+    '/user/correspondencia/{id}',
+    [UserCorrespondenciaController::class, 'show']
+)->name('user.correspondencia.show');
 
     /*
     |-----------------------------------
@@ -119,11 +134,13 @@ Route::middleware(['auth'])->group(function () {
     |-----------------------------------
     */
 
-    Route::get('/admin/dashboard', function () {
 
-        return view('admin.dashboard');
 
-    })->name('admin.dashboard');
+Route::get(
+    '/admin/dashboard',
+    [DashboardController::class, 'index']
+)->middleware(['auth', 'verified'])
+ ->name('admin.dashboard');
 
 
     /*
@@ -226,6 +243,11 @@ Route::middleware(['auth'])->group(function () {
         '/admin/reportes/derivaciones',
         [ReporteController::class, 'derivaciones']
     )->name('admin.reportes.derivaciones');
+    /*Descarga PDF */
+    Route::get(
+    '/admin/reportes/derivaciones/pdf',
+    [ReporteController::class, 'derivacionesPDF']
+)->name('admin.reportes.derivaciones.pdf');
 });
 
 Route::middleware(['auth'])->group(function () {

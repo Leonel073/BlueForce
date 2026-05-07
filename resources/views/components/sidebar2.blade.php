@@ -19,30 +19,22 @@
 <div class="nav-section">
     <div class="nav-section-label">Correspondencia</div>
 
-    <a href="#"
-       class="nav-link"
-       data-label="Enviadas">
-        <span class="nav-icon"><i class="bi bi-send-fill"></i></span>
-        <span class="nav-label-text">Enviadas</span>
-    </a>
-
-    <a href="#"
-       class="nav-link"
-       data-label="Recibidas">
-        <span class="nav-icon"><i class="bi bi-inbox-fill"></i></span>
-        <span class="nav-label-text">Recibidas</span>
+   
     </a>
 </div>
 
 <div class="nav-section">
     <div class="nav-section-label">Configuración</div>
 
-    <a href="#"
-       class="nav-link"
-       data-label="Reportes">
-        <span class="nav-icon"><i class="bi bi-bar-chart-fill"></i></span>
-        <span class="nav-label-text">Reportes</span>
-    </a>
+   <a href="{{ route('admin.reportes.index') }}"
+   class="nav-link {{ request()->routeIs('admin.reportes.*') ? 'active' : '' }}"
+   data-label="Reportes">
+
+    <span class="nav-icon">
+
+        <i class="bi bi-bar-chart-fill"></i>
+
+    </span>
 
    <a href="{{ route('user.configuracion') }}"
        class="nav-link {{ request()->routeIs('user.configuracion') ? 'active' : '' }}"

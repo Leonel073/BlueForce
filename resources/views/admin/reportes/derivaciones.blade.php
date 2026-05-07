@@ -314,6 +314,15 @@
                     </tbody>
 
                 </table>
+                    <a href="{{ route('admin.reportes.derivaciones.pdf', request()->query()) }}"
+       class="btn btn-danger rounded-3">
+
+        <i class="bi bi-file-earmark-pdf-fill"></i>
+
+        Exportar PDF
+
+    </a>
+
 
             </div>
 
