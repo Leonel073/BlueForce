@@ -11,6 +11,15 @@
 }
 
 </style>
+<a href="{{ route('admin.usuarios') }}"
+   class="btn text-white rounded-3"
+   style="background-color:#0B2D59;">
+
+    <i class="bi bi-arrow-left-circle-fill"></i>
+
+    Volver
+
+</a>
 
 <div class="container py-4">
 

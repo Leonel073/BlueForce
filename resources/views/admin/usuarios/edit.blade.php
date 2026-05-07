@@ -162,7 +162,7 @@
 
                     </button>
 
-                    <a href="{{ route('admin.usuarios.show', $usuario->id) }}"
+                    <a href="{{ route('admin.usuarios') }}"
                        class="btn btn-secondary">
 
                         Cancelar
