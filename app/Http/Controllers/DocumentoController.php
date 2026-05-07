@@ -18,14 +18,58 @@ class DocumentoController extends Controller
     /**
      * Listar todos los documentos
      */
-    public function index()
-    {
-        $documentos = Correspondencia::with(['tipoDocumento', 'estado', 'urgencia', 'remitente'])->get();
-        
-        return view('user.correspondencia.index', [
-            'documentos' => $documentos,
-        ]);
-    }
+   public function index()
+{
+    $usuario = auth()->user();
+
+    // DOCUMENTOS
+    $documentos = Correspondencia::with([
+        'tipoDocumento',
+        'estado',
+        'urgencia',
+        'remitente'
+    ])
+    ->where('idUsuario', $usuario->id)
+    ->get();
+
+    // CONTADORES
+    $totalDocumentos = Correspondencia::where(
+        'idUsuario',
+        $usuario->id
+    )->count();
+
+    $aprobados = Correspondencia::where(
+        'idUsuario',
+        $usuario->id
+    )
+    ->where('idEstado', 1)
+    ->count();
+
+    $vigentes = Correspondencia::where(
+        'idUsuario',
+        $usuario->id
+    )
+    ->where('idEstado', 2)
+    ->count();
+
+    $revision = Correspondencia::where(
+        'idUsuario',
+        $usuario->id
+    )
+    ->where('idEstado', 3)
+    ->count();
+
+    return view('user.correspondencia.index', [
+
+        'documentos' => $documentos,
+
+        'totalDocumentos' => $totalDocumentos,
+        'aprobados' => $aprobados,
+        'vigentes' => $vigentes,
+        'revision' => $revision,
+
+    ]);
+}
 
     /**
      * Mostrar el formulario de registro documental

@@ -8,12 +8,19 @@
         <span class="nav-label-text">Dashboard</span>
     </a>
 
-    <a href="{{ route('documentos.show') }}"
-       class="nav-link {{ request()->routeIs('documentos*') ? 'active' : '' }}"
-       data-label="Documentos">
-        <span class="nav-icon"><i class="bi bi-file-text"></i></span>
-        <span class="nav-label-text">Documentos</span>
-    </a>
+<a href="{{ auth()->user()->idRol == 1 
+            ? route('admin.correspondencia') 
+            : route('documentos.show') }}"
+   class="nav-link 
+   {{ request()->routeIs('documentos*') || request()->routeIs('admin.correspondencia') ? 'active' : '' }}"
+   data-label="Documentos">
+    <span class="nav-icon">
+        <i class="bi bi-file-text"></i>
+    </span>
+    <span class="nav-label-text">
+        Documentos
+    </span>
+</a>
     @if(Auth::user()->idRol == 1)
     <a href="{{ route('admin.usuarios') }}"
        class="nav-link {{ request()->routeIs('usuarios*') ? 'active' : '' }}"

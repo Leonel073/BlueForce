@@ -80,37 +80,65 @@
     </div>
 
     <!-- tarjetas -->
-    <div class="row mb-4">
+   <div class="row mb-4">
 
-        <div class="col-md-3">
-            <div class="card shadow-sm text-center p-3">
-                <h2 class="fw-bold">0</h2>
-                <small>Total Documentos</small>
-            </div>
+    <div class="col-md-3">
+        <div class="card shadow-sm text-center p-3">
+
+            <h2 class="fw-bold">
+
+                {{ $totalDocumentos }}
+
+            </h2>
+
+            <small>Total Documentos</small>
+
         </div>
-
-        <div class="col-md-3">
-            <div class="card shadow-sm text-center p-3">
-                <h2 class="fw-bold text-success">0</h2>
-                <small>Aprobados</small>
-            </div>
-        </div>
-
-        <div class="col-md-3">
-            <div class="card shadow-sm text-center p-3">
-                <h2 class="fw-bold text-warning">0</h2>
-                <small>Vigentes</small>
-            </div>
-        </div>
-
-        <div class="col-md-3">
-            <div class="card shadow-sm text-center p-3">
-                <h2 class="fw-bold text-danger">0</h2>
-                <small>En Revisión</small>
-            </div>
-        </div>
-
     </div>
+
+    <div class="col-md-3">
+        <div class="card shadow-sm text-center p-3">
+
+            <h2 class="fw-bold text-success">
+
+                {{ $aprobados }}
+
+            </h2>
+
+            <small>Aprobados</small>
+
+        </div>
+    </div>
+
+    <div class="col-md-3">
+        <div class="card shadow-sm text-center p-3">
+
+            <h2 class="fw-bold text-warning">
+
+                {{ $vigentes }}
+
+            </h2>
+
+            <small>Vigentes</small>
+
+        </div>
+    </div>
+
+    <div class="col-md-3">
+        <div class="card shadow-sm text-center p-3">
+
+            <h2 class="fw-bold text-danger">
+
+                {{ $revision }}
+
+            </h2>
+
+            <small>En Revisión</small>
+
+        </div>
+    </div>
+
+</div>
 
     <!-- 📄 TABLA -->
     <div class="card shadow">

@@ -44,7 +44,7 @@ class UserConfiguracionController extends Controller
             $user->password = Hash::make($request->password);
         }
 
-        $user->save();
+        $user->Auth::save();
 
         return back()->with('success', 'Configuración actualizada correctamente.');
     }
