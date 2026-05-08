@@ -19,19 +19,31 @@ class UserSeeder extends Seeder
         $idPersonaAdmin = DB::table('PERSONA')->insertGetId([
             'nombre' => 'Administrador del Sistema',
             'correo' => 'admin@blueforce.com',
+            'telefono_celular' => '591-2-7654321',
+            'telefono_fijo' => '591-2-2654321',
             'tipo' => 'INTERNO',
+            'idDepartamento' => 1,
+            'activo' => true,
         ]);
 
         $idPersonaJonathan = DB::table('PERSONA')->insertGetId([
-            'nombre' => 'Jonathan',
+            'nombre' => 'Jonathan Perez',
             'correo' => 'jonathan@blueforce.com',
+            'telefono_celular' => '591-2-7654322',
+            'telefono_fijo' => null,
             'tipo' => 'INTERNO',
+            'idDepartamento' => 2,
+            'activo' => true,
         ]);
 
         $idPersonaJorge = DB::table('PERSONA')->insertGetId([
-            'nombre' => 'Jorge',
-            'correo' => 'jorge@blueforce.com',
+            'nombre' => 'Ludwin Martinez',
+            'correo' => 'ludwin33@gmail.com',
+            'telefono_celular' => '591-2-7654323',
+            'telefono_fijo' => null,
             'tipo' => 'INTERNO',
+            'idDepartamento' => 3,
+            'activo' => true,
         ]);
 
         User::create([

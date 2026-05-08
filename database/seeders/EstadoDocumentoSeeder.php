@@ -10,9 +10,8 @@ class EstadoDocumentoSeeder extends Seeder
     public function run()
     {
         DB::table('ESTADO_DOCUMENTO')->insert([
-            ['nombre' => 'Recibido'],
-            ['nombre' => 'Derivado'],
-            ['nombre' => 'Finalizado'],
+            ['nombre' => 'Pendiente'],
+            ['nombre' => 'Atendido'],
             ['nombre' => 'Archivado'],
         ]);
     }
