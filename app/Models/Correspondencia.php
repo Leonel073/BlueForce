@@ -7,10 +7,13 @@ use Illuminate\Database\Eloquent\Model;
 class Correspondencia extends Model
 {
     protected $table = 'CORRESPONDENCIA';
+
     protected $primaryKey = 'idDocumento';
+
     public $timestamps = false;
 
     protected $fillable = [
+
         'cite',
         'asunto',
         'fecha',
@@ -20,117 +23,177 @@ class Correspondencia extends Model
         'idUsuario',
         'idRemitente',
         'activo',
+
     ];
 
-    /**
-     * Relación: Correspondencia pertenece a un Tipo de Documento
-     */
+    /*
+    |--------------------------------------------------------------------------
+    | TIPO DOCUMENTO
+    |--------------------------------------------------------------------------
+    */
+
     public function tipoDocumento()
     {
-        return $this->belongsTo(TipoDocumento::class, 'idTipoDocumento', 'idTipoDocumento');
+        return $this->belongsTo(
+            TipoDocumento::class,
+            'idTipoDocumento',
+            'idTipoDocumento'
+        );
     }
 
-    /**
-     * Relación: Correspondencia pertenece a un Estado
-     */
+    /*
+    |--------------------------------------------------------------------------
+    | ESTADO
+    |--------------------------------------------------------------------------
+    */
+
     public function estado()
     {
-        return $this->belongsTo(EstadoDocumento::class, 'idEstado', 'idEstado');
+        return $this->belongsTo(
+            EstadoDocumento::class,
+            'idEstado',
+            'idEstado'
+        );
     }
 
-    /**
-     * Relación: Correspondencia pertenece a un Nivel de Urgencia
-     */
+    /*
+    |--------------------------------------------------------------------------
+    | URGENCIA
+    |--------------------------------------------------------------------------
+    */
+
     public function urgencia()
     {
-        return $this->belongsTo(NivelUrgencia::class, 'idUrgencia', 'idUrgencia');
+        return $this->belongsTo(
+            NivelUrgencia::class,
+            'idUrgencia',
+            'idUrgencia'
+        );
     }
 
-    /**
-     * Relación: Correspondencia tiene un Remitente (Persona)
-     */
+    /*
+    |--------------------------------------------------------------------------
+    | REMITENTE
+    |--------------------------------------------------------------------------
+    */
+
     public function remitente()
     {
-        return $this->belongsTo(Persona::class, 'idRemitente', 'idPersona');
+        return $this->belongsTo(
+            Persona::class,
+            'idRemitente',
+            'idPersona'
+        );
     }
 
-    /**
-     * Relación: Correspondencia tiene muchos Destinatarios
-     */
-    public function destinatarios()
-    {
-        return $this->hasMany(CorrespondenciaDestinatario::class, 'idDocumento', 'idDocumento');
-    }
+    /*
+    |--------------------------------------------------------------------------
+    | USUARIO CREADOR
+    |--------------------------------------------------------------------------
+    */
 
-    /*Creacion para poder usar datos del usuario */
     public function usuario()
     {
-    return $this->belongsTo(User::class, 'idUsuario');
+        return $this->belongsTo(
+            User::class,
+            'idUsuario',
+            'id'
+        );
     }
-    public function correspondencias()
+
+    /*
+    |--------------------------------------------------------------------------
+    | DESTINATARIOS
+    |--------------------------------------------------------------------------
+    */
+
+    public function destinatarios()
     {
         return $this->hasMany(
-            Correspondencia::class,
-            'idUsuario'
+            CorrespondenciaDestinatario::class,
+            'idDocumento',
+            'idDocumento'
         );
     }
-    public function seguimientos()
-    {
-    return $this->hasMany(Seguimiento::class, 'idDocumento', 'idDocumento');
-    }
+
+    /*
+    |--------------------------------------------------------------------------
+    | DERIVACIONES
+    |--------------------------------------------------------------------------
+    */
 
     public function derivaciones()
-{
-    return $this->hasMany(
-        Derivacion::class,
-        'idDocumento',
-        'idDocumento'
-    );
-
-    
-    }
-    public function usuarioActual()
-{
-    /*
-    |--------------------------------------------------------------------------
-    | OBTENER ÚLTIMA DERIVACIÓN
-    |--------------------------------------------------------------------------
-    */
-
-    $ultimaDerivacion = $this->derivaciones()
-        ->orderByDesc('orden')
-        ->first();
-
-    /*
-    |--------------------------------------------------------------------------
-    | SI EXISTE DERIVACIÓN
-    |--------------------------------------------------------------------------
-    */
-
-    if ($ultimaDerivacion &&
-        $ultimaDerivacion->idUsuarioAsignado) {
-
-        return User::find(
-            $ultimaDerivacion->idUsuarioAsignado
+    {
+        return $this->hasMany(
+            Derivacion::class,
+            'idDocumento',
+            'idDocumento'
         );
     }
-
-    /*
+        /*
     |--------------------------------------------------------------------------
-    | SI NO EXISTE DERIVACIÓN
+    | ÚLTIMA DERIVACIÓN
     |--------------------------------------------------------------------------
     */
 
-    return $this->usuario;
-    }
-    public function puedeDerivar($usuarioId)
+    public function ultimaDerivacion()
     {
-        $usuarioActual = $this->usuarioActual();
+        return $this->hasOne(
+            Derivacion::class,
+            'idDocumento',
+            'idDocumento'
+        )->latestOfMany('orden');
+    }
+        /*
+    |--------------------------------------------------------------------------
+    | UBICACIÓN ACTUAL
+    |--------------------------------------------------------------------------
+    */
 
-        if (!$usuarioActual) {
-            return false;
+    public function ubicacionActual()
+    {
+        $ultima = $this->ultimaDerivacion;
+
+        if (!$ultima) {
+            return 'Sin derivación';
         }
 
-        return $usuarioActual->id == $usuarioId;
+        return $ultima->departamentoDestino->nombre ?? 'N/A';
+    }
+
+        /*
+    |--------------------------------------------------------------------------
+    | ESTADO FÍSICO
+    |--------------------------------------------------------------------------
+    */
+
+    public function estadoFisico()
+    {
+        $ultima = $this->ultimaDerivacion;
+
+        if (!$ultima) {
+            return 'Registrado';
+        }
+
+        if ($ultima->fechaRecepcion) {
+            return 'Recibido';
+        }
+
+        return 'En tránsito';
+    }
+
+    /*
+    |--------------------------------------------------------------------------
+    | SEGUIMIENTOS
+    |--------------------------------------------------------------------------
+    */
+
+    public function seguimientos()
+    {
+        return $this->hasMany(
+            Seguimiento::class,
+            'idDocumento',
+            'idDocumento'
+        );
     }
 }

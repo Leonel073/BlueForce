@@ -12,28 +12,50 @@
 
         <div class="card-body">
 
-            <h1 class="fw-bold text-white">
+            <div class="d-flex justify-content-between align-items-center flex-wrap">
 
-                <i class="bi bi-folder-fill"></i>
+                <div>
 
-                Mi Correspondencia
+                    <h1 class="fw-bold text-white mb-1">
 
-            </h1>
+                        <i class="bi bi-folder-fill"></i>
 
-            <p class="text-light mb-0">
+                        Mi Correspondencia
 
-                Gestión documental personal
+                    </h1>
 
-            </p>
+                    <p class="text-light mb-0">
+
+                        Gestión documental personal
+
+                    </p>
+
+                </div>
+
+                <div>
+
+                    <a href="{{ route('documentos.show') }}"
+                       class="btn btn-light rounded-4 px-4">
+
+                        <i class="bi bi-plus-circle-fill"></i>
+
+                        Nuevo Documento
+
+                    </a>
+
+                </div>
+
+            </div>
 
         </div>
 
     </div>
 
-    {{-- CARD --}}
+    {{-- ESTADÍSTICAS --}}
     <div class="row mb-4">
 
-        <div class="col-md-3">
+        {{-- TOTAL --}}
+        <div class="col-md-3 mb-3">
 
             <div class="card border-0 shadow-sm rounded-4 text-center p-4">
 
@@ -45,7 +67,70 @@
 
                 <div class="text-muted">
 
-                    Mis Documentos
+                    Total Documentos
+
+                </div>
+
+            </div>
+
+        </div>
+
+        {{-- PENDIENTES --}}
+        <div class="col-md-3 mb-3">
+
+            <div class="card border-0 shadow-sm rounded-4 text-center p-4">
+
+                <h1 class="fw-bold text-warning">
+
+                    {{ $pendientes }}
+
+                </h1>
+
+                <div class="text-muted">
+
+                    Pendientes
+
+                </div>
+
+            </div>
+
+        </div>
+
+        {{-- FINALIZADOS --}}
+        <div class="col-md-3 mb-3">
+
+            <div class="card border-0 shadow-sm rounded-4 text-center p-4">
+
+                <h1 class="fw-bold text-success">
+
+                    {{ $finalizados }}
+
+                </h1>
+
+                <div class="text-muted">
+
+                    Finalizados
+
+                </div>
+
+            </div>
+
+        </div>
+
+        {{-- URGENTES --}}
+        <div class="col-md-3 mb-3">
+
+            <div class="card border-0 shadow-sm rounded-4 text-center p-4">
+
+                <h1 class="fw-bold text-danger">
+
+                    {{ $urgentes }}
+
+                </h1>
+
+                <div class="text-muted">
+
+                    Urgentes
 
                 </div>
 
@@ -58,10 +143,16 @@
     {{-- TABLA --}}
     <div class="card border-0 shadow-lg rounded-4">
 
-        <div class="card-header text-white rounded-top-4"
+        <div class="card-header text-white rounded-top-4 d-flex justify-content-between align-items-center"
              style="background-color:#0B2D59;">
 
-            Documentos Registrados
+            <span>
+
+                <i class="bi bi-files"></i>
+
+                Documentos Registrados
+
+            </span>
 
         </div>
 
@@ -71,7 +162,7 @@
 
                 <table class="table table-hover align-middle">
 
-                    <thead>
+                    <thead class="table-light">
 
                         <tr>
 
@@ -79,9 +170,21 @@
 
                             <th>Asunto</th>
 
+                            <th>Remitente</th>
+
+                            <th>Departamento</th>
+
+                            <th>Urgencia</th>
+
+                            <th>Estado</th>
+
                             <th>Fecha</th>
 
-                            <th>Acciones</th>
+                            <th class="text-center">
+
+                                Acciones
+
+                            </th>
 
                         </tr>
 
@@ -93,33 +196,158 @@
 
                             <tr>
 
+                                {{-- CITE --}}
                                 <td>
 
-                                    {{ $doc->cite }}
+                                    <span class="fw-semibold">
+
+                                        {{ $doc->cite }}
+
+                                    </span>
 
                                 </td>
 
+                                {{-- ASUNTO --}}
                                 <td>
 
                                     {{ $doc->asunto }}
 
                                 </td>
 
+                                {{-- REMITENTE --}}
                                 <td>
 
-                                    {{ $doc->fecha }}
+                                    {{ $doc->remitente->nombre ?? 'N/A' }}
 
                                 </td>
 
+                                {{-- DEPARTAMENTO DESTINO --}}
                                 <td>
 
-          <a href="{{ route('admin.correspondencia.show', $doc->idDocumento) }}"
-                                       class="btn btn-sm text-white"
-                                       style="background-color:#0B2D59;">
+                                    {{
 
-                                        <i class="bi bi-eye-fill"></i>
+                                        optional(
+                                            $doc->derivaciones->last()
+                                        )->departamentoDestino->nombre
 
-                                    </a>
+                                        ?? 'Sin destino'
+
+                                    }}
+
+                                </td>
+
+                                {{-- URGENCIA --}}
+                                <td>
+
+                                    @if(
+                                        optional($doc->urgencia)->nombre == 'Urgente'
+                                    )
+
+                                        <span class="badge bg-danger rounded-pill">
+
+                                            Urgente
+
+                                        </span>
+
+                                    @else
+
+                                        <span class="badge bg-secondary rounded-pill">
+
+                                            {{ $doc->urgencia->nombre ?? 'N/A' }}
+
+                                        </span>
+
+                                    @endif
+
+                                </td>
+
+                                {{-- ESTADO --}}
+                                <td>
+
+                                    @php
+
+                                        $estado =
+                                            $doc->estado->nombre ?? 'N/A';
+
+                                    @endphp
+
+                                    @if($estado == 'Finalizado')
+
+                                        <span class="badge bg-success rounded-pill">
+
+                                            {{ $estado }}
+
+                                        </span>
+
+                                    @elseif($estado == 'Pendiente')
+
+                                        <span class="badge bg-warning text-dark rounded-pill">
+
+                                            {{ $estado }}
+
+                                        </span>
+
+                                    @elseif($estado == 'Derivado')
+
+                                        <span class="badge bg-primary rounded-pill">
+
+                                            {{ $estado }}
+
+                                        </span>
+
+                                    @else
+
+                                        <span class="badge bg-secondary rounded-pill">
+
+                                            {{ $estado }}
+
+                                        </span>
+
+                                    @endif
+
+                                </td>
+
+                                {{-- FECHA --}}
+                                <td>
+
+                                    {{ \Carbon\Carbon::parse($doc->fecha)->format('d/m/Y H:i') }}
+
+                                </td>
+
+                                {{-- ACCIONES --}}
+                                <td class="text-center">
+
+                                    <div class="btn-group">
+
+                                        {{-- VER --}}
+                                        <a href="{{ route('admin.correspondencia.show', $doc->idDocumento) }}"
+                                           class="btn btn-sm text-white"
+                                           style="background-color:#0B2D59;"
+                                           title="Ver Documento">
+
+                                            <i class="bi bi-eye-fill"></i>
+
+                                        </a>
+
+                                        {{-- PDF --}}
+                                        <a href="#"
+                                           class="btn btn-sm btn-danger"
+                                           title="Exportar PDF">
+
+                                            <i class="bi bi-file-earmark-pdf-fill"></i>
+
+                                        </a>
+
+                                        {{-- SEGUIMIENTO --}}
+                                        <a href="#"
+                                           class="btn btn-sm btn-info text-white"
+                                           title="Seguimiento">
+
+                                            <i class="bi bi-clock-history"></i>
+
+                                        </a>
+
+                                    </div>
 
                                 </td>
 
@@ -129,10 +357,16 @@
 
                             <tr>
 
-                                <td colspan="4"
-                                    class="text-center text-muted">
+                                <td colspan="8"
+                                    class="text-center py-5">
 
-                                    No existen documentos.
+                                    <div class="text-muted">
+
+                                        <i class="bi bi-inbox fs-1 d-block mb-3"></i>
+
+                                        No existen documentos registrados.
+
+                                    </div>
 
                                 </td>
 

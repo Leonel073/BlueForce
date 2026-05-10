@@ -10,7 +10,7 @@ class NivelUrgenciaSeeder extends Seeder
     public function run()
     {
         DB::table('NIVEL_URGENCIA')->insert([
-            ['nombre' => 'Urgente'],
+            ['nombre' => 'Alta'],
             ['nombre' => 'Medio'],
             ['nombre' => 'Bajo'],
         ]);

@@ -9,45 +9,73 @@ use Illuminate\Support\Facades\Auth;
 
 class CorrespondenciaController extends Controller
 {
-    public function index()
-    {
-        /*
-        |--------------------------------------------------------------------------
-        | USUARIO LOGUEADO
-        |--------------------------------------------------------------------------
-        */
+   public function index()
+{
+    $usuario = Auth::user();
 
-        $usuario = Auth::user();
+    /*
+    |--------------------------------------------------------------------------
+    | DOCUMENTOS DEL USUARIO
+    |--------------------------------------------------------------------------
+    */
 
-        /*
-        |--------------------------------------------------------------------------
-        | DOCUMENTOS DEL USUARIO
-        |--------------------------------------------------------------------------
-        */
+    $documentos = Correspondencia::with([
 
-        $documentos = Correspondencia::where(
-            'idUsuario',
-            $usuario->id
+        'tipoDocumento',
+        'estado',
+        'urgencia',
+        'remitente',
+        'derivaciones.departamentoDestino'
+
+    ])
+
+    ->where('idUsuario', $usuario->id)
+
+    ->orderByDesc('fecha')
+
+    ->get();
+
+    /*
+    |--------------------------------------------------------------------------
+    | CONTADORES
+    |--------------------------------------------------------------------------
+    */
+
+    $totalDocumentos =
+        $documentos->count();
+
+    $pendientes =
+        $documentos
+            ->where('estado.nombre', 'Pendiente')
+            ->count();
+
+    $finalizados =
+        $documentos
+            ->where('estado.nombre', 'Finalizado')
+            ->count();
+
+    $urgentes =
+        $documentos
+            ->where('urgencia.nombre', 'Urgente')
+            ->count();
+
+    /*
+    |--------------------------------------------------------------------------
+    | RETORNO
+    |--------------------------------------------------------------------------
+    */
+
+    return view(
+        'user.correspondencia.index',
+        compact(
+            'documentos',
+            'totalDocumentos',
+            'pendientes',
+            'finalizados',
+            'urgentes'
         )
-        ->latest('idDocumento')
-        ->get();
-
-        /*
-        |--------------------------------------------------------------------------
-        | ESTADÍSTICAS
-        |--------------------------------------------------------------------------
-        */
-
-        $totalDocumentos = $documentos->count();
-
-        return view(
-            'user.correspondencia.index',
-            compact(
-                'documentos',
-                'totalDocumentos'
-            )
-        );
-    }
+    );
+}
 
         public function show($id)
     {

@@ -1,74 +1,73 @@
-{{-- resources/views/admin/correspondencia/index.blade.php --}}
-
 @extends('layouts.app')
 
-@section('title', 'Administración de Correspondencia')
+@section('title', 'Mi Correspondencia')
 
 @section('content')
 
 <div class="container-fluid py-4">
 
-    {{-- ENCABEZADO --}}
+    {{-- HEADER --}}
     <div class="card border-0 shadow-lg rounded-4 mb-4"
-         style="background: linear-gradient(135deg, #0B2D59, #2E608C);">
+         style="background: linear-gradient(135deg,#0B2D59,#2E608C);">
 
-        <div class="card-body d-flex justify-content-between align-items-center flex-wrap">
+        <div class="card-body">
 
-            <div>
+            <div class="d-flex justify-content-between align-items-center flex-wrap">
 
-                <h1 class="fw-bold text-white mb-1">
+                <div>
 
-                    <i class="bi bi-folder-fill"></i>
+                    <h1 class="fw-bold text-white mb-1">
 
-                    Administración de Correspondencia
+                        <i class="bi bi-folder-fill"></i>
 
-                </h1>
+                        Mi Correspondencia
 
-                <p class="text-light mb-0">
+                    </h1>
 
-                    Control global documental del sistema
+                    <p class="text-light mb-0">
 
-                </p>
+                        Gestión documental personal
 
-            </div>
+                    </p>
 
-            <div>
+                </div>
 
-                <span class="badge rounded-pill px-4 py-3"
-                      style="background-color:#D9A23D; color:#0B2D59;">
+                <div>
 
-                    Total: {{ $totalDocumentos }}
+                    <a href="{{ route('documentos.show') }}"
+                       class="btn btn-light rounded-4 px-4">
 
-                </span>
+                        <i class="bi bi-plus-circle-fill"></i>
+
+                        Nuevo Documento
+
+                    </a>
+
+                </div>
 
             </div>
 
         </div>
 
     </div>
-
 
     {{-- ESTADÍSTICAS --}}
     <div class="row mb-4">
 
-        <div class="col-md-4">
+        {{-- TOTAL --}}
+        <div class="col-md-3 mb-3">
 
-            <div class="card border-0 shadow-sm rounded-4">
+            <div class="card border-0 shadow-sm rounded-4 text-center p-4">
 
-                <div class="card-body text-center">
+                <h1 class="fw-bold text-primary">
 
-                    <h2 class="fw-bold"
-                        style="color:#0B2D59;">
+                    {{ $totalDocumentos }}
 
-                        {{ $totalDocumentos }}
+                </h1>
 
-                    </h2>
+                <div class="text-muted">
 
-                    <p class="text-muted mb-0">
-
-                        Total Documentos
-
-                    </p>
+                    Total Documentos
 
                 </div>
 
@@ -76,23 +75,20 @@
 
         </div>
 
-        <div class="col-md-4">
+        {{-- PENDIENTES --}}
+        <div class="col-md-3 mb-3">
 
-            <div class="card border-0 shadow-sm rounded-4">
+            <div class="card border-0 shadow-sm rounded-4 text-center p-4">
 
-                <div class="card-body text-center">
+                <h1 class="fw-bold text-warning">
 
-                    <h2 class="fw-bold text-danger">
+                    {{ $pendientes }}
 
-                        {{ $totalUrgentes }}
+                </h1>
 
-                    </h2>
+                <div class="text-muted">
 
-                    <p class="text-muted mb-0">
-
-                        Urgentes
-
-                    </p>
+                    Pendientes
 
                 </div>
 
@@ -100,23 +96,41 @@
 
         </div>
 
-        <div class="col-md-4">
+        {{-- FINALIZADOS --}}
+        <div class="col-md-3 mb-3">
 
-            <div class="card border-0 shadow-sm rounded-4">
+            <div class="card border-0 shadow-sm rounded-4 text-center p-4">
 
-                <div class="card-body text-center">
+                <h1 class="fw-bold text-success">
 
-                    <h2 class="fw-bold text-warning">
+                    {{ $finalizados }}
 
-                        {{ $totalRevision }}
+                </h1>
 
-                    </h2>
+                <div class="text-muted">
 
-                    <p class="text-muted mb-0">
+                    Finalizados
 
-                        En Revisión
+                </div>
 
-                    </p>
+            </div>
+
+        </div>
+
+        {{-- URGENTES --}}
+        <div class="col-md-3 mb-3">
+
+            <div class="card border-0 shadow-sm rounded-4 text-center p-4">
+
+                <h1 class="fw-bold text-danger">
+
+                    {{ $urgentes }}
+
+                </h1>
+
+                <div class="text-muted">
+
+                    Urgentes
 
                 </div>
 
@@ -125,154 +139,22 @@
         </div>
 
     </div>
-
-
-    {{-- FILTROS --}}
-    <div class="card border-0 shadow-sm rounded-4 mb-4">
-
-        <div class="card-body">
-
-            <form method="GET"
-                  action="{{ route('admin.correspondencia') }}">
-
-                <div class="row g-3">
-
-                    {{-- BUSCADOR --}}
-                    <div class="col-md-3">
-
-                        <input type="text"
-                               name="buscar"
-                               class="form-control rounded-3"
-                               placeholder="Buscar cite o asunto..."
-                               value="{{ request('buscar') }}">
-
-                    </div>
-
-                    {{-- ESTADO --}}
-                    <div class="col-md-2">
-
-                        <select name="estado"
-                                class="form-select rounded-3">
-
-                            <option value="">
-
-                                Estado
-
-                            </option>
-
-                            @foreach($estados as $estado)
-
-                                <option value="{{ $estado->idEstado }}"
-                                    {{ request('estado') == $estado->idEstado ? 'selected' : '' }}>
-
-                                    {{ $estado->nombre }}
-
-                                </option>
-
-                            @endforeach
-
-                        </select>
-
-                    </div>
-
-                    {{-- URGENCIA --}}
-                    <div class="col-md-2">
-
-                        <select name="urgencia"
-                                class="form-select rounded-3">
-
-                            <option value="">
-
-                                Urgencia
-
-                            </option>
-
-                            @foreach($urgencias as $urgencia)
-
-                                <option value="{{ $urgencia->idUrgencia }}"
-                                    {{ request('urgencia') == $urgencia->idUrgencia ? 'selected' : '' }}>
-
-                                    {{ $urgencia->nombre }}
-
-                                </option>
-
-                            @endforeach
-
-                        </select>
-
-                    </div>
-
-                    {{-- USUARIO --}}
-                    <div class="col-md-2">
-
-                        <select name="usuario"
-                                class="form-select rounded-3">
-
-                            <option value="">
-
-                                Usuario
-
-                            </option>
-
-                            @foreach($usuarios as $usuario)
-
-                                <option value="{{ $usuario->id }}"
-                                    {{ request('usuario') == $usuario->id ? 'selected' : '' }}>
-
-                                    {{ $usuario->name }}
-
-                                </option>
-
-                            @endforeach
-
-                        </select>
-
-                    </div>
-
-                    {{-- FECHA INICIO --}}
-                    <div class="col-md-1">
-
-                        <input type="date"
-                               name="fecha_inicio"
-                               class="form-control rounded-3"
-                               value="{{ request('fecha_inicio') }}">
-
-                    </div>
-
-                    {{-- FECHA FIN --}}
-                    <div class="col-md-1">
-
-                        <input type="date"
-                               name="fecha_fin"
-                               class="form-control rounded-3"
-                               value="{{ request('fecha_fin') }}">
-
-                    </div>
-
-                    {{-- BOTÓN --}}
-                    <div class="col-md-1 d-grid">
-
-                        <button type="submit"
-                                class="btn text-white rounded-3"
-                                style="background-color:#0B2D59;">
-
-                            <i class="bi bi-search"></i>
-
-                        </button>
-
-                    </div>
-
-                </div>
-
-            </form>
-
-        </div>
-
-    </div>
-
 
     {{-- TABLA --}}
     <div class="card border-0 shadow-lg rounded-4">
+
+        <div class="card-header text-white rounded-top-4 d-flex justify-content-between align-items-center"
+             style="background-color:#0B2D59;">
+
+            <span>
+
+                <i class="bi bi-files"></i>
+
+                Documentos Registrados
+
+            </span>
+
+        </div>
 
         <div class="card-body">
 
@@ -280,26 +162,28 @@
 
                 <table class="table table-hover align-middle">
 
-                    <thead style="background-color:#0B2D59;">
+                    <thead class="table-light">
 
                         <tr>
 
-                            <th class="text-dark">Cite</th>
+                            <th>Cite</th>
 
-                            <th class="text-dark">Asunto</th>
+                            <th>Asunto</th>
 
-                            <th class="text-dark">Usuario</th>
+                            <th>Remitente</th>
 
-                            <th class="text-dark">Estado</th>
+                            <th>Departamento</th>
 
-                            <th class="text-dark">Urgencia</th>
+                            <th>Urgencia</th>
 
-                            <th class="text-dark">Fecha</th>
+                            <th>Estado</th>
 
-                            <th class="text-dark">Seguimiento</th>
+                            <th>Fecha</th>
 
-                            <th class="text-dark text-center">
+                            <th class="text-center">
+
                                 Acciones
+
                             </th>
 
                         </tr>
@@ -310,120 +194,183 @@
 
                         @forelse($documentos as $doc)
 
-                        <tr>
+                            <tr>
 
-                            {{-- CITE --}}
-                            <td>
+                                {{-- CITE --}}
+                                <td>
 
-                                <span class="fw-bold">
+                                    <span class="fw-semibold">
 
-                                    {{ $doc->cite }}
-
-                                </span>
-
-                            </td>
-
-                            {{-- ASUNTO --}}
-                            <td>
-
-                                {{ $doc->asunto }}
-
-                            </td>
-
-                            {{-- USUARIO --}}
-                            <td>
-
-                                {{ $doc->usuario->name ?? 'Sin usuario' }}
-
-                            </td>
-
-                            {{-- ESTADO --}}
-                            <td>
-
-                                <span class="badge bg-success">
-
-                                    {{ $doc->estado->nombre ?? 'Sin estado' }}
-
-                                </span>
-
-                            </td>
-
-                            {{-- URGENCIA --}}
-                            <td>
-
-                                <span class="badge"
-                                      style="background-color:#D9A23D;
-                                             color:#0B2D59;">
-
-                                    {{ $doc->urgencia->nombre ?? 'Normal' }}
-
-                                </span>
-
-                            </td>
-
-                            {{-- FECHA --}}
-                            <td>
-
-                                {{ $doc->fecha }}
-
-                            </td>
-
-                            {{-- SEGUIMIENTO --}}
-                            <td>
-
-                                @forelse($doc->seguimientos as $seg)
-
-                                    <div class="mb-1">
-
-                                        <span class="badge bg-primary">
-
-                                            {{ $seg->ubicacion }}
-
-                                        </span>
-
-                                    </div>
-
-                                @empty
-
-                                    <span class="text-muted">
-
-                                        Sin seguimiento
+                                        {{ $doc->cite }}
 
                                     </span>
 
-                                @endforelse
+                                </td>
 
-                            </td>
+                                {{-- ASUNTO --}}
+                                <td>
 
-                            {{-- ACCIONES --}}
-                            <td class="text-center">
+                                    {{ $doc->asunto }}
 
-                              <a href="{{ route('admin.correspondencia.show', $doc->idDocumento) }}"
-                                   class="btn btn-sm text-white rounded-3"
-                                   style="background-color:#0B2D59;">
+                                </td>
 
-                                    <i class="bi bi-eye-fill"></i>
+                                {{-- REMITENTE --}}
+                                <td>
 
-                                    Ver
+                                    {{ $doc->remitente->nombre ?? 'N/A' }}
 
-                                </a>
+                                </td>
 
-                            </td>
+                                {{-- DEPARTAMENTO DESTINO --}}
+                                <td>
 
-                        </tr>
+                                    {{
+
+                                        optional(
+                                            $doc->derivaciones->last()
+                                        )->departamentoDestino->nombre
+
+                                        ?? 'Sin destino'
+
+                                    }}
+
+                                </td>
+
+                                {{-- URGENCIA --}}
+                                <td>
+
+                                    @if(
+                                        optional($doc->urgencia)->nombre == 'Urgente'
+                                    )
+
+                                        <span class="badge bg-danger rounded-pill">
+
+                                            Urgente
+
+                                        </span>
+
+                                    @else
+
+                                        <span class="badge bg-secondary rounded-pill">
+
+                                            {{ $doc->urgencia->nombre ?? 'N/A' }}
+
+                                        </span>
+
+                                    @endif
+
+                                </td>
+
+                                {{-- ESTADO --}}
+                                <td>
+
+                                    @php
+
+                                        $estado =
+                                            $doc->estado->nombre ?? 'N/A';
+
+                                    @endphp
+
+                                    @if($estado == 'Finalizado')
+
+                                        <span class="badge bg-success rounded-pill">
+
+                                            {{ $estado }}
+
+                                        </span>
+
+                                    @elseif($estado == 'Pendiente')
+
+                                        <span class="badge bg-warning text-dark rounded-pill">
+
+                                            {{ $estado }}
+
+                                        </span>
+
+                                    @elseif($estado == 'Derivado')
+
+                                        <span class="badge bg-primary rounded-pill">
+
+                                            {{ $estado }}
+
+                                        </span>
+
+                                    @else
+
+                                        <span class="badge bg-secondary rounded-pill">
+
+                                            {{ $estado }}
+
+                                        </span>
+
+                                    @endif
+
+                                </td>
+
+                                {{-- FECHA --}}
+                                <td>
+
+                                    {{ \Carbon\Carbon::parse($doc->fecha)->format('d/m/Y H:i') }}
+
+                                </td>
+
+                                {{-- ACCIONES --}}
+                                <td class="text-center">
+
+                                    <div class="btn-group">
+
+                                        {{-- VER --}}
+                                        <a href="{{ route('admin.correspondencia.show', $doc->idDocumento) }}"
+                                           class="btn btn-sm text-white"
+                                           style="background-color:#0B2D59;"
+                                           title="Ver Documento">
+
+                                            <i class="bi bi-eye-fill"></i>
+
+                                        </a>
+
+                                        {{-- PDF --}}
+                                        <a href="#"
+                                           class="btn btn-sm btn-danger"
+                                           title="Exportar PDF">
+
+                                            <i class="bi bi-file-earmark-pdf-fill"></i>
+
+                                        </a>
+
+                                        {{-- SEGUIMIENTO --}}
+                                        <a href="#"
+                                           class="btn btn-sm btn-info text-white"
+                                           title="Seguimiento">
+
+                                            <i class="bi bi-clock-history"></i>
+
+                                        </a>
+
+                                    </div>
+
+                                </td>
+
+                            </tr>
 
                         @empty
 
-                        <tr>
+                            <tr>
 
-                            <td colspan="8"
-                                class="text-center text-muted py-5">
+                                <td colspan="8"
+                                    class="text-center py-5">
 
-                                No existen documentos registrados.
+                                    <div class="text-muted">
 
-                            </td>
+                                        <i class="bi bi-inbox fs-1 d-block mb-3"></i>
 
-                        </tr>
+                                        No existen documentos registrados.
+
+                                    </div>
+
+                                </td>
+
+                            </tr>
 
                         @endforelse
 
@@ -434,14 +381,6 @@
             </div>
 
         </div>
-
-    </div>
-
-
-    {{-- PAGINACIÓN --}}
-    <div class="mt-4">
-
-        {{ $documentos->links() }}
 
     </div>
 

@@ -19,4 +19,12 @@ class Departamento extends Model
     {
         return $this->hasMany(CorrespondenciaDestinatario::class, 'idPersona', 'idDepartamento');
     }
+    public function encargado()
+{
+    return $this->belongsTo(
+        Persona::class,
+        'idPersonaEncargada',
+        'idPersona'
+    );
+}
 }

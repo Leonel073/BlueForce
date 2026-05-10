@@ -1,74 +1,96 @@
 @extends('layouts.app')
 
-@section('title', 'Correspondencia Enviada')
+@section('title', 'Bandeja General')
 
 @section('content')
 
-<style>
-.bg-mi-fondo {
-    background-color: #0b295b;
-    color: white;
-}
-
-.btn-mi-amarillo {
-    background-color: #d3af37;
-    color: #0b295b;
-    border: none;
-}
-.btn-mi-azul {
-    background-color: #0b295b;
-    color: white;
-    border: none;
-}
-
-.btn-mi-verde:hover {
-    background-color: #146c43;
-}
-
-.text-mi-azul {
-    color:  #0b295b;
-}
-</style>
-
 <div class="container-fluid py-4">
 
-    {{-- ENCABEZADO --}}
+    {{-- HEADER --}}
     <div class="card border-0 shadow-lg rounded-4 mb-4"
-         style="background: linear-gradient(135deg, #0B2D59, #2E608C);">
+         style="background: linear-gradient(135deg,#0B2D59,#2E608C);">
 
-        <div class="card-body d-flex justify-content-between align-items-center flex-wrap">
+        <div class="card-body">
 
-            <div>
+            <h1 class="fw-bold text-white">
 
-                <h1 class="fw-bold text-white mb-1">
+                <i class="bi bi-inboxes-fill"></i>
 
-                    <i class="bi bi-send-fill"></i>
+                Bandeja General Documental
 
-                    Correspondencia Enviada
+            </h1>
+
+            <p class="text-light mb-0">
+
+                Control general del flujo documental institucional
+
+            </p>
+
+        </div>
+
+    </div>
+
+    {{-- ESTADÍSTICAS --}}
+    <div class="row mb-4">
+
+        {{-- TOTAL --}}
+        <div class="col-md-4 mb-3">
+
+            <div class="card border-0 shadow-sm rounded-4 text-center p-4">
+
+                <h1 class="fw-bold text-primary">
+
+                    {{ $totalDocumentos }}
 
                 </h1>
 
-                <p class="text-light mb-0">
+                <div class="text-muted">
 
-                    Gestión y control documental enviado
+                    Total Derivaciones
 
-                </p>
-                <a href="{{ route('documentos.crear') }}" class="btn btn-mi-amarillo shadow text-mi-azul">
-            Subir Documento
-        </a>
+                </div>
 
             </div>
 
-            <div>
+        </div>
 
-                <span class="badge rounded-pill px-4 py-3"
-                      style="background-color:#D9A23D;
-                             color:#0B2D59;">
+        {{-- EN TRÁNSITO --}}
+        <div class="col-md-4 mb-3">
 
-                    Total:
-                    {{ $documentos->count() }}
+            <div class="card border-0 shadow-sm rounded-4 text-center p-4">
 
-                </span>
+                <h1 class="fw-bold text-warning">
+
+                    {{ $enTransito }}
+
+                </h1>
+
+                <div class="text-muted">
+
+                    En Tránsito
+
+                </div>
+
+            </div>
+
+        </div>
+
+        {{-- RECIBIDOS --}}
+        <div class="col-md-4 mb-3">
+
+            <div class="card border-0 shadow-sm rounded-4 text-center p-4">
+
+                <h1 class="fw-bold text-success">
+
+                    {{ $recibidos }}
+
+                </h1>
+
+                <div class="text-muted">
+
+                    Recibidos
+
+                </div>
 
             </div>
 
@@ -76,9 +98,15 @@
 
     </div>
 
-
     {{-- TABLA --}}
     <div class="card border-0 shadow-lg rounded-4">
+
+        <div class="card-header text-white rounded-top-4"
+             style="background-color:#0B2D59;">
+
+            Flujo General de Documentos
+
+        </div>
 
         <div class="card-body">
 
@@ -86,57 +114,29 @@
 
                 <table class="table table-hover align-middle">
 
-                    <thead style="background-color:#0B2D59;">
+                    <thead>
 
                         <tr>
 
-                            <th class="text-dark">
+                            <th>Cite</th>
 
-                                Cite
+                            <th>Asunto</th>
 
-                            </th>
+                            <th>Remitente</th>
 
-                            <th class="text-dark">
+                            <th>Origen</th>
 
-                                Asunto
+                            <th>Destino</th>
 
-                            </th>
+                            <th>Urgencia</th>
 
-                            <th class="text-dark">
+                            <th>Estado</th>
 
-                                Tipo
+                            <th>Envío</th>
 
-                            </th>
+                            <th>Recepción</th>
 
-                            <th class="text-dark">
-
-                                Fecha
-
-                            </th>
-
-                            <th class="text-dark">
-
-                                Estado
-
-                            </th>
-
-                            <th class="text-dark">
-
-                                Urgencia
-
-                            </th>
-
-                            <th class="text-dark">
-
-                                Última Derivación
-
-                            </th>
-
-                            <th class="text-dark text-center">
-
-                                Acciones
-
-                            </th>
+                            <th>Acciones</th>
 
                         </tr>
 
@@ -144,91 +144,90 @@
 
                     <tbody>
 
-                        @forelse($documentos as $doc)
-
-                            @php
-
-                                $ultimaDerivacion =
-                                    $doc->derivaciones
-                                        ->sortByDesc('orden')
-                                        ->first();
-
-                            @endphp
+                        @forelse($derivaciones as $d)
 
                             <tr>
 
                                 {{-- CITE --}}
                                 <td>
 
-                                    <span class="fw-bold">
-
-                                        {{ $doc->cite }}
-
-                                    </span>
+                                    {{ $d->documento->cite }}
 
                                 </td>
 
                                 {{-- ASUNTO --}}
                                 <td>
 
-                                    {{ $doc->asunto }}
+                                    {{ $d->documento->asunto }}
 
                                 </td>
 
-                                {{-- TIPO --}}
+                                {{-- REMITENTE --}}
                                 <td>
 
-                                    {{ $doc->tipoDocumento->nombre ?? 'Sin tipo' }}
+                                    {{ $d->documento->remitente->nombre ?? 'N/A' }}
 
                                 </td>
 
-                                {{-- FECHA --}}
+                                {{-- ORIGEN --}}
                                 <td>
 
-                                    {{ $doc->fecha }}
+                                    {{ $d->departamentoOrigen->nombre ?? 'N/A' }}
 
                                 </td>
 
-                                {{-- ESTADO --}}
+                                {{-- DESTINO --}}
                                 <td>
 
-                                    <span class="badge bg-success">
-
-                                        {{ $doc->estado->nombre ?? 'Sin estado' }}
-
-                                    </span>
+                                    {{ $d->departamentoDestino->nombre ?? 'N/A' }}
 
                                 </td>
 
                                 {{-- URGENCIA --}}
                                 <td>
 
-                                    <span class="badge"
-                                          style="background-color:#D9A23D;
-                                                 color:#0B2D59;">
+                                    <span class="badge bg-danger">
 
-                                        {{ $doc->urgencia->nombre ?? 'Normal' }}
+                                        {{ $d->documento->urgencia->nombre ?? 'N/A' }}
 
                                     </span>
 
                                 </td>
 
-                                {{-- DERIVACIÓN --}}
+                                {{-- ESTADO --}}
                                 <td>
 
-                                    @if($ultimaDerivacion)
+                                    <span class="badge bg-primary">
 
-                                        <span class="badge bg-primary">
+                                        {{ $d->documento->estado->nombre ?? 'N/A' }}
 
-                                            {{ $ultimaDerivacion->departamentoDestino->nombre ?? 'N/A' }}
+                                    </span>
+
+                                </td>
+
+                                {{-- FECHA ENVÍO --}}
+                                <td>
+
+                                    {{ $d->fechaEnvio }}
+
+                                </td>
+
+                                {{-- FECHA RECEPCIÓN --}}
+                                <td>
+
+                                    @if($d->fechaRecepcion)
+
+                                        <span class="badge bg-success">
+
+                                            Recibido
 
                                         </span>
 
                                     @else
 
-                                        <span class="text-muted">
+                                        <span class="badge bg-warning text-dark">
 
-                                            Sin derivación
+                                            En tránsito
 
                                         </span>
 
@@ -237,36 +236,15 @@
                                 </td>
 
                                 {{-- ACCIONES --}}
-                                <td class="text-center">
+                                <td>
 
-                                    <div class="d-flex gap-2 justify-content-center">
+                                    <a href="{{ route('admin.correspondencia.show', $d->documento->idDocumento) }}"
+                                       class="btn btn-sm text-white"
+                                       style="background-color:#0B2D59;">
 
-                                        {{-- VER --}}
-                                        <a href="{{ route('admin.correspondencia.show', $doc->idDocumento) }}"
-                                           class="btn btn-sm text-white"
-                                           style="background-color:#0B2D59;">
+                                        <i class="bi bi-eye-fill"></i>
 
-                                            <i class="bi bi-eye-fill"></i>
-
-                                        </a>
-
-                                        {{-- DERIVAR --}}
-                                        <a href="#"
-                                           class="btn btn-sm btn-warning">
-
-                                            <i class="bi bi-arrow-left-right"></i>
-
-                                        </a>
-
-                                        {{-- HISTORIAL --}}
-                                        <a href="#"
-                                           class="btn btn-sm btn-secondary">
-
-                                            <i class="bi bi-clock-history"></i>
-
-                                        </a>
-
-                                    </div>
+                                    </a>
 
                                 </td>
 
@@ -276,10 +254,10 @@
 
                             <tr>
 
-                                <td colspan="8"
-                                    class="text-center text-muted py-5">
+                                <td colspan="10"
+                                    class="text-center text-muted">
 
-                                    No existen documentos enviados.
+                                    No existen derivaciones registradas.
 
                                 </td>
 

@@ -11,14 +11,19 @@ class Persona extends Model
     public $timestamps = false;
 
     protected $fillable = [
+
         'nombre',
         'correo',
+        'telefono_celular',
+        'telefono_fijo',
+        'ci',
         'cargo',
         'institucion',
         'tipo',
+        'idDepartamento',
         'activo',
-    ];
 
+    ];
     /**
      * Relación: Una persona puede ser remitente de muchas correspondencias
      */

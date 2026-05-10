@@ -13,20 +13,21 @@ class Derivacion extends Model
     public $timestamps = false;
 
     protected $fillable = [
+
         'idDocumento',
         'orden',
         'idDepartamentoOrigen',
         'idDepartamentoDestino',
-        'idUsuarioAsignado',
         'instruccion',
         'fechaEnvio',
         'fechaRecepcion',
         'activo',
+
     ];
 
     /*
     |--------------------------------------------------------------------------
-    | RELACIÓN DOCUMENTO
+    | DOCUMENTO
     |--------------------------------------------------------------------------
     */
 
@@ -68,22 +69,4 @@ class Derivacion extends Model
             'idDepartamento'
         );
     }
-
-    /*
-    |--------------------------------------------------------------------------
-    | USUARIO ASIGNADO
-    |--------------------------------------------------------------------------
-    */
-
-    public function usuarioAsignado()
-    {
-        return $this->belongsTo(
-            User::class,
-            'idUsuarioAsignado',
-            'id'
-        );
-    }
-
-
-    
 }

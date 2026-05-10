@@ -8,6 +8,7 @@ use App\Http\Controllers\Admin\UsuarioController;
 use App\Http\Controllers\UserDashboardController;
 use App\Http\Controllers\Admin\CorespondenciaController;
 use App\Http\Controllers\EnvioController;
+use App\Http\Controllers\RecibidasController;
 use App\Http\Controllers\Admin\DashboardController;
 use App\Http\Controllers\User\CorrespondenciaController as UserCorrespondenciaController;
 
@@ -103,7 +104,14 @@ Route::middleware(['auth', 'verified'])->group(function () {
         return "Aquí verás la tabla de correspondencia recibida.";
 
     })->name('recibidas');
-
+    Route::post(
+    '/envios/{id}/finalizar',
+    [EnvioController::class, 'finalizar']
+)->name('envios.finalizar');
+    Route::put(
+    '/envios/{id}/finalizar',
+    [EnvioController::class, 'finalizar']
+)->name('envios.finalizar');
 
     /*
     |-----------------------------------
@@ -213,7 +221,14 @@ Route::get(
     Route::post(
     '/admin/correspondencia/{id}/derivar',
     [\App\Http\Controllers\Admin\CorrespondenciaController::class, 'derivar']
+
+  
 )->name('admin.correspondencia.derivar');
+// buscar persona por ci para derivacion y creacion de correspondencia
+Route::get(
+    '/persona/buscar/{ci}',
+    [DocumentoController::class, 'buscarPersona']
+)->name('persona.buscar');
 
 
 
@@ -283,6 +298,23 @@ Route::post(
 )->name('envios.derivar');
 });
 
+
+
+//recibos 
+Route::get(
+    '/recibidas',
+    [RecibidasController::class, 'index']
+)->name('recibidas.index');
+
+Route::post(
+    '/recibidas/{id}/recibir',
+    [RecibidasController::class, 'recibir']
+)->name('recibidas.recibir');
+
+Route::post(
+    '/recibidas/{id}/finalizar',
+    [RecibidasController::class, 'finalizar']
+)->name('recibidas.finalizar');
 /*
 |--------------------------------------------------------------------------
 | PERFIL

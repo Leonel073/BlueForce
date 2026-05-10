@@ -12,256 +12,190 @@ use App\Models\User;
 use App\Models\Departamento;
 use App\Models\Derivacion;
 use App\Models\Seguimiento;
+use Illuminate\Support\Facades\Auth;
 class CorrespondenciaController extends Controller
 {
-    public function index(Request $request)
+public function index()
+{
+    $usuario = Auth::user();
+
+    /*
+    |--------------------------------------------------------------------------
+    | DOCUMENTOS DEL USUARIO
+    |--------------------------------------------------------------------------
+    */
+
+    $documentos = Correspondencia::with([
+
+        'tipoDocumento',
+        'estado',
+        'urgencia',
+        'remitente',
+        'derivaciones.departamentoDestino'
+
+    ])
+
+    ->where('idUsuario', $usuario->id)
+
+    ->orderByDesc('fecha')
+
+    ->get();
+
+    /*
+    |--------------------------------------------------------------------------
+    | CONTADORES
+    |--------------------------------------------------------------------------
+    */
+
+    $totalDocumentos =
+        $documentos->count();
+
+    $pendientes =
+        $documentos
+            ->where('estado.nombre', 'Pendiente')
+            ->count();
+
+    $finalizados =
+        $documentos
+            ->where('estado.nombre', 'Finalizado')
+            ->count();
+
+    $urgentes =
+        $documentos
+            ->where('urgencia.nombre', 'Urgente')
+            ->count();
+
+    /*
+    |--------------------------------------------------------------------------
+    | RETORNO
+    |--------------------------------------------------------------------------
+    */
+
+    return view(
+        'user.correspondencia.index',
+        compact(
+            'documentos',
+            'totalDocumentos',
+            'pendientes',
+            'finalizados',
+            'urgentes'
+        )
+    );
+}
+
+public function show($id)
+{
+    $documento = Correspondencia::with([
+
+        'usuario',
+        'estado',
+        'urgencia',
+        'tipoDocumento',
+        'remitente',
+
+        'derivaciones.departamentoOrigen',
+        'derivaciones.departamentoDestino'
+
+    ])->findOrFail($id);
+
+    /*
+    |--------------------------------------------------------------------------
+    | ÚLTIMA DERIVACIÓN
+    |--------------------------------------------------------------------------
+    */
+
+    $ultimaDerivacion = $documento->derivaciones
+        ->sortByDesc('orden')
+        ->first();
+
+    return view(
+        'admin.correspondencia.show',
+        compact(
+            'documento',
+            'ultimaDerivacion'
+        )
+    );
+}
+
+        public function derivar(Request $request, $id)
     {
-        // QUERY BASE
-        $query = Correspondencia::with([
-            'usuario',
-            'estado',
-            'urgencia',
-            'tipoDocumento',
-            'seguimientos'
+        $request->validate([
+
+            'idDepartamentoDestino' => 'required',
+
+        ]);
+
+        $documento = Correspondencia::findOrFail($id);
+
+        /*
+        |--------------------------------------------------------------------------
+        | OBTENER ÚLTIMO ORDEN
+        |--------------------------------------------------------------------------
+        */
+
+        $ultimoOrden = Derivacion::where(
+            'idDocumento',
+            $id
+        )->max('orden');
+
+        $nuevoOrden = $ultimoOrden
+            ? $ultimoOrden + 1
+            : 1;
+
+        /*
+        |--------------------------------------------------------------------------
+        | CREAR DERIVACIÓN
+        |--------------------------------------------------------------------------
+        */
+
+        Derivacion::create([
+
+            'idDocumento' => $id,
+
+            'orden' => $nuevoOrden,
+
+            'idDepartamentoOrigen' => 1,
+
+            'idDepartamentoDestino'
+                => $request->idDepartamentoDestino,
+
+            'idUsuarioAsignado'
+                => $request->idUsuarioAsignado,
+
+            'instruccion'
+                => $request->instruccion,
+
+            'fechaEnvio' => now(),
+
+            'activo' => true,
+
         ]);
 
         /*
         |--------------------------------------------------------------------------
-        | BUSCADOR GENERAL
+        | REGISTRAR SEGUIMIENTO
         |--------------------------------------------------------------------------
         */
 
-        if ($request->buscar) {
+        Seguimiento::create([
 
-            $query->where(function ($q) use ($request) {
+            'idDocumento' => $id,
 
-                $q->where('cite', 'LIKE', '%' . $request->buscar . '%')
-                  ->orWhere('asunto', 'LIKE', '%' . $request->buscar . '%');
+            'fecha' => now(),
 
-            });
+            'ubicacion'
+                => 'Documento derivado',
 
-        }
+            'idEstado'
+                => $documento->idEstado,
 
-        /*
-        |--------------------------------------------------------------------------
-        | FILTRO ESTADO
-        |--------------------------------------------------------------------------
-        */
+            'activo' => true,
 
-        if ($request->estado) {
+        ]);
 
-            $query->where(
-                'idEstado',
-                $request->estado
-            );
-
-        }
-
-        /*
-        |--------------------------------------------------------------------------
-        | FILTRO URGENCIA
-        |--------------------------------------------------------------------------
-        */
-
-        if ($request->urgencia) {
-
-            $query->where(
-                'idUrgencia',
-                $request->urgencia
-            );
-
-        }
-
-        /*
-        |--------------------------------------------------------------------------
-        | FILTRO USUARIO
-        |--------------------------------------------------------------------------
-        */
-
-        if ($request->usuario) {
-
-            $query->where(
-                'idUsuario',
-                $request->usuario
-            );
-
-        }
-
-        /*
-        |--------------------------------------------------------------------------
-        | FILTRO FECHA
-        |--------------------------------------------------------------------------
-        */
-
-        if ($request->fecha_inicio && $request->fecha_fin) {
-
-            $query->whereBetween('fecha', [
-                $request->fecha_inicio,
-                $request->fecha_fin
-            ]);
-
-        }
-
-        /*
-        |--------------------------------------------------------------------------
-        | OBTENER DATOS
-        |--------------------------------------------------------------------------
-        */
-
-        $documentos = $query
-            ->orderBy('fecha', 'desc')
-            ->paginate(10);
-
-        /*
-        |--------------------------------------------------------------------------
-        | DATOS PARA FILTROS
-        |--------------------------------------------------------------------------
-        */
-
-        $estados = EstadoDocumento::all();
-        $urgencias = NivelUrgencia::all();
-        $usuarios = User::all();
-
-        /*
-        |--------------------------------------------------------------------------
-        | ESTADÍSTICAS
-        |--------------------------------------------------------------------------
-        */
-
-        $totalDocumentos = Correspondencia::count();
-
-        $totalUrgentes = Correspondencia::where(
-            'idUrgencia',
-            1
-        )->count();
-
-        $totalRevision = Correspondencia::where(
-            'idEstado',
-            3
-        )->count();
-
-        return view(
-            'admin.correspondencia.index',
-            compact(
-                'documentos',
-                'estados',
-                'urgencias',
-                'usuarios',
-                'totalDocumentos',
-                'totalUrgentes',
-                'totalRevision'
-            )
+        return back()->with(
+            'success',
+            'Documento derivado correctamente.'
         );
     }
-
-    public function show($id)
-        {
-                    $documento = Correspondencia::with([
-                    'usuario',
-                    'estado',
-                    'urgencia',
-                    'tipoDocumento',
-                    'remitente',
-                    'seguimientos',
-                    'derivaciones.departamentoOrigen',
-                    'derivaciones.departamentoDestino',
-                    'derivaciones.usuarioAsignado',
-                ])->findOrFail($id);
-                $departamentos = Departamento::all();
-
-                $usuarios = User::where('activo', 1)->get();
-
-            return view(
-                'admin.correspondencia.show',
-                compact(
-            'documento',
-            'departamentos',
-            'usuarios'
-        )
-            );
-
-
-            
-        }
-        public function derivar(Request $request, $id)
-{
-    $request->validate([
-
-        'idDepartamentoDestino' => 'required',
-
-    ]);
-
-    $documento = Correspondencia::findOrFail($id);
-
-    /*
-    |--------------------------------------------------------------------------
-    | OBTENER ÚLTIMO ORDEN
-    |--------------------------------------------------------------------------
-    */
-
-    $ultimoOrden = Derivacion::where(
-        'idDocumento',
-        $id
-    )->max('orden');
-
-    $nuevoOrden = $ultimoOrden
-        ? $ultimoOrden + 1
-        : 1;
-
-    /*
-    |--------------------------------------------------------------------------
-    | CREAR DERIVACIÓN
-    |--------------------------------------------------------------------------
-    */
-
-    Derivacion::create([
-
-        'idDocumento' => $id,
-
-        'orden' => $nuevoOrden,
-
-        'idDepartamentoOrigen' => 1,
-
-        'idDepartamentoDestino'
-            => $request->idDepartamentoDestino,
-
-        'idUsuarioAsignado'
-            => $request->idUsuarioAsignado,
-
-        'instruccion'
-            => $request->instruccion,
-
-        'fechaEnvio' => now(),
-
-        'activo' => true,
-
-    ]);
-
-    /*
-    |--------------------------------------------------------------------------
-    | REGISTRAR SEGUIMIENTO
-    |--------------------------------------------------------------------------
-    */
-
-    Seguimiento::create([
-
-        'idDocumento' => $id,
-
-        'fecha' => now(),
-
-        'ubicacion'
-            => 'Documento derivado',
-
-        'idEstado'
-            => $documento->idEstado,
-
-        'activo' => true,
-
-    ]);
-
-    return back()->with(
-        'success',
-        'Documento derivado correctamente.'
-    );
-}
 }
