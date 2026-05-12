@@ -34,14 +34,15 @@
 
                 <div>
 
-                    <a href="{{ route('documentos.show') }}"
-                       class="btn btn-light rounded-4 px-4">
+                  <a href="{{ route('documentos.crear') }}"
+   class="btn text-white rounded-4 px-4 shadow-sm"
+   style="background: linear-gradient(135deg,#D9A23D,#BF8A2E); border:none;">
 
-                        <i class="bi bi-plus-circle-fill"></i>
+    <i class="bi bi-file-earmark-plus-fill me-2"></i>
 
-                        Nuevo Documento
+    Registrar Documento
 
-                    </a>
+</a>
 
                 </div>
 
@@ -320,7 +321,7 @@
                                     <div class="btn-group">
 
                                         {{-- VER --}}
-                                        <a href="{{ route('admin.correspondencia.show', $doc->idDocumento) }}"
+                                       <a href="{{ route('correspondencia.show', $doc->idDocumento) }}"
                                            class="btn btn-sm text-white"
                                            style="background-color:#0B2D59;"
                                            title="Ver Documento">

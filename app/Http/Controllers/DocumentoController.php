@@ -104,16 +104,13 @@ public function index()
 
         $nivelesUrgencia = NivelUrgencia::all();
 
-        $departamentos = Departamento::all();
+        $departamentos = Departamento::where('activo', true)->get();
 
-        return view(
-            'user.documento-registro',
-            compact(
-                'tiposDocumento',
-                'nivelesUrgencia',
-                'departamentos'
-            )
-        );
+        return view('correspondencia.documento-registro', compact(
+            'tiposDocumento',
+            'nivelesUrgencia',
+            'departamentos'
+        ));
     }
 
     /*
@@ -123,281 +120,373 @@ public function index()
     */
 
     public function store(Request $request)
-    {
-        $validated = $request->validate([
-
-            /*
-            |--------------------------------------------------------------------------
-            | DOCUMENTO
-            |--------------------------------------------------------------------------
-            */
-
-            
-
-            'asunto' => 'required|string|max:500',
-
-            'tipo_documento' =>
-                'required|exists:TIPO_DOCUMENTO,idTipoDocumento',
-
-            'nivel_urgencia' =>
-                'required|exists:NIVEL_URGENCIA,idUrgencia',
-
-            /*
-            |--------------------------------------------------------------------------
-            | REMITENTE
-            |--------------------------------------------------------------------------
-            */
-
-            'nombre_remitente' =>
-                'required|string|max:200',
-
-            'correo_remitente' =>
-                'nullable|email|max:150',
-
-            'cargo_remitente' =>
-                'nullable|string|max:150',
-
-            'institucion_remitente' =>
-                'nullable|string|max:200',
-
-            'tipo_remitente' =>
-                'required|in:INTERNO,EXTERNO',
-            'ci_remitente' => 'required|string|max:20',
-'telefono_celular' => 'required|string|max:20',
-'telefono_fijo' => 'nullable|string|max:20',
-'departamento_remitente' => 'nullable|exists:DEPARTAMENTO,idDepartamento',
-            /*
-            |--------------------------------------------------------------------------
-            | DESTINO
-            |--------------------------------------------------------------------------
-            */
-
-            'departamento' =>
-                'required|exists:DEPARTAMENTO,idDepartamento',
-
-        ]);
-
-        try {
-
-            DB::transaction(function () use ($validated) {
-
-                /*
-                |--------------------------------------------------------------------------
-                | CREAR REMITENTE
-                |--------------------------------------------------------------------------
-                */
-
-               /*
-|--------------------------------------------------------------------------
-| BUSCAR PERSONA POR CI
-|--------------------------------------------------------------------------
-*/
-
-$persona = Persona::where(
-    'ci',
-    $validated['ci_remitente']
-)->first();
-
-/*
-|--------------------------------------------------------------------------
-| SI NO EXISTE → CREAR
-|--------------------------------------------------------------------------
-*/
-
-if(!$persona)
 {
-    $persona = Persona::create([
+    /*
+    |--------------------------------------------------------------------------
+    | VALIDACIÓN
+    |--------------------------------------------------------------------------
+    */
 
-        'nombre' => $validated['nombre_remitente'],
+    $validated = $request->validate([
 
-        'correo' =>
-            $validated['correo_remitente'] ?? null,
-
-        'telefono_celular' =>
-            $validated['telefono_celular'],
-
-        'telefono_fijo' =>
-            $validated['telefono_fijo'] ?? null,
-
-        'ci' =>
-            $validated['ci_remitente'],
-
-        'cargo' =>
-            $validated['cargo_remitente'] ?? null,
-
-        'institucion' =>
-            $validated['institucion_remitente'] ?? null,
-
-        'idDepartamento' =>
-            $validated['departamento_remitente'] ?? null,
-
-        'tipo' =>
-            $validated['tipo_remitente'],
-
-        'activo' => true,
-    ]);
-}
-
-                /*
-                |--------------------------------------------------------------------------
-                | ESTADO INICIAL
-                |--------------------------------------------------------------------------
-                */
-
-                $estado = EstadoDocumento::first();
-
-                /*
-                |--------------------------------------------------------------------------
-                | CREAR Ns
-                |--------------------------------------------------------------------------
-                */
-                $tipo = TipoDocumento::find(
-                    $validated['tipo_documento']
-                );
-
-                $urgencia = NivelUrgencia::find(
-                    $validated['nivel_urgencia']
-                );
-
-                $cite = strtoupper(substr($tipo->nombre,0,1))
-                    . strtoupper(substr($urgencia->nombre,0,1))
-                    . '-'
-                    . now()->format('Y-m-d-His');
         /*
-                |--------------------------------------------------------------------------
-                | CREAR DOCUMENTO
-                |--------------------------------------------------------------------------
-                */
-                $documento = Correspondencia::create([
+        |--------------------------------------------------------------------------
+        | DOCUMENTO
+        |--------------------------------------------------------------------------
+        */
 
-                   
-                        'cite' => $cite,
-                    'asunto' =>
-                        $validated['asunto'],
+        'asunto' => [
+            'required',
+            'string',
+            'max:500',
+            'regex:/^[\pL\pN\s\.\,\-\(\)\#\/]+$/u'
+        ],
 
-                    'fecha' =>
-                        now(),
+        'tipo_documento' =>
+            'required|exists:TIPO_DOCUMENTO,idTipoDocumento',
 
-                    'idTipoDocumento' =>
-                        $validated['tipo_documento'],
+        'nivel_urgencia' =>
+            'required|exists:NIVEL_URGENCIA,idUrgencia',
 
-                    'idEstado' =>
-                        $estado->idEstado,
+        /*
+        |--------------------------------------------------------------------------
+        | REMITENTE
+        |--------------------------------------------------------------------------
+        */
 
-                    'idUrgencia' =>
-                        $validated['nivel_urgencia'],
+        'nombre_remitente' => [
+            'required',
+            'string',
+            'max:200',
+            'regex:/^[\pL\s]+$/u'
+        ],
 
-                    'idUsuario' =>
-                        Auth::id(),
+        'correo_remitente' =>
+            'nullable|email|max:150',
 
-                    'idRemitente' =>
-                        $persona->idPersona,
+        'cargo_remitente' => [
+            'nullable',
+            'string',
+            'max:150',
+            'regex:/^[\pL\s]+$/u'
+        ],
 
-                    'activo' => true,
+        'institucion_remitente' => [
+            'nullable',
+            'string',
+            'max:200',
+            'regex:/^[\pL\pN\s]+$/u'
+        ],
 
-                ]);
+        'tipo_remitente' =>
+            'required|in:INTERNO,EXTERNO',
 
-                /*
-                |--------------------------------------------------------------------------
-                | DEPARTAMENTO DESTINO
-                |--------------------------------------------------------------------------
-                */
+        'ci_remitente' => [
+            'required',
+            'string',
+            'max:20',
+            'regex:/^[0-9A-Za-z\-]+$/'
+        ],
 
-                $departamentoDestino = Departamento::findOrFail(
-                    $validated['departamento']
-                );
+        'telefono_celular' => [
+            'required',
+            'string',
+            'max:20',
+            'regex:/^[0-9\+\-\s]+$/'
+        ],
 
-                /*
-                |--------------------------------------------------------------------------
-                | PERSONA ENCARGADA
-                |--------------------------------------------------------------------------
-                */
+        'telefono_fijo' => [
+            'nullable',
+            'string',
+            'max:20',
+            'regex:/^[0-9\+\-\s]+$/'
+        ],
 
-                if ($departamentoDestino->idPersonaEncargada) {
+        'departamento_remitente' =>
+            'nullable|exists:DEPARTAMENTO,idDepartamento',
 
-                    CorrespondenciaDestinatario::create([
+        /*
+        |--------------------------------------------------------------------------
+        | DESTINO
+        |--------------------------------------------------------------------------
+        */
 
-                        'idDocumento' =>
-                            $documento->idDocumento,
+        'departamento' =>
+            'required|exists:DEPARTAMENTO,idDepartamento',
 
-                        'idPersona' =>
-                            $departamentoDestino->idPersonaEncargada,
+    ], [
 
-                        'activo' => true,
+        'asunto.regex' =>
+            'El asunto contiene caracteres inválidos.',
 
-                    ]);
-                }
+        'nombre_remitente.regex' =>
+            'El nombre solo puede contener letras.',
 
-                /*
-                |--------------------------------------------------------------------------
-                | DERIVACIÓN AUTOMÁTICA
-                |--------------------------------------------------------------------------
-                */
+        'cargo_remitente.regex' =>
+            'El cargo contiene caracteres inválidos.',
 
-                Derivacion::create([
+        'institucion_remitente.regex' =>
+            'La institución contiene caracteres inválidos.',
 
-                    'idDocumento' =>
-                        $documento->idDocumento,
+        'ci_remitente.regex' =>
+            'El CI contiene caracteres inválidos.',
 
-                    'orden' => 1,
+        'telefono_celular.regex' =>
+            'El teléfono celular no es válido.',
 
-                    'idDepartamentoOrigen' => 1,
+        'telefono_fijo.regex' =>
+            'El teléfono fijo no es válido.',
+    ]);
 
-                    'idDepartamentoDestino' =>
-                        $departamentoDestino->idDepartamento,
+    /*
+    |--------------------------------------------------------------------------
+    | LIMPIEZA DE DATOS
+    |--------------------------------------------------------------------------
+    */
 
-                    'instruccion' =>
-                        'Derivación automática inicial',
+    $validated = array_map(function ($value) {
 
-                    'fechaEnvio' => now(),
+        if (is_string($value)) {
 
-                    'activo' => true,
+            $value = strip_tags($value);
 
-                ]);
+            $value = trim($value);
 
-                /*
-                |--------------------------------------------------------------------------
-                | SEGUIMIENTO
-                |--------------------------------------------------------------------------
-                */
-
-                Seguimiento::create([
-
-                    'idDocumento' =>
-                        $documento->idDocumento,
-
-                    'fecha' => now(),
-
-                    'ubicacion' =>
-                        $departamentoDestino->nombre,
-
-                    'idEstado' =>
-                        $estado->idEstado,
-
-                    'activo' => true,
-
-                ]);
-            });
-
-            return redirect()
-                ->route('documentos.show')
-                ->with(
-                    'success',
-                    'Documento registrado correctamente.'
-                );
-
-        } catch (\Exception $e) {
-
-            return redirect()
-                ->back()
-                ->withInput()
-                ->with(
-                    'error',
-                    'Error al registrar: ' .
-                    $e->getMessage()
-                );
+            $value = preg_replace('/\s+/', ' ', $value);
         }
+
+        return $value;
+
+    }, $validated);
+
+    try {
+
+        DB::transaction(function () use ($validated) {
+
+            /*
+            |--------------------------------------------------------------------------
+            | BUSCAR PERSONA POR CI
+            |--------------------------------------------------------------------------
+            */
+
+            $persona = Persona::where(
+                'ci',
+                $validated['ci_remitente']
+            )->first();
+
+            /*
+            |--------------------------------------------------------------------------
+            | SI NO EXISTE → CREAR
+            |--------------------------------------------------------------------------
+            */
+
+            if (!$persona)
+            {
+                $persona = Persona::create([
+
+                    'nombre' =>
+                        e($validated['nombre_remitente']),
+
+                    'correo' =>
+                        $validated['correo_remitente'] ?? null,
+
+                    'telefono_celular' =>
+                        $validated['telefono_celular'],
+
+                    'telefono_fijo' =>
+                        $validated['telefono_fijo'] ?? null,
+
+                    'ci' =>
+                        $validated['ci_remitente'],
+
+                    'cargo' =>
+                        isset($validated['cargo_remitente'])
+                            ? e($validated['cargo_remitente'])
+                            : null,
+
+                    'institucion' =>
+                        isset($validated['institucion_remitente'])
+                            ? e($validated['institucion_remitente'])
+                            : null,
+
+                    'idDepartamento' =>
+                        $validated['departamento_remitente'] ?? null,
+
+                    'tipo' =>
+                        $validated['tipo_remitente'],
+
+                    'activo' => true,
+                ]);
+            }
+
+            /*
+            |--------------------------------------------------------------------------
+            | ESTADO INICIAL
+            |--------------------------------------------------------------------------
+            */
+
+            $estado = EstadoDocumento::first();
+
+            /*
+            |--------------------------------------------------------------------------
+            | GENERAR CITE
+            |--------------------------------------------------------------------------
+            */
+
+            $tipo = TipoDocumento::find(
+                $validated['tipo_documento']
+            );
+
+            $urgencia = NivelUrgencia::find(
+                $validated['nivel_urgencia']
+            );
+
+            $cite =
+                strtoupper(substr($tipo->nombre, 0, 1))
+                . strtoupper(substr($urgencia->nombre, 0, 1))
+                . '-'
+                . now()->format('Y-m-d-His');
+
+            /*
+            |--------------------------------------------------------------------------
+            | CREAR DOCUMENTO
+            |--------------------------------------------------------------------------
+            */
+
+            $documento = Correspondencia::create([
+
+                'cite' =>
+                    $cite,
+
+                'asunto' =>
+                    e($validated['asunto']),
+
+                'fecha' =>
+                    now(),
+
+                'idTipoDocumento' =>
+                    $validated['tipo_documento'],
+
+                'idEstado' =>
+                    $estado->idEstado,
+
+                'idUrgencia' =>
+                    $validated['nivel_urgencia'],
+
+                'idUsuario' =>
+                    Auth::id(),
+
+                'idRemitente' =>
+                    $persona->idPersona,
+
+                'activo' => true,
+
+            ]);
+
+            /*
+            |--------------------------------------------------------------------------
+            | DEPARTAMENTO DESTINO
+            |--------------------------------------------------------------------------
+            */
+
+            $departamentoDestino = Departamento::findOrFail(
+                $validated['departamento']
+            );
+
+            /*
+            |--------------------------------------------------------------------------
+            | PERSONA ENCARGADA
+            |--------------------------------------------------------------------------
+            */
+
+            if ($departamentoDestino->idPersonaEncargada)
+            {
+                CorrespondenciaDestinatario::create([
+
+                    'idDocumento' =>
+                        $documento->idDocumento,
+
+                    'idPersona' =>
+                        $departamentoDestino->idPersonaEncargada,
+
+                    'activo' => true,
+
+                ]);
+            }
+
+            /*
+            |--------------------------------------------------------------------------
+            | DERIVACIÓN AUTOMÁTICA
+            |--------------------------------------------------------------------------
+            */
+
+            Derivacion::create([
+
+                'idDocumento' =>
+                    $documento->idDocumento,
+
+                'orden' => 1,
+
+                'idDepartamentoOrigen' => 1,
+
+                'idDepartamentoDestino' =>
+                    $departamentoDestino->idDepartamento,
+
+                'idUsuarioAsignado' =>
+                    Auth::id(),
+
+                'instruccion' =>
+                    e('Derivación automática inicial'),
+
+                'fechaEnvio' => now(),
+
+                'activo' => true,
+
+            ]);
+
+            /*
+            |--------------------------------------------------------------------------
+            | SEGUIMIENTO
+            |--------------------------------------------------------------------------
+            */
+
+            Seguimiento::create([
+
+                'idDocumento' =>
+                    $documento->idDocumento,
+
+                'fecha' => now(),
+
+                'ubicacion' =>
+                    e($departamentoDestino->nombre),
+
+                'idEstado' =>
+                    $estado->idEstado,
+
+                'activo' => true,
+
+            ]);
+
+        });
+
+        return redirect()
+            ->route('admin.correspondencia')
+            ->with(
+                'success',
+                'Documento registrado correctamente.'
+            );
+
+    } catch (\Exception $e) {
+
+        return redirect()
+            ->back()
+            ->withInput()
+            ->with(
+                'error',
+                'Error al registrar: ' . $e->getMessage()
+            );
     }
+}
 
     /*
     |--------------------------------------------------------------------------

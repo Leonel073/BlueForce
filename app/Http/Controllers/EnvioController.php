@@ -19,29 +19,59 @@ class EnvioController extends Controller
     |--------------------------------------------------------------------------
     */
 
-    public function index()
-    {
-        $usuario = Auth::user();
+public function index()
+{
+    /*
+    |--------------------------------------------------------------------------
+    | DERIVACIONES GENERALES
+    |--------------------------------------------------------------------------
+    */
 
-        $documentos = Correspondencia::with([
+    $derivaciones = Derivacion::with([
 
-            'estado',
-            'urgencia',
-            'tipoDocumento',
-            'remitente',
-            'derivaciones.departamentoOrigen',
-            'derivaciones.departamentoDestino',
+        'documento.estado',
+        'documento.urgencia',
+        'documento.remitente',
 
-        ])
-        ->where('idUsuario', $usuario->id)
-        ->orderByDesc('idDocumento')
-        ->get();
+        'departamentoOrigen',
+        'departamentoDestino',
 
-        return view(
-            'envio.index',
-            compact('documentos')
-        );
-    }
+    ])
+    ->orderByDesc('fechaEnvio')
+    ->get();
+
+    /*
+    |--------------------------------------------------------------------------
+    | ESTADÍSTICAS
+    |--------------------------------------------------------------------------
+    */
+
+    $totalDocumentos = $derivaciones->count();
+
+    $enTransito = $derivaciones
+        ->whereNull('fechaRecepcion')
+        ->count();
+
+    $recibidos = $derivaciones
+        ->whereNotNull('fechaRecepcion')
+        ->count();
+
+    /*
+    |--------------------------------------------------------------------------
+    | RETORNO
+    |--------------------------------------------------------------------------
+    */
+
+    return view(
+        'envio.index',
+        compact(
+            'derivaciones',
+            'totalDocumentos',
+            'enTransito',
+            'recibidos'
+        )
+    );
+}
 
     /*
     |--------------------------------------------------------------------------

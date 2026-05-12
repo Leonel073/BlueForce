@@ -51,7 +51,12 @@ class ModificacionesBaseDatos extends Migration
                   ->references('idPersona')
                   ->on('PERSONA')
                   ->onDelete('set null');
+ $table->boolean('activo')
+          ->default(true)
+          ->after('idPersonaEncargada');
         });
+       
+
 
         Schema::enableForeignKeyConstraints();
     }
