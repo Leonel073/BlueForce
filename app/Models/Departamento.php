@@ -3,6 +3,7 @@
 namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Foundation\Auth\User as Authenticatable;
 
 class Departamento extends Model
 {
@@ -10,7 +11,15 @@ class Departamento extends Model
     protected $primaryKey = 'idDepartamento';
     public $timestamps = false;
 
-    protected $fillable = ['nombre'];
+    protected $fillable = [
+
+    'nombre',
+
+    'idPersonaEncargada',
+
+    'activo',
+
+];
 
     /**
      * Relación: Un departamento puede recibir muchas correspondencias
@@ -27,4 +36,5 @@ class Departamento extends Model
         'idPersona'
     );
 }
+
 }

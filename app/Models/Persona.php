@@ -31,7 +31,14 @@ class Persona extends Model
     {
         return $this->hasMany(Correspondencia::class, 'idRemitente', 'idPersona');
     }
-
+    public function departamento()
+{
+    return $this->belongsTo(
+        Departamento::class,
+        'idDepartamento',
+        'idDepartamento'
+    );
+}
     /**
      * Relación: Una persona puede ser destinataria de muchas correspondencias
      */

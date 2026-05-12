@@ -4,9 +4,7 @@
 <div class="nav-section">
 
     <div class="nav-section-label">
-
         Principal
-
     </div>
 
     {{-- DASHBOARD --}}
@@ -18,20 +16,14 @@
        {{ request()->routeIs('admin.dashboard')
             || request()->routeIs('user.dashboard')
             ? 'active'
-            : '' }}"
-
-       data-label="Dashboard">
+            : '' }}">
 
         <span class="nav-icon">
-
             <i class="bi bi-grid-fill"></i>
-
         </span>
 
         <span class="nav-label-text">
-
             Dashboard
-
         </span>
 
     </a>
@@ -43,51 +35,17 @@
        {{ request()->routeIs('correspondencia.*')
             || request()->routeIs('documentos.*')
             ? 'active'
-            : '' }}"
-
-       data-label="Documentos">
+            : '' }}">
 
         <span class="nav-icon">
-
-            <i class="bi bi-file-text-fill"></i>
-
+            <i class="bi bi-file-earmark-text-fill"></i>
         </span>
 
         <span class="nav-label-text">
-
             Documentos
-
         </span>
 
     </a>
-
-    {{-- USUARIOS SOLO ADMIN --}}
-    @if(Auth::user()->idRol == 1)
-
-        <a href="{{ route('admin.usuarios') }}"
-
-           class="nav-link
-           {{ request()->routeIs('admin.usuarios*')
-                ? 'active'
-                : '' }}"
-
-           data-label="Usuarios">
-
-            <span class="nav-icon">
-
-                <i class="bi bi-people-fill"></i>
-
-            </span>
-
-            <span class="nav-label-text">
-
-                Usuarios
-
-            </span>
-
-        </a>
-
-    @endif
 
 </div>
 
@@ -97,89 +55,123 @@
 <div class="nav-section">
 
     <div class="nav-section-label">
-
         Correspondencia
-
     </div>
 
     {{-- BANDEJA --}}
     <a href="{{ route('envios.bandeja') }}"
-
-       class="nav-link
-       {{ request()->routeIs('envios.bandeja')
-            ? 'active'
-            : '' }}"
-
-       data-label="Mi Bandeja">
+       class="nav-link {{ request()->routeIs('envios.bandeja') ? 'active' : '' }}">
 
         <span class="nav-icon">
-
             <i class="bi bi-inbox-fill"></i>
-
         </span>
 
         <span class="nav-label-text">
-
             Mi Bandeja
-
         </span>
 
     </a>
 
     {{-- ENVIADOS --}}
     <a href="{{ route('envios.index') }}"
-
-       class="nav-link
-       {{ request()->routeIs('envios.index')
-            || request()->routeIs('envios.derivar*')
-            ? 'active'
-            : '' }}"
-
-       data-label="Enviadas">
+       class="nav-link {{ request()->routeIs('envios.*') ? 'active' : '' }}">
 
         <span class="nav-icon">
-
             <i class="bi bi-send-fill"></i>
-
         </span>
 
         <span class="nav-label-text">
-
             Enviadas
-
         </span>
 
     </a>
 
-    {{-- REPORTES SOLO ADMIN --}}
-    @if(Auth::user()->idRol == 1)
+</div>
 
-        <a href="{{ route('admin.reportes.index') }}"
+{{-- =========================
+| ADMINISTRACIÓN
+========================= --}}
+@if(Auth::user()->idRol == 1)
 
-           class="nav-link
-           {{ request()->routeIs('admin.reportes.*')
-                ? 'active'
-                : '' }}"
+<div class="nav-section">
 
-           data-label="Reportes">
+    <div class="nav-section-label">
+        Administración
+    </div>
 
-            <span class="nav-icon">
+    {{-- USUARIOS --}}
+    <a href="{{ route('admin.usuarios') }}"
+       class="nav-link {{ request()->routeIs('admin.usuarios*') ? 'active' : '' }}">
 
-                <i class="bi bi-bar-chart-fill"></i>
+        <span class="nav-icon">
+            <i class="bi bi-people-fill"></i>
+        </span>
 
-            </span>
+        <span class="nav-label-text">
+            Usuarios
+        </span>
 
-            <span class="nav-label-text">
+    </a>
 
-                Reportes
+    {{-- DEPARTAMENTOS --}}
+    <a href="{{ route('admin.departamentos.index') }}"
+       class="nav-link {{ request()->routeIs('admin.departamentos.*') ? 'active' : '' }}">
 
-            </span>
+        <span class="nav-icon">
+            <i class="bi bi-building-fill"></i>
+        </span>
 
-        </a>
+        <span class="nav-label-text">
+            Departamentos
+        </span>
 
-    @endif
+    </a>
+
+    {{-- PERSONAS --}}
+    <a href="{{ route('admin.personas.index') }}"
+       class="nav-link {{ request()->routeIs('admin.personas.*') ? 'active' : '' }}">
+
+        <span class="nav-icon">
+            <i class="bi bi-person-vcard-fill"></i>
+        </span>
+
+        <span class="nav-label-text">
+            Personas
+        </span>
+
+    </a>
+
+    {{-- GESTIÓN DOCUMENTAL --}}
+    <a href="{{ route('admin.documentos.index') }}"
+       class="nav-link {{ request()->routeIs('admin.documentos.*') ? 'active' : '' }}">
+
+        <span class="nav-icon">
+            <i class="bi bi-folder2-open"></i>
+        </span>
+
+        <span class="nav-label-text">
+            Gestión Documental
+        </span>
+
+    </a>
+
+    {{-- REPORTES --}}
+    <a href="{{ route('admin.reportes.index') }}"
+       class="nav-link {{ request()->routeIs('admin.reportes.*') ? 'active' : '' }}">
+
+        <span class="nav-icon">
+            <i class="bi bi-bar-chart-fill"></i>
+        </span>
+
+        <span class="nav-label-text">
+            Reportes
+        </span>
+
+    </a>
 
 </div>
+
+@endif
 
 {{-- =========================
 | CONFIGURACIÓN
@@ -187,30 +179,18 @@
 <div class="nav-section">
 
     <div class="nav-section-label">
-
         Configuración
-
     </div>
 
     <a href="{{ route('user.configuracion') }}"
-
-       class="nav-link
-       {{ request()->routeIs('user.configuracion')
-            ? 'active'
-            : '' }}"
-
-       data-label="Configuración">
+       class="nav-link {{ request()->routeIs('user.configuracion') ? 'active' : '' }}">
 
         <span class="nav-icon">
-
             <i class="bi bi-gear-fill"></i>
-
         </span>
 
         <span class="nav-label-text">
-
             Configuración
-
         </span>
 
     </a>

@@ -535,4 +535,243 @@ public function index()
             'persona' => $persona
         ]);
     }
+    public function adminIndex()
+    {
+        $documentos = Correspondencia::with([
+
+            'remitente',
+            'tipoDocumento',
+            'urgencia',
+            'estado'
+
+        ])
+        ->orderByDesc('idDocumento')
+        ->get();
+
+        return view(
+            'admin.documentos.index',
+            compact('documentos')
+        );
+    }
+    public function edit($id)
+    {
+        $documento = Correspondencia::findOrFail($id);
+
+        $personas = Persona::where('activo', true)
+            ->orderBy('nombre')
+            ->get();
+
+        $tiposDocumento = TipoDocumento::orderBy('nombre')->get();
+
+        $nivelesUrgencia = NivelUrgencia::orderBy('nombre')->get();
+
+        $estados = EstadoDocumento::orderBy('nombre')->get();
+
+        $departamentos = Departamento::where('activo', true)
+            ->orderBy('nombre')
+            ->get();
+
+        return view(
+            'admin.documentos.edit',
+            compact(
+                'documento',
+                'personas',
+                'tiposDocumento',
+                'nivelesUrgencia',
+                'estados',
+                'departamentos'
+            )
+        );
+    }
+    public function toggle($id)
+    {
+        $documento = Correspondencia::findOrFail($id);
+
+        $documento->activo = !$documento->activo;
+
+        $documento->save();
+
+        return redirect()
+            ->back()
+            ->with(
+                'success',
+                'Estado documental actualizado.'
+            );
+    }
+    public function buscarRemitente(Request $request)
+{
+    $buscar = trim($request->q);
+
+    $personas = Persona::where('activo', true)
+
+        ->where(function ($query) use ($buscar) {
+
+            $query->where('nombre', 'LIKE', "%{$buscar}%")
+                  ->orWhere('ci', 'LIKE', "%{$buscar}%");
+
+        })
+
+        ->limit(10)
+
+        ->get([
+            'idPersona',
+            'nombre',
+            'ci',
+            'correo',
+            'telefono_celular',
+            'cargo',
+            'institucion'
+        ]);
+
+    return response()->json($personas);
+}
+
+public function update(Request $request, $id)
+{
+    $documento = Correspondencia::findOrFail($id);
+
+    /*
+    |--------------------------------------------------------------------------
+    | SI ESTÁ ARCHIVADO O FINALIZADO
+    |--------------------------------------------------------------------------
+    */
+
+    if(
+        strtoupper($documento->estado->nombre ?? '') == 'ARCHIVADO'
+        || strtoupper($documento->estado->nombre ?? '') == 'FINALIZADO'
+    )
+    {
+
+        /*
+        |--------------------------------------------------------------------------
+        | SOLO CAMBIAR ESTADO
+        |--------------------------------------------------------------------------
+        */
+
+        $request->validate([
+
+            'idEstado' =>
+                'required|exists:ESTADO_DOCUMENTO,idEstado',
+
+        ]);
+
+        $documento->update([
+
+            'idEstado' => $request->idEstado,
+
+        ]);
+
+        /*
+        |--------------------------------------------------------------------------
+        | REGISTRAR SEGUIMIENTO
+        |--------------------------------------------------------------------------
+        */
+
+        Seguimiento::create([
+
+            'idDocumento' =>
+                $documento->idDocumento,
+
+            'fecha' =>
+                now(),
+
+            'ubicacion' =>
+                'Administración',
+
+            'idEstado' =>
+                $request->idEstado,
+
+            'activo' => true,
+
+        ]);
+
+        return redirect()
+            ->route('admin.documentos.edit', $documento->idDocumento)
+            ->with(
+                'success',
+                'Estado documental actualizado correctamente.'
+            );
+    }
+
+    /*
+    |--------------------------------------------------------------------------
+    | VALIDACIÓN NORMAL
+    |--------------------------------------------------------------------------
+    */
+
+    $validated = $request->validate([
+
+        'asunto' =>
+            'required|string|max:500',
+
+        'idRemitente' =>
+            'required|exists:PERSONA,idPersona',
+
+        'idTipoDocumento' =>
+            'required|exists:TIPO_DOCUMENTO,idTipoDocumento',
+
+        'idUrgencia' =>
+            'required|exists:NIVEL_URGENCIA,idUrgencia',
+
+        'idEstado' =>
+            'required|exists:ESTADO_DOCUMENTO,idEstado',
+
+    ]);
+
+    /*
+    |--------------------------------------------------------------------------
+    | ACTUALIZAR DOCUMENTO
+    |--------------------------------------------------------------------------
+    */
+
+    $documento->update([
+
+        'asunto' =>
+            $validated['asunto'],
+
+        'idRemitente' =>
+            $validated['idRemitente'],
+
+        'idTipoDocumento' =>
+            $validated['idTipoDocumento'],
+
+        'idUrgencia' =>
+            $validated['idUrgencia'],
+
+        'idEstado' =>
+            $validated['idEstado'],
+
+    ]);
+
+    /*
+    |--------------------------------------------------------------------------
+    | SEGUIMIENTO
+    |--------------------------------------------------------------------------
+    */
+
+    Seguimiento::create([
+
+        'idDocumento' =>
+            $documento->idDocumento,
+
+        'fecha' =>
+            now(),
+
+        'ubicacion' =>
+            'Administración',
+
+        'idEstado' =>
+            $validated['idEstado'],
+
+        'activo' => true,
+
+    ]);
+
+    return redirect()
+        ->route('admin.documentos.edit', $documento->idDocumento)
+        ->with(
+            'success',
+            'Documento actualizado correctamente.'
+        );
+}
 }

@@ -19,6 +19,8 @@ use App\Http\Controllers\CorrespondenciaController;
 use App\Http\Controllers\Admin\DashboardController;
 use App\Http\Controllers\Admin\UsuarioController;
 use App\Http\Controllers\Admin\ReporteController;
+use App\Http\Controllers\Admin\DepartamentoController;
+use App\Http\Controllers\Admin\PersonaController;
 
 /*
 |--------------------------------------------------------------------------
@@ -327,6 +329,113 @@ Route::get('/admin/reportes/personas/pdf', [\App\Http\Controllers\Admin\ReporteC
 
     Route::get('/admin/reportes/documentos', [ReporteController::class, 'documentos'])->name('admin.reportes.documentos');
 Route::get('/admin/reportes/documentos/pdf', [ReporteController::class, 'documentosPDF'])->name('admin.reportes.documentos.pdf');
+
+    /*=================== */
+    //     creacion de modulos de reportes 
+    //adicionales para personas y documentos,
+    //
+    // con sus respectivas rutas para vista y generación de PDF. Esto permitirá al administrador generar informes detallados sobre las personas registradas en el sistema y los documentos gestionados, facilitando la toma de decisiones y el análisis de datos.
+    /*=================== */
+    Route::get(
+    '/departamentos',
+    [DepartamentoController::class, 'index']
+)->name('admin.departamentos.index');
+
+Route::get(
+    '/departamentos/create',
+    [DepartamentoController::class, 'create']
+)->name('admin.departamentos.create');
+
+Route::post(
+    '/departamentos',
+    [DepartamentoController::class, 'store']
+)->name('admin.departamentos.store');
+// BUSCAR PERSONAS
+Route::get(
+    '/departamentos/personas/buscar',
+    [DepartamentoController::class, 'buscarPersonas']
+)->name('admin.departamentos.personas.buscar');
+
+
+Route::get(
+    '/departamentos/{id}/edit',
+    [DepartamentoController::class, 'edit']
+)->name('admin.departamentos.edit');
+
+
+Route::put(
+    '/departamentos/{id}',
+    [DepartamentoController::class, 'update']
+)->name('admin.departamentos.update');
+
+Route::put(
+    '/departamentos/{id}/toggle',
+    [DepartamentoController::class, 'toggle']
+)->name('admin.departamentos.toggle');
+
+/*
+|--------------------------------------------------------------------------
+| PERSONAS
+|--------------------------------------------------------------------------
+*/
+
+Route::get(
+    '/personas',
+    [PersonaController::class, 'index']
+)->name('admin.personas.index');
+
+Route::get(
+    '/personas/{id}/edit',
+    [PersonaController::class, 'edit']
+)->name('admin.personas.edit');
+
+Route::put(
+    '/personas/{id}',
+    [PersonaController::class, 'update']
+)->name('admin.personas.update');
+
+Route::put(
+    '/personas/{id}/toggle',
+    [PersonaController::class, 'toggle']
+)->name('admin.personas.toggle');
+//para admins
+/*
+|--------------------------------------------------------------------------
+| GESTIÓN DOCUMENTAL
+|--------------------------------------------------------------------------
+*/
+
+Route::get(
+    '/documentos',
+    [DocumentoController::class, 'adminIndex']
+)->name('admin.documentos.index');
+
+Route::get(
+    '/documentos/{id}/edit',
+    [DocumentoController::class, 'edit']
+)->name('admin.documentos.edit');
+
+Route::put(
+    '/documentos/{id}',
+    [DocumentoController::class, 'update']
+)->name('admin.documentos.update');
+
+Route::put(
+    '/documentos/{id}/toggle',
+    [DocumentoController::class, 'toggle']
+)->name('admin.documentos.toggle');
+/*
+|--------------------------------------------------------------------------
+| BUSCADOR REMITENTE ADMIN
+|--------------------------------------------------------------------------
+*/
+
+Route::get(
+    '/personas/buscar',
+    [PersonaController::class, 'buscar']
+)->name('admin.personas.buscar');
+
+
 });
 
 /*
