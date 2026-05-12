@@ -176,158 +176,60 @@
 </div>
 
     {{-- TABLA --}}
+    {{-- TABLA --}}
     <div class="card border-0 shadow-lg rounded-4">
-
-        <div class="card-body">
-
-            <div class="table-responsive">
-
-                <table class="table table-hover align-middle">
-
-                    <thead style="background-color:#0B2D59;">
-
-                        <tr>
-
-                            <th class="text-white">
-
-                                Documento
-
-                            </th>
-
-                            <th class="text-white">
-
-                                Origen
-
-                            </th>
-
-                            <th class="text-white">
-
-                                Destino
-
-                            </th>
-
-                            <th class="text-white">
-
-                                Usuario Asignado
-
-                            </th>
-
-                            <th class="text-white">
-
-                                Fecha Envío
-
-                            </th>
-
-                            <th class="text-white">
-
-                                Instrucción
-
-                            </th>
-
-                        </tr>
-
-                    </thead>
-
-                    <tbody>
-
-                        @forelse($derivaciones as $derivacion)
-
-                            <tr>
-
-                                {{-- DOCUMENTO --}}
-                                <td>
-
-                                    <div class="fw-bold">
-
-                                        {{ $derivacion->documento->cite ?? 'N/A' }}
-
-                                    </div>
-
-                                    <small class="text-muted">
-
-                                        {{ $derivacion->documento->asunto ?? '' }}
-
-                                    </small>
-
-                                </td>
-
-                                {{-- ORIGEN --}}
-                                <td>
-
-                                    <span class="badge bg-primary">
-
-                                        {{ $derivacion->departamentoOrigen->nombre ?? 'N/A' }}
-
-                                    </span>
-
-                                </td>
-
-                                {{-- DESTINO --}}
-                                <td>
-
-                                    <span class="badge bg-success">
-
-                                        {{ $derivacion->departamentoDestino->nombre ?? 'N/A' }}
-
-                                    </span>
-
-                                </td>
-
-                                {{-- USUARIO --}}
-                                <td>
-
-                                    {{ $derivacion->usuarioAsignado->name ?? 'Sin asignar' }}
-
-                                </td>
-
-                                {{-- FECHA --}}
-                                <td>
-
-                                    {{ $derivacion->fechaEnvio }}
-
-                                </td>
-
-                                {{-- INSTRUCCIÓN --}}
-                                <td>
-
-                                    {{ $derivacion->instruccion ?? 'Sin instrucción' }}
-
-                                </td>
-
-                            </tr>
-
-                        @empty
-
-                            <tr>
-
-                                <td colspan="6"
-                                    class="text-center text-muted py-5">
-
-                                    No existen derivaciones registradas.
-
-                                </td>
-
-                            </tr>
-
-                        @endforelse
-
-                    </tbody>
-
-                </table>
-                    <a href="{{ route('admin.reportes.derivaciones.pdf', request()->query()) }}"
-       class="btn btn-danger rounded-3">
-
-        <i class="bi bi-file-earmark-pdf-fill"></i>
-
-        Exportar PDF
-
-    </a>
-
-
-            </div>
-
+        {{-- BOTÓN EXPORTAR EN LA CABECERA --}}
+        <div class="card-header bg-white border-0 pt-4 pb-0 d-flex justify-content-between align-items-center">
+            <h5 class="mb-0 fw-bold text-secondary">Resultados de la búsqueda</h5>
+            <a href="{{ route('admin.reportes.derivaciones.pdf', request()->query()) }}" class="btn btn-danger shadow-sm">
+                <i class="bi bi-file-earmark-pdf-fill"></i> Exportar PDF
+            </a>
         </div>
 
+        <div class="card-body">
+            <div class="table-responsive">
+                <table class="table table-hover align-middle">
+                    <thead class="table-dark" style="--bs-table-bg: #010303;">
+                        <tr>
+                            <th class="text-white">Documento</th>
+                            <th class="text-white">Origen</th>
+                            <th class="text-white">Destino</th>
+                            <th class="text-white">Fecha Envío</th>
+                            <th class="text-white">Instrucción</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @forelse($derivaciones as $derivacion)
+                            <tr>
+                                {{-- DOCUMENTO --}}
+                                <td>
+                                    <div class="fw-bold">{{ $derivacion->documento->cite ?? 'N/A' }}</div>
+                                    <small class="text-muted">{{ $derivacion->documento->asunto ?? '' }}</small>
+                                </td>
+                                {{-- ORIGEN --}}
+                                <td>
+                                    <span class="badge bg-primary">{{ $derivacion->departamentoOrigen->nombre ?? 'N/A' }}</span>
+                                </td>
+                                {{-- DESTINO --}}
+                                <td>
+                                    <span class="badge bg-success">{{ $derivacion->departamentoDestino->nombre ?? 'N/A' }}</span>
+                                </td>
+                                {{-- FECHA --}}
+                                <td>{{ $derivacion->fechaEnvio }}</td>
+                                {{-- INSTRUCCIÓN --}}
+                                <td>{{ $derivacion->instruccion ?? 'Sin instrucción' }}</td>
+                            </tr>
+                        @empty
+                            <tr>
+                                <td colspan="5" class="text-center text-muted py-5">
+                                    No existen derivaciones registradas.
+                                </td>
+                            </tr>
+                        @endforelse
+                    </tbody>
+                </table>
+            </div>
+        </div>
     </div>
 
 </div>

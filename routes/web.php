@@ -308,12 +308,16 @@ Route::middleware(['auth', 'verified'])
         '/reportes/departamentos',
         [ReporteController::class, 'departamentos']
     )->name('admin.reportes.departamentos');
+    Route::get('/admin/reportes/usuarios/pdf', [ReporteController::class, 'usuariosPDF'])->name('admin.reportes.usuarios.pdf');
+Route::get('/admin/reportes/departamentos/pdf', [ReporteController::class, 'departamentosPDF'])->name('admin.reportes.departamentos.pdf');
 
     // REPORTE DERIVACIONES
     Route::get(
         '/reportes/derivaciones',
         [ReporteController::class, 'derivaciones']
     )->name('admin.reportes.derivaciones');
+    Route::get('/admin/reportes/personas', [\App\Http\Controllers\Admin\ReporteController::class, 'personas'])->name('admin.reportes.personas');
+Route::get('/admin/reportes/personas/pdf', [\App\Http\Controllers\Admin\ReporteController::class, 'personasPDF'])->name('admin.reportes.personas.pdf');
 
     // PDF DERIVACIONES
     Route::get(
@@ -321,6 +325,8 @@ Route::middleware(['auth', 'verified'])
         [ReporteController::class, 'derivacionesPDF']
     )->name('admin.reportes.derivaciones.pdf');
 
+    Route::get('/admin/reportes/documentos', [ReporteController::class, 'documentos'])->name('admin.reportes.documentos');
+Route::get('/admin/reportes/documentos/pdf', [ReporteController::class, 'documentosPDF'])->name('admin.reportes.documentos.pdf');
 });
 
 /*

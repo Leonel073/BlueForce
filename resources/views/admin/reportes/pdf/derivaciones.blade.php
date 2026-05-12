@@ -180,12 +180,8 @@
 
                 </p>
 
-                <p>
+                            <p>Generado: {{ now()->timezone('America/La_Paz')->format('d/m/Y H:i') }}</p>
 
-                    Generado:
-                    {{ now()->format('d/m/Y H:i') }}
-
-                </p>
 
             </td>
 
@@ -241,11 +237,7 @@
 
                 </th>
 
-                <th>
-
-                    Usuario
-
-                </th>
+           
 
                 <th>
 
@@ -304,12 +296,7 @@
 
                     </td>
 
-                    {{-- USUARIO --}}
-                    <td>
-
-                        {{ $d->usuarioAsignado->name ?? 'Sin asignar' }}
-
-                    </td>
+               
 
                     {{-- FECHA --}}
                     <td>
@@ -324,7 +311,7 @@
 
                 <tr>
 
-                    <td colspan="5"
+                    <td colspan="4"
                         style="text-align:center;
                                padding:20px;">
 

@@ -6,6 +6,7 @@
 
 @section('content')
 
+
 <div class="container-fluid py-4 px-4">
 
     {{-- ENCABEZADO --}}
@@ -134,6 +135,36 @@
 
                         </div>
 
+                        {{-- ROL (SOLO LECTURA) --}}
+                        <div class="mb-4">
+
+                            <label class="form-label fw-semibold" style="color: #0B2D59;">
+                                Rol en el Sistema
+                            </label>
+
+                            @php
+                                // Obtenemos el nombre real del rol desde la base de datos
+                                $nombreRol = auth()->user()->rol->nombre ?? 'Sin Rol Asignado';
+                            @endphp
+
+                            <input
+                                type="text"
+                                class="form-control rounded-3 border-0 shadow-sm text-dark fw-bold"
+                                style="background-color: #e9ecef; cursor: not-allowed;"
+                                value="{{ $nombreRol }}"
+                                readonly
+                            >
+                            
+                            <small class="text-muted mt-2 d-block">
+                                <i class="bi bi-info-circle-fill" style="color: #D9A23D;"></i> 
+                                @if(strtoupper($nombreRol) === 'ADMINISTRADOR' || strtoupper($nombreRol) === 'ADMIN')
+                                    Eres el <strong>Administrador</strong> del sistema. Puedes modificar los roles de otros desde el módulo de Gestión de Usuarios.
+                                @else
+                                    Tu rol actual es de solo lectura en esta pantalla. Solicita a un Administrador si necesitas cambiar tus privilegios.
+                                @endif
+                            </small>
+
+                        </div>
                         <button type="submit"
                                 class="btn w-100 rounded-3 fw-bold text-white py-2"
                                 style="background-color: #0B2D59;">
