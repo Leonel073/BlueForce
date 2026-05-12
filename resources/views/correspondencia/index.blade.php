@@ -330,23 +330,7 @@
 
                                         </a>
 
-                                        {{-- PDF --}}
-                                        <a href="#"
-                                           class="btn btn-sm btn-danger"
-                                           title="Exportar PDF">
-
-                                            <i class="bi bi-file-earmark-pdf-fill"></i>
-
-                                        </a>
-
-                                        {{-- SEGUIMIENTO --}}
-                                        <a href="#"
-                                           class="btn btn-sm btn-info text-white"
-                                           title="Seguimiento">
-
-                                            <i class="bi bi-clock-history"></i>
-
-                                        </a>
+                                      
 
                                     </div>
 

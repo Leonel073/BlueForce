@@ -106,6 +106,17 @@
                         Departamento Destino
 
                     </label>
+                    @php
+
+    $ultimaDerivacion =
+        $documento->derivaciones
+            ->sortByDesc('orden')
+            ->first();
+
+    $departamentoActual =
+        $ultimaDerivacion?->idDepartamentoDestino;
+
+@endphp
 
                     <select name="idDepartamentoDestino"
                             class="form-select rounded-3"
@@ -117,15 +128,20 @@
 
                         </option>
 
-                        @foreach($departamentos as $dep)
+                    @foreach($departamentos as $dep)
 
-                            <option value="{{ $dep->idDepartamento }}">
+                        <option value="{{ $dep->idDepartamento }}"
+                            {{ $departamentoActual == $dep->idDepartamento ? 'disabled' : '' }}>
 
-                                {{ $dep->nombre }}
+                            {{ $dep->nombre }}
 
-                            </option>
+                            @if($departamentoActual == $dep->idDepartamento)
+                                (Departamento Actual)
+                            @endif
 
-                        @endforeach
+                        </option>
+
+                    @endforeach
 
                     </select>
 

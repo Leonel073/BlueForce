@@ -117,7 +117,7 @@
                                         <th class="text-black">Estado</th>
                                         <th class="text-black">Urgencia</th>
                                         <th class="text-black">Seguimiento</th>
-                                        <th class="text-white">Acciones</th>
+                                        
                                     </tr>
                                 </thead>
 
@@ -176,19 +176,7 @@
 
                                         </td>
 
-                                        <td>
-
-                                            <a href="{{ route('admin.documentos.detalle', $doc->idDocumento) }}"
-                                            class="btn btn-sm text-white"
-                                            style="background-color:#0B2D59;">
-
-                                                <i class="bi bi-eye-fill"></i>
-
-                                                Ver
-
-                                            </a>
-
-                                        </td>
+                            
                          
                                     </tr>
 

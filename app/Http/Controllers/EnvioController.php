@@ -131,165 +131,186 @@ public function index()
     |--------------------------------------------------------------------------
     */
 
-    public function derivar(Request $request, $id)
-{
-    /*
-    |--------------------------------------------------------------------------
-    | VALIDACIÓN
-    |--------------------------------------------------------------------------
-    */
+   public function derivar(Request $request, $id)
+    {
+        /*
+        |--------------------------------------------------------------------------
+        | VALIDACIÓN
+        |--------------------------------------------------------------------------
+        */
 
-    $request->validate([
+        $request->validate([
 
-        'idDepartamentoDestino' =>
-            'required|exists:DEPARTAMENTO,idDepartamento',
+            'idDepartamentoDestino' =>
+                'required|exists:DEPARTAMENTO,idDepartamento',
 
-        'instruccion' =>
-            'nullable|string|max:1000',
-
-    ]);
-
-    /*
-    |--------------------------------------------------------------------------
-    | OBTENER DOCUMENTO
-    |--------------------------------------------------------------------------
-    */
-
-    $documento = Correspondencia::findOrFail($id);
-
-    /*
-    |--------------------------------------------------------------------------
-    | OBTENER ÚLTIMA DERIVACIÓN
-    |--------------------------------------------------------------------------
-    */
-
-    $ultimaDerivacion = Derivacion::where(
-        'idDocumento',
-        $id
-    )
-    ->orderByDesc('orden')
-    ->first();
-
-    /*
-    |--------------------------------------------------------------------------
-    | OBTENER NUEVO ORDEN
-    |--------------------------------------------------------------------------
-    */
-
-    $nuevoOrden = $ultimaDerivacion
-        ? $ultimaDerivacion->orden + 1
-        : 1;
-
-    /*
-    |--------------------------------------------------------------------------
-    | DEPARTAMENTO ORIGEN
-    |--------------------------------------------------------------------------
-    */
-
-    $departamentoOrigen = $ultimaDerivacion
-        ? $ultimaDerivacion->idDepartamentoDestino
-        : 1;
-
-    /*
-    |--------------------------------------------------------------------------
-    | CERRAR DERIVACIÓN ANTERIOR
-    |--------------------------------------------------------------------------
-    */
-
-    if ($ultimaDerivacion) {
-
-        $ultimaDerivacion->update([
-
-            'fechaRecepcion' => now()
+            'instruccion' =>
+                'nullable|string|max:1000',
 
         ]);
 
-    }
+        /*
+        |--------------------------------------------------------------------------
+        | OBTENER DOCUMENTO
+        |--------------------------------------------------------------------------
+        */
 
-    /*
-    |--------------------------------------------------------------------------
-    | CREAR NUEVA DERIVACIÓN
-    |--------------------------------------------------------------------------
-    */
+        $documento = Correspondencia::with('derivaciones')
+            ->findOrFail($id);
 
-    Derivacion::create([
+        /*
+        |--------------------------------------------------------------------------
+        | OBTENER ÚLTIMA DERIVACIÓN
+        |--------------------------------------------------------------------------
+        */
 
-        'idDocumento' => $documento->idDocumento,
+        $ultimaDerivacion = $documento->derivaciones
+            ->sortByDesc('orden')
+            ->first();
 
-        'orden' => $nuevoOrden,
+        /*
+        |--------------------------------------------------------------------------
+        | VALIDAR MISMO DEPARTAMENTO
+        |--------------------------------------------------------------------------
+        */
 
-        'idDepartamentoOrigen' =>
-            $departamentoOrigen,
+        if(
+            $ultimaDerivacion &&
+            $ultimaDerivacion->idDepartamentoDestino ==
+            $request->idDepartamentoDestino
+        )
+        {
+            return back()
+                ->withInput()
+                ->with(
+                    'error',
+                    'El documento ya se encuentra en ese departamento.'
+                );
+        }
 
-        'idDepartamentoDestino' =>
-            $request->idDepartamentoDestino,
+        /*
+        |--------------------------------------------------------------------------
+        | OBTENER NUEVO ORDEN
+        |--------------------------------------------------------------------------
+        */
 
-        'instruccion' =>
-            $request->instruccion,
+        $nuevoOrden = $ultimaDerivacion
+            ? $ultimaDerivacion->orden + 1
+            : 1;
 
-        'fechaEnvio' => now(),
+        /*
+        |--------------------------------------------------------------------------
+        | DEPARTAMENTO ORIGEN
+        |--------------------------------------------------------------------------
+        */
 
-        'activo' => true,
+        $departamentoOrigen = $ultimaDerivacion
+            ? $ultimaDerivacion->idDepartamentoDestino
+            : 1;
 
-    ]);
+        /*
+        |--------------------------------------------------------------------------
+        | CERRAR DERIVACIÓN ANTERIOR
+        |--------------------------------------------------------------------------
+        */
 
-    /*
-    |--------------------------------------------------------------------------
-    | ACTUALIZAR ESTADO
-    |--------------------------------------------------------------------------
-    */
+        if ($ultimaDerivacion)
+        {
+            $ultimaDerivacion->update([
 
-    $estadoDerivado = EstadoDocumento::where(
-        'nombre',
-        'DERIVADO'
-    )->first();
+                'fechaRecepcion' => now()
 
-    if ($estadoDerivado) {
+            ]);
+        }
 
-        $documento->update([
+        /*
+        |--------------------------------------------------------------------------
+        | CREAR NUEVA DERIVACIÓN
+        |--------------------------------------------------------------------------
+        */
+
+        Derivacion::create([
+
+            'idDocumento' =>
+                $documento->idDocumento,
+
+            'orden' =>
+                $nuevoOrden,
+
+            'idDepartamentoOrigen' =>
+                $departamentoOrigen,
+
+            'idDepartamentoDestino' =>
+                $request->idDepartamentoDestino,
+
+            'instruccion' =>
+                $request->instruccion,
+
+            'fechaEnvio' =>
+                now(),
+
+            'activo' => true,
+
+        ]);
+
+        /*
+        |--------------------------------------------------------------------------
+        | ACTUALIZAR ESTADO
+        |--------------------------------------------------------------------------
+        */
+
+        $estadoDerivado = EstadoDocumento::where(
+            'nombre',
+            'DERIVADO'
+        )->first();
+
+        if ($estadoDerivado)
+        {
+            $documento->update([
+
+                'idEstado' =>
+                    $estadoDerivado->idEstado
+
+            ]);
+        }
+
+        /*
+        |--------------------------------------------------------------------------
+        | REGISTRAR SEGUIMIENTO
+        |--------------------------------------------------------------------------
+        */
+
+        Seguimiento::create([
+
+            'idDocumento' =>
+                $documento->idDocumento,
+
+            'fecha' =>
+                now(),
+
+            'ubicacion' =>
+                'Documento derivado a otro departamento',
 
             'idEstado' =>
-                $estadoDerivado->idEstado
+                $documento->idEstado,
+
+            'activo' => true,
 
         ]);
 
+        /*
+        |--------------------------------------------------------------------------
+        | REDIRECCIÓN
+        |--------------------------------------------------------------------------
+        */
+
+        return redirect()
+            ->route('envios.bandeja')
+            ->with(
+                'success',
+                'Documento derivado correctamente.'
+            );
     }
-
-    /*
-    |--------------------------------------------------------------------------
-    | REGISTRAR SEGUIMIENTO
-    |--------------------------------------------------------------------------
-    */
-
-    Seguimiento::create([
-
-        'idDocumento' => $documento->idDocumento,
-
-        'fecha' => now(),
-
-        'ubicacion' =>
-            'Documento derivado a otro departamento',
-
-        'idEstado' =>
-            $documento->idEstado,
-
-        'activo' => true,
-
-    ]);
-
-    /*
-    |--------------------------------------------------------------------------
-    | REDIRECCIÓN
-    |--------------------------------------------------------------------------
-    */
-
-    return redirect()
-        ->route('envios.bandeja')
-        ->with(
-            'success',
-            'Documento derivado correctamente.'
-        );
-}
     public function finalizar($id)
 {
     /*

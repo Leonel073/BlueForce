@@ -295,28 +295,96 @@
                 </div>
 
             </div>
+{{-- DESTINO ACTUAL --}}
+<div class="card border-0 shadow-sm rounded-4 mb-4">
 
-            {{-- DESTINO --}}
-            <div class="card border-0 shadow-sm rounded-4 mb-4">
+    <div class="card-header text-white rounded-top-4"
+         style="background-color:#0B2D59;">
 
-                <div class="card-header text-white rounded-top-4"
-                     style="background-color:#0B2D59;">
+        <i class="bi bi-building-fill"></i>
 
-                    Destino
+        Destino Actual
 
-                </div>
+    </div>
 
-                <div class="card-body">
+    <div class="card-body">
 
-                    <h5 class="fw-bold">
+        @php
 
-                        {{ $documento->departamentoDestino->nombre ?? 'N/A' }}
+            $ultimaDerivacion =
+                $documento->derivaciones
+                    ->sortByDesc('orden')
+                    ->first();
 
-                    </h5>
+            $departamentoActual =
+                $ultimaDerivacion?->departamentoDestino;
 
-                </div>
+        @endphp
+
+        @if($departamentoActual)
+
+            {{-- DEPARTAMENTO --}}
+            <div class="mb-3">
+
+                <label class="text-muted small">
+
+                    Departamento Destino
+
+                </label>
+
+                <h5 class="fw-bold text-primary mb-0">
+
+                    {{ $departamentoActual->nombre }}
+
+                </h5>
 
             </div>
+
+            <hr>
+
+            {{-- RESPONSABLE --}}
+            <div>
+
+                <label class="text-muted small">
+
+                    Responsable
+
+                </label>
+
+                <h6 class="fw-semibold mb-1">
+
+                    {{ $departamentoActual->encargado->nombre ?? 'Sin responsable asignado' }}
+
+                </h6>
+
+                @if($departamentoActual->encargado)
+
+                    <small class="text-muted">
+
+                        CI:
+                        {{ $departamentoActual->encargado->ci ?? 'N/A' }}
+
+                    </small>
+
+                @endif
+
+            </div>
+
+        @else
+
+            <div class="text-muted text-center py-3">
+
+                <i class="bi bi-inbox fs-2 d-block mb-2"></i>
+
+                Documento sin derivación actual
+
+            </div>
+
+        @endif
+
+    </div>
+
+</div>
 
             {{-- USUARIO --}}
             <div class="card border-0 shadow-sm rounded-4">

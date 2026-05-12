@@ -231,7 +231,15 @@
 
         <!-- Logo y título -->
         <div class="d-flex align-items-center">
-            <img src="{{ asset('img/OIP.png') }}" alt="Logo EPAB" style="max-height: 75px;">
+            <img src="{{ asset('img/OIP.png') }}"
+     alt="Logo EPAB"
+     style="
+        width:75px;
+        height:75px;
+        border-radius:50%;
+        object-fit:cover;
+        border:3px solid white;
+     ">
             <div class="brand-text d-none d-md-block">
                 <h1>Escuela de Posgrado de la <br> Armada Boliviana</h1>
             </div>

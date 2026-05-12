@@ -82,8 +82,8 @@ body { background: #f1f5f9; font-family: system-ui, sans-serif; }
     text-decoration: none;
 }
 .logo-icon-wrap {
-    width: 42px; min-width: 42px; height: 42px;
-    border-radius: 11px;
+    width: 87px; min-width: 87px; height: 87px;
+    border-radius: 100%;
     background: linear-gradient(135deg, #ffffff 0%, #ffffff 100%);
     display: flex; align-items: center; justify-content: center;
     box-shadow: 0 0 0 1px rgba(255,193,7,0.3), 0 4px 14px rgba(255,193,7,0.25);
@@ -301,9 +301,20 @@ body.sidebar-collapsed .main-content { margin-left: var(--sidebar-collapsed); }
                 <hr class="w-100 my-1 opacity-25">
                 <div class="logo-tagline">Sistema de Gestión SISGED</div>
             </div>
-            <div class="logo-icon-wrap mt-2">
-                <img src="{{ asset('images/LogoEmpresa.png') }}" alt="Logo">
-            </div>
+           <div class="logo-icon-wrap mt-2">
+
+    <img src="{{ asset('images/LogoEmpresa.png') }}"
+         alt="Logo"
+         style="
+            width:90px;
+            height:90px;
+            border-radius:50%;
+            object-fit:cover;
+            border:3px solid rgba(255,255,255,0.8);
+            box-shadow:0 4px 12px rgba(0,0,0,0.25);
+         ">
+
+</div>
         </a>
 
         <nav class="sidebar-nav">

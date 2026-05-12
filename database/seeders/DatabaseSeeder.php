@@ -17,7 +17,7 @@ class DatabaseSeeder extends Seeder
             NivelUrgenciaSeeder::class,
             
             // Módulos y permisos
-            ModuloSeeder::class,
+          
             
             // Personas (con departamentos asignados)
             PersonaSeeder::class,
