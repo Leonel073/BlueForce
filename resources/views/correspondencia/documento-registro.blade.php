@@ -29,63 +29,88 @@
 
     </div>
 
-    {{-- ALERTAS --}}
+    {{-- ALERTAS DE ÉXITO --}}
     @if(session('success'))
 
-        <div class="alert alert-success alert-dismissible fade show">
+        <div class="alert alert-success alert-dismissible fade show border-0 shadow-sm rounded-4" role="alert">
 
-            <i class="bi bi-check-circle-fill"></i>
+            <i class="bi bi-check-circle-fill me-2"></i>
 
-            {{ session('success') }}
+            <strong>¡Éxito!</strong> {{ session('success') }}
 
             <button type="button"
                     class="btn-close"
-                    data-bs-dismiss="alert"></button>
+                    data-bs-dismiss="alert"
+                    aria-label="Close"></button>
 
         </div>
 
     @endif
 
+    {{-- ALERTAS DE ERROR GENERAL --}}
     @if(session('error'))
 
-        <div class="alert alert-danger alert-dismissible fade show">
+        <div class="alert alert-danger alert-dismissible fade show border-0 shadow-sm rounded-4" role="alert">
 
-            <i class="bi bi-exclamation-triangle-fill"></i>
+            <i class="bi bi-exclamation-triangle-fill me-2"></i>
 
-            {{ session('error') }}
+            <strong>Error:</strong> {{ session('error') }}
 
             <button type="button"
                     class="btn-close"
-                    data-bs-dismiss="alert"></button>
+                    data-bs-dismiss="alert"
+                    aria-label="Close"></button>
 
         </div>
 
     @endif
 
-    {{-- VALIDACIONES --}}
+    {{-- VALIDACIONES CON DETALLE POR CAMPO --}}
     @if($errors->any())
 
-        <div class="alert alert-warning alert-dismissible fade show">
+        <div class="alert alert-danger alert-dismissible fade show border-0 shadow-sm rounded-4" role="alert">
 
-            <strong>
+            <div class="d-flex align-items-start">
 
-                Existen errores en el formulario
+                <div>
 
-            </strong>
+                    <i class="bi bi-exclamation-triangle-fill me-2 fs-5"></i>
 
-            <ul class="mb-0 mt-2">
+                </div>
 
-                @foreach($errors->all() as $error)
+                <div class="flex-grow-1">
 
-                    <li>{{ $error }}</li>
+                    <strong class="d-block mb-2">
 
-                @endforeach
+                        Se encontraron {{ $errors->count() }} 
+                        error{{ $errors->count() > 1 ? 'es' : '' }} en el formulario
 
-            </ul>
+                    </strong>
+
+                    <ul class="mb-0 ms-3 small">
+
+                        @foreach($errors->all() as $error)
+
+                            <li class="mb-1">
+
+                                <i class="bi bi-dash-circle text-danger me-1"></i>
+
+                                {{ $error }}
+
+                            </li>
+
+                        @endforeach
+
+                    </ul>
+
+                </div>
+
+            </div>
 
             <button type="button"
                     class="btn-close"
-                    data-bs-dismiss="alert"></button>
+                    data-bs-dismiss="alert"
+                    aria-label="Close"></button>
 
         </div>
 
@@ -153,15 +178,28 @@
                             <textarea name="asunto"
                                       rows="4"
                                       class="form-control @error('asunto') is-invalid @enderror"
+                                      placeholder="Ingrese una descripción clara del asunto del documento"
                                       required>{{ old('asunto') }}</textarea>
 
                             @error('asunto')
 
-                                <div class="invalid-feedback">
+                                <div class="invalid-feedback d-block">
+
+                                    <i class="bi bi-exclamation-circle me-1"></i>
 
                                     {{ $message }}
 
                                 </div>
+
+                            @else
+
+                                <small class="text-muted">
+
+                                    <i class="bi bi-info-circle me-1"></i>
+
+                                    Máximo 500 caracteres.
+
+                                </small>
 
                             @enderror
 
@@ -187,7 +225,7 @@
 
                                     <option value="">
 
-                                        Seleccione
+                                        -- Seleccione un tipo --
 
                                     </option>
 
@@ -206,7 +244,9 @@
 
                                 @error('tipo_documento')
 
-                                    <div class="invalid-feedback">
+                                    <div class="invalid-feedback d-block">
+
+                                        <i class="bi bi-exclamation-circle me-1"></i>
 
                                         {{ $message }}
 
@@ -233,7 +273,7 @@
 
                                     <option value="">
 
-                                        Seleccione
+                                        -- Seleccione nivel --
 
                                     </option>
 
@@ -252,7 +292,9 @@
 
                                 @error('nivel_urgencia')
 
-                                    <div class="invalid-feedback">
+                                    <div class="invalid-feedback d-block">
+
+                                        <i class="bi bi-exclamation-circle me-1"></i>
 
                                         {{ $message }}
 
@@ -309,16 +351,29 @@
                                     id="ci_remitente"
                                     name="ci_remitente"
                                     class="form-control @error('ci_remitente') is-invalid @enderror"
+                                    placeholder="Ej: 1234567-8"
                                     value="{{ old('ci_remitente') }}"
                                     required>
 
                                 @error('ci_remitente')
 
-                                    <div class="invalid-feedback">
+                                    <div class="invalid-feedback d-block">
+
+                                        <i class="bi bi-exclamation-circle me-1"></i>
 
                                         {{ $message }}
 
                                     </div>
+
+                                @else
+
+                                    <small class="text-muted">
+
+                                        <i class="bi bi-info-circle me-1"></i>
+
+                                        Ingrese su número de cédula.
+
+                                    </small>
 
                                 @enderror
 
@@ -338,16 +393,29 @@
                                     id="telefono_celular"
                                     name="telefono_celular"
                                     class="form-control @error('telefono_celular') is-invalid @enderror"
+                                    placeholder="Ej: +591 71234567"
                                     value="{{ old('telefono_celular') }}"
                                     required>
 
                                 @error('telefono_celular')
 
-                                    <div class="invalid-feedback">
+                                    <div class="invalid-feedback d-block">
+
+                                        <i class="bi bi-exclamation-circle me-1"></i>
 
                                         {{ $message }}
 
                                     </div>
+
+                                @else
+
+                                    <small class="text-muted">
+
+                                        <i class="bi bi-info-circle me-1"></i>
+
+                                        Incluya el prefijo del país si es necesario.
+
+                                    </small>
 
                                 @enderror
 
@@ -424,16 +492,29 @@
                                 id="nombre_remitente"
                                 name="nombre_remitente"
                                 class="form-control @error('nombre_remitente') is-invalid @enderror"
+                                placeholder="Ej: Juan Carlos García López"
                                 value="{{ old('nombre_remitente') }}"
                                 required>
 
                             @error('nombre_remitente')
 
-                                <div class="invalid-feedback">
+                                <div class="invalid-feedback d-block">
+
+                                    <i class="bi bi-exclamation-circle me-1"></i>
 
                                     {{ $message }}
 
                                 </div>
+
+                            @else
+
+                                <small class="text-muted">
+
+                                    <i class="bi bi-info-circle me-1"></i>
+
+                                    Solo se permiten letras y espacios.
+
+                                </small>
 
                             @enderror
 
@@ -454,8 +535,31 @@
                                 <input type="email"
                                     id="correo_remitente"
                                     name="correo_remitente"
-                                    class="form-control"
+                                    class="form-control @error('correo_remitente') is-invalid @enderror"
+                                    placeholder="usuario@ejemplo.com"
                                     value="{{ old('correo_remitente') }}">
+
+                                @error('correo_remitente')
+
+                                    <div class="invalid-feedback d-block">
+
+                                        <i class="bi bi-exclamation-circle me-1"></i>
+
+                                        {{ $message }}
+
+                                    </div>
+
+                                @else
+
+                                    <small class="text-muted">
+
+                                        <i class="bi bi-info-circle me-1"></i>
+
+                                        Opcional - Formato: usuario@ejemplo.com
+
+                                    </small>
+
+                                @enderror
 
                             </div>
 
@@ -471,8 +575,31 @@
                                 <input type="text"
                                     id="cargo_remitente"
                                     name="cargo_remitente"
-                                    class="form-control"
+                                    class="form-control @error('cargo_remitente') is-invalid @enderror"
+                                    placeholder="Ej: Director, Analista"
                                     value="{{ old('cargo_remitente') }}">
+
+                                @error('cargo_remitente')
+
+                                    <div class="invalid-feedback d-block">
+
+                                        <i class="bi bi-exclamation-circle me-1"></i>
+
+                                        {{ $message }}
+
+                                    </div>
+
+                                @else
+
+                                    <small class="text-muted">
+
+                                        <i class="bi bi-info-circle me-1"></i>
+
+                                        Opcional - Solo letras y espacios.
+
+                                    </small>
+
+                                @enderror
 
                             </div>
 
@@ -493,8 +620,31 @@
                                 <input type="text"
                                     id="institucion_remitente"
                                     name="institucion_remitente"
-                                    class="form-control"
+                                    class="form-control @error('institucion_remitente') is-invalid @enderror"
+                                    placeholder="Ej: Ministerio de Educación"
                                     value="{{ old('institucion_remitente') }}">
+
+                                @error('institucion_remitente')
+
+                                    <div class="invalid-feedback d-block">
+
+                                        <i class="bi bi-exclamation-circle me-1"></i>
+
+                                        {{ $message }}
+
+                                    </div>
+
+                                @else
+
+                                    <small class="text-muted">
+
+                                        <i class="bi bi-info-circle me-1"></i>
+
+                                        Opcional - Letras, números y espacios.
+
+                                    </small>
+
+                                @enderror
 
                             </div>
 
@@ -503,35 +653,57 @@
 
                                 <label class="form-label fw-semibold">
 
-                                    Tipo
+                                    Tipo de Remitente
                                     <span class="text-danger">*</span>
 
                                 </label>
 
                                 <select name="tipo_remitente"
                                         id="tipo_remitente"
-                                        class="form-select"
+                                        class="form-select @error('tipo_remitente') is-invalid @enderror"
                                         required>
 
                                     <option value="">
 
-                                        Seleccione
+                                        -- Seleccione tipo --
 
                                     </option>
 
-                                    <option value="INTERNO">
+                                    <option value="INTERNO" @selected(old('tipo_remitente') == 'INTERNO')>
 
-                                        INTERNO
+                                        <i class="bi bi-person-circle"></i> INTERNO
 
                                     </option>
 
-                                    <option value="EXTERNO">
+                                    <option value="EXTERNO" @selected(old('tipo_remitente') == 'EXTERNO')>
 
-                                        EXTERNO
+                                        <i class="bi bi-globe"></i> EXTERNO
 
                                     </option>
 
                                 </select>
+
+                                @error('tipo_remitente')
+
+                                    <div class="invalid-feedback d-block">
+
+                                        <i class="bi bi-exclamation-circle me-1"></i>
+
+                                        {{ $message }}
+
+                                    </div>
+
+                                @else
+
+                                    <small class="text-muted">
+
+                                        <i class="bi bi-info-circle me-1"></i>
+
+                                        Interno: dentro de la institución | Externo: de afuera.
+
+                                    </small>
+
+                                @enderror
 
                             </div>
 
@@ -588,13 +760,14 @@
 
                                 <option value="">
 
-                                    Seleccione departamento
+                                    -- Seleccione departamento --
 
                                 </option>
 
                                 @foreach($departamentos as $depto)
 
-                                    <option value="{{ $depto->idDepartamento }}">
+                                    <option value="{{ $depto->idDepartamento }}"
+                                        @selected(old('departamento') == $depto->idDepartamento)>
 
                                         {{ $depto->nombre }}
 
@@ -606,11 +779,23 @@
 
                             @error('departamento')
 
-                                <div class="invalid-feedback">
+                                <div class="invalid-feedback d-block">
+
+                                    <i class="bi bi-exclamation-circle me-1"></i>
 
                                     {{ $message }}
 
                                 </div>
+
+                            @else
+
+                                <small class="text-muted">
+
+                                    <i class="bi bi-info-circle me-1"></i>
+
+                                    Seleccione a dónde será derivado el documento.
+
+                                </small>
 
                             @enderror
 

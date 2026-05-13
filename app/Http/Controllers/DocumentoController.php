@@ -11,6 +11,7 @@ use App\Models\EstadoDocumento;
 use App\Models\Departamento;
 use App\Models\Derivacion;
 use App\Models\Seguimiento;
+use App\Http\Requests\StoreDocumentoRequest;
 
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
@@ -119,124 +120,15 @@ public function index()
     |--------------------------------------------------------------------------
     */
 
-    public function store(Request $request)
-{
-    /*
-    |--------------------------------------------------------------------------
-    | VALIDACIÓN
-    |--------------------------------------------------------------------------
-    */
-
-    $validated = $request->validate([
-
+    public function store(StoreDocumentoRequest $request)
+    {
         /*
         |--------------------------------------------------------------------------
-        | DOCUMENTO
+        | VALIDACIÓN - YA HECHA POR EL REQUEST
         |--------------------------------------------------------------------------
         */
 
-        'asunto' => [
-            'required',
-            'string',
-            'max:500',
-            'regex:/^[\pL\pN\s\.\,\-\(\)\#\/]+$/u'
-        ],
-
-        'tipo_documento' =>
-            'required|exists:TIPO_DOCUMENTO,idTipoDocumento',
-
-        'nivel_urgencia' =>
-            'required|exists:NIVEL_URGENCIA,idUrgencia',
-
-        /*
-        |--------------------------------------------------------------------------
-        | REMITENTE
-        |--------------------------------------------------------------------------
-        */
-
-        'nombre_remitente' => [
-            'required',
-            'string',
-            'max:200',
-            'regex:/^[\pL\s]+$/u'
-        ],
-
-        'correo_remitente' =>
-            'nullable|email|max:150',
-
-        'cargo_remitente' => [
-            'nullable',
-            'string',
-            'max:150',
-            'regex:/^[\pL\s]+$/u'
-        ],
-
-        'institucion_remitente' => [
-            'nullable',
-            'string',
-            'max:200',
-            'regex:/^[\pL\pN\s]+$/u'
-        ],
-
-        'tipo_remitente' =>
-            'required|in:INTERNO,EXTERNO',
-
-        'ci_remitente' => [
-            'required',
-            'string',
-            'max:20',
-            'regex:/^[0-9A-Za-z\-]+$/'
-        ],
-
-        'telefono_celular' => [
-            'required',
-            'string',
-            'max:20',
-            'regex:/^[0-9\+\-\s]+$/'
-        ],
-
-        'telefono_fijo' => [
-            'nullable',
-            'string',
-            'max:20',
-            'regex:/^[0-9\+\-\s]+$/'
-        ],
-
-        'departamento_remitente' =>
-            'nullable|exists:DEPARTAMENTO,idDepartamento',
-
-        /*
-        |--------------------------------------------------------------------------
-        | DESTINO
-        |--------------------------------------------------------------------------
-        */
-
-        'departamento' =>
-            'required|exists:DEPARTAMENTO,idDepartamento',
-
-    ], [
-
-        'asunto.regex' =>
-            'El asunto contiene caracteres inválidos.',
-
-        'nombre_remitente.regex' =>
-            'El nombre solo puede contener letras.',
-
-        'cargo_remitente.regex' =>
-            'El cargo contiene caracteres inválidos.',
-
-        'institucion_remitente.regex' =>
-            'La institución contiene caracteres inválidos.',
-
-        'ci_remitente.regex' =>
-            'El CI contiene caracteres inválidos.',
-
-        'telefono_celular.regex' =>
-            'El teléfono celular no es válido.',
-
-        'telefono_fijo.regex' =>
-            'El teléfono fijo no es válido.',
-    ]);
+        $validated = $request->validated();
 
     /*
     |--------------------------------------------------------------------------
