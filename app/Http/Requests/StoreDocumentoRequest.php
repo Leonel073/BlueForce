@@ -91,9 +91,6 @@ class StoreDocumentoRequest extends FormRequest
                 'regex:/^[0-9\+\-\s]+$/'
             ],
 
-            'departamento_remitente' => 
-                'nullable|exists:DEPARTAMENTO,idDepartamento',
-
             /*
             |--------------------------------------------------------------------------
             | DESTINO

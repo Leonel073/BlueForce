@@ -201,8 +201,7 @@ public function index()
                             ? e($validated['institucion_remitente'])
                             : null,
 
-                    'idDepartamento' =>
-                        $validated['departamento_remitente'] ?? null,
+                    'idDepartamento' => null,
 
                     'tipo' =>
                         $validated['tipo_remitente'],

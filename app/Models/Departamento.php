@@ -45,4 +45,94 @@ public function derivacionesDestino()
     );
 }
 
+/**
+ * Relación: Un departamento puede tener múltiples responsables (auditoría)
+ */
+public function responsables()
+{
+    return $this->hasMany(
+        DepartamentoResponsable::class,
+        'idDepartamento',
+        'idDepartamento'
+    );
+}
+
+/**
+ * Relación: Personas que trabajan en este departamento
+ */
+public function personas()
+{
+    return $this->hasMany(
+        Persona::class,
+        'idDepartamento',
+        'idDepartamento'
+    );
+}
+
+/*
+|--------------------------------------------------------------------------
+| SCOPES
+|--------------------------------------------------------------------------
+*/
+
+/**
+ * Scope: Departamentos activos
+ */
+public function scopeActivos($query)
+{
+    return $query->where('activo', true);
+}
+
+/*
+|--------------------------------------------------------------------------
+| MÉTODOS
+|--------------------------------------------------------------------------
+*/
+
+/**
+ * Asignar persona como responsable del departamento
+ */
+public function asignarResponsable($idPersona)
+{
+    // Declinar responsables anteriores
+    $this->responsables()
+         ->where('activo', true)
+         ->update([
+             'fecha_declinacion' => now(),
+             'activo' => false
+         ]);
+
+    // Crear nuevo responsable
+    return $this->responsables()->create([
+        'idPersona' => $idPersona,
+        'fecha_asignacion' => now(),
+        'activo' => true,
+    ]);
+}
+
+/**
+ * Declinar responsable actual
+ */
+public function declinarResponsable()
+{
+    return $this->responsables()
+                ->where('activo', true)
+                ->update([
+                    'fecha_declinacion' => now(),
+                    'activo' => false
+                ]);
+}
+
+/**
+ * Obtener responsable actual
+ */
+public function responsableActual()
+{
+    return $this->responsables()
+                ->where('activo', true)
+                ->whereNull('fecha_declinacion')
+                ->with('persona')
+                ->first();
+}
+
 }

@@ -443,39 +443,6 @@
 
                             </div>
 
-                            {{-- DEPARTAMENTO --}}
-                            <div class="col-md-6 mb-3">
-
-                                <label class="form-label fw-semibold">
-
-                                    Departamento
-
-                                </label>
-
-                                <select name="departamento_remitente"
-                                        id="departamento_remitente"
-                                        class="form-select">
-
-                                    <option value="">
-
-                                        Seleccione
-
-                                    </option>
-
-                                    @foreach($departamentos as $depto)
-
-                                        <option value="{{ $depto->idDepartamento }}">
-
-                                            {{ $depto->nombre }}
-
-                                        </option>
-
-                                    @endforeach
-
-                                </select>
-
-                            </div>
-
                         </div>
 
                         {{-- NOMBRE --}}
@@ -999,9 +966,6 @@
 
                 document.getElementById('tipo_remitente')
                     .value = p.tipo || '';
-
-                document.getElementById('departamento_remitente')
-                    .value = p.idDepartamento || '';
 
                 // Mostrar/ocultar cargo según tipo
                 toggleCargoField();

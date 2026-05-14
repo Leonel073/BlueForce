@@ -7,12 +7,15 @@ use Illuminate\Http\Request;
 use App\Models\Persona;
 use App\Models\Departamento;
 use App\Models\Cargo;
+use App\Models\DepartamentoResponsable;
+use App\Http\Requests\StorePersonaRequest;
+use App\Http\Requests\UpdatePersonaRequest;
 
 class PersonaController extends Controller
 {
     public function index()
 {
-    $personas = Persona::with('departamento')
+    $personas = Persona::with('departamento', 'cargo')
         ->orderBy('nombre')
         ->get();
 
@@ -169,5 +172,57 @@ public function buscar(Request $request)
         });
 
     return response()->json($personas);
+}
+
+public function create()
+{
+    $departamentos = Departamento::activos()->orderBy('nombre')->get();
+    $cargos = Cargo::where('activo', true)->orderBy('nombre')->get();
+    return view('admin.personas.create', compact('departamentos', 'cargos'));
+}
+
+public function store(StorePersonaRequest $request)
+{
+    $validated = $request->validated();
+    $persona = Persona::create([
+        'nombre' => strtoupper(trim($validated['nombre'])),
+        'ci' => trim($validated['ci']),
+        'tipo' => $validated['tipo'],
+        'telefono_celular' => $validated['telefono_celular'],
+        'telefono_fijo' => $validated['telefono_fijo'] ?? null,
+        'correo' => $validated['correo'] ?? null,
+        'institucion' => $validated['institucion'] ?? null,
+        'idCargo' => $validated['idCargo'],
+        'idDepartamento' => $validated['idDepartamento'],
+        'activo' => true,
+        'fecha_creacion' => now(),
+    ]);
+    if ($request->boolean('es_responsable')) {
+        $departamento = Departamento::find($validated['idDepartamento']);
+        $departamento->asignarResponsable($persona->idPersona);
+    }
+    return redirect()->route('admin.personas.index')
+        ->with('success', 'Persona creada correctamente.');
+}
+
+public function disable($id)
+{
+    $persona = Persona::findOrFail($id);
+    if ($persona->esResponsableActual()) {
+        foreach ($persona->departamentosResponsables() as $depto) {
+            $depto->declinarResponsable();
+        }
+    }
+    $persona->deshabilitar();
+    return redirect()->back()
+        ->with('success', 'Persona deshabilitada correctamente.');
+}
+
+public function enable($id)
+{
+    $persona = Persona::findOrFail($id);
+    $persona->reactivar();
+    return redirect()->back()
+        ->with('success', 'Persona reactivada correctamente.');
 }
 }

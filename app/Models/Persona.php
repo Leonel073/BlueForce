@@ -31,6 +31,8 @@ class Persona extends Model
         'idDepartamento',
         'idCargo',
         'activo',
+        'fecha_creacion',
+        'fecha_deshabilitacion',
     ];
 
     /*
@@ -68,6 +70,20 @@ class Persona extends Model
     }
 
     /**
+     * Relación: Una persona puede tener múltiples responsabilidades en departamentos
+     * 
+     * @return HasMany
+     */
+    public function responsabilidades()
+    {
+        return $this->hasMany(
+            'App\Models\DepartamentoResponsable',
+            'idPersona',
+            'idPersona'
+        );
+    }
+
+    /**
      * Relación: Una persona puede ser remitente de muchas correspondencias
      * 
      * @return HasMany
@@ -94,5 +110,136 @@ class Persona extends Model
             'idPersona'
         );
     }
-}
 
+    /*
+    |--------------------------------------------------------------------------
+    | SCOPES PARA FILTROS
+    |--------------------------------------------------------------------------
+    */
+
+    /**
+     * Scope: Personas activas (no deshabilitadas)
+     */
+    public function scopeActivas($query)
+    {
+        return $query->whereNull('fecha_deshabilitacion');
+    }
+
+    /**
+     * Scope: Personas deshabilitadas
+     */
+    public function scopeDeshabilitadas($query)
+    {
+        return $query->whereNotNull('fecha_deshabilitacion');
+    }
+
+    /**
+     * Scope: Personas que trabajan en la institución (asignadas a departamento)
+     */
+    public function scopeTrabajadores($query)
+    {
+        return $query->whereNotNull('idDepartamento')->activas();
+    }
+
+    /**
+     * Scope: Personas remitentes (no asignadas a departamento)
+     */
+    public function scopeRemitentes($query)
+    {
+        return $query->whereNull('idDepartamento')->activas();
+    }
+
+    /**
+     * Scope: Filtrar por CI
+     */
+    public function scopePorCI($query, $ci)
+    {
+        return $query->where('ci', 'like', "%{$ci}%");
+    }
+
+    /**
+     * Scope: Filtrar por nombre
+     */
+    public function scopePorNombre($query, $nombre)
+    {
+        return $query->where('nombre', 'like', "%{$nombre}%");
+    }
+
+    /**
+     * Scope: Filtrar por departamento
+     */
+    public function scopePorDepartamento($query, $idDepartamento)
+    {
+        return $query->where('idDepartamento', $idDepartamento);
+    }
+
+    /**
+     * Scope: Filtrar por cargo
+     */
+    public function scopePorCargo($query, $idCargo)
+    {
+        return $query->where('idCargo', $idCargo);
+    }
+
+    /**
+     * Scope: Filtrar por tipo (INTERNO/EXTERNO)
+     */
+    public function scopePorTipo($query, $tipo)
+    {
+        return $query->where('tipo', $tipo);
+    }
+
+    /**
+     * Scope: Filtrar por celular
+     */
+    public function scopePorCelular($query, $celular)
+    {
+        return $query->where('telefono_celular', 'like', "%{$celular}%");
+    }
+
+    /*
+    |--------------------------------------------------------------------------
+    | MÉTODOS ÚTILES
+    |--------------------------------------------------------------------------
+    */
+
+    /**
+     * Deshabilitar persona (borrado lógico)
+     */
+    public function deshabilitar()
+    {
+        $this->fecha_deshabilitacion = now();
+        $this->save();
+    }
+
+    /**
+     * Reactivar persona
+     */
+    public function reactivar()
+    {
+        $this->fecha_deshabilitacion = null;
+        $this->save();
+    }
+
+    /**
+     * Verificar si es responsable de algún departamento actualmente
+     */
+    public function esResponsableActual()
+    {
+        return $this->responsabilidades()
+                    ->where('activo', true)
+                    ->whereNull('fecha_declinacion')
+                    ->exists();
+    }
+
+    /**
+     * Obtener departamentos donde es responsable actualmente
+     */
+    public function departamentosResponsables()
+    {
+        return $this->responsabilidades()
+                    ->where('activo', true)
+                    ->whereNull('fecha_declinacion')
+                    ->get();
+    }
+}

@@ -462,6 +462,16 @@ Route::get(
 )->name('admin.personas.index');
 
 Route::get(
+    '/personas/create',
+    [PersonaController::class, 'create']
+)->name('admin.personas.create');
+
+Route::post(
+    '/personas',
+    [PersonaController::class, 'store']
+)->name('admin.personas.store');
+
+Route::get(
     '/personas/{id}/edit',
     [PersonaController::class, 'edit']
 )->name('admin.personas.edit');
@@ -471,10 +481,25 @@ Route::put(
     [PersonaController::class, 'update']
 )->name('admin.personas.update');
 
+Route::post(
+    '/personas/{id}/disable',
+    [PersonaController::class, 'disable']
+)->name('admin.personas.disable');
+
+Route::post(
+    '/personas/{id}/enable',
+    [PersonaController::class, 'enable']
+)->name('admin.personas.enable');
+
 Route::put(
     '/personas/{id}/toggle',
     [PersonaController::class, 'toggle']
 )->name('admin.personas.toggle');
+
+Route::get(
+    '/personas/buscar',
+    [PersonaController::class, 'buscar']
+)->name('admin.personas.buscar');
 //para admins
 /*
 |--------------------------------------------------------------------------
