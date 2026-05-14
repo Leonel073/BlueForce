@@ -77,7 +77,9 @@
                         </small>
                         <br><br>
                         <strong>{{ $p->institucion ?? 'Independiente' }}</strong><br>
-                        <small>{{ $p->cargo ?? '-' }}</small>
+                       <small class="text-muted">
+                                        {{ $p->cargo->nombre ?? 'Sin cargo' }}
+                                    </small>
                     </td>
                     
                     {{-- DOCUMENTOS --}}

@@ -229,7 +229,7 @@ function mostrarEstadisticas() {
 
 function cerrar() {
     if (confirm('¿Deseas cerrar este reporte?')) {
-        window.location.href = '{{ route("admin.index") }}';
+        window.location.href = '{{ route("admin.reportes.index") }}';
     }
 }
 </script>
