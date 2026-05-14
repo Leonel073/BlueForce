@@ -280,7 +280,7 @@
 
                         <strong>Cargo:</strong>
 
-                        {{ $documento->remitente->cargo ?? 'N/A' }}
+                       {{ $documento->remitente->cargo->nombre ?? 'N/A' }}
 
                     </p>
 
