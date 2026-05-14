@@ -9,20 +9,41 @@ class DatabaseSeeder extends Seeder
     public function run(): void
     {
         $this->call([
-            // Catálogos base
+            
+            /*
+            |------
+            | CATÁLOGOS BASE (SIN DEPENDENCIAS)
+            |------
+            */
+            
             RolSeeder::class,
             DepartamentoSeeder::class,
             TipoDocumentoSeeder::class,
             EstadoDocumentoSeeder::class,
             NivelUrgenciaSeeder::class,
             
-            // Módulos y permisos
-          
+            /*
+            |------
+            | CATÁLOGO DE CARGOS (DEBE IR ANTES DE PERSONAS)
+            |------
+            */
             
-            // Personas (con departamentos asignados)
+            CargoSeeder::class,
+            
+            /*
+            |------
+            | PERSONAS (DEPENDE DE CARGOS)
+            |------
+            */
+            
             PersonaSeeder::class,
             
-            // Usuarios
+            /*
+            |------
+            | USUARIOS FINALES
+            |------
+            */
+            
             UserSeeder::class,
         ]);
     }

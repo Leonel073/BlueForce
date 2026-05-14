@@ -53,7 +53,6 @@ class CreacionTablas extends Migration
             $table->id('idPersona');
             $table->string('nombre', 200);
             $table->string('correo', 150)->nullable();
-            $table->string('cargo', 150)->nullable();
             $table->string('institucion', 200)->nullable();
             $table->enum('tipo', ['INTERNO','EXTERNO']);
             $table->boolean('activo')->default(true);
