@@ -346,9 +346,21 @@ Route::middleware(['auth', 'verified'])
     
     /*
     |--------------------------------------------------------------------------
-    | REPORTES - PROTEGIDO SOLO PARA ADMIN
+    | REPORTES (USUARIO: DOCUMENTOS Y DEPARTAMENTOS)
     |--------------------------------------------------------------------------
     */
+    Route::get(
+        '/reportes/documentos',
+        [ReporteController::class, 'documentos']
+    )->name('admin.reportes.documentos');
+    Route::get('/reportes/documentos/pdf', [ReporteController::class, 'documentosPDF'])->name('admin.reportes.documentos.pdf');
+
+    Route::get(
+        '/reportes/departamentos',
+        [ReporteController::class, 'departamentos']
+    )->name('admin.reportes.departamentos');
+    Route::get('/reportes/departamentos/pdf', [ReporteController::class, 'departamentosPDF'])->name('admin.reportes.departamentos.pdf');
+
     Route::middleware('admin')->group(function () {
         // PANEL REPORTES
         Route::get(
@@ -363,13 +375,6 @@ Route::middleware(['auth', 'verified'])
         )->name('admin.reportes.usuarios');
         Route::get('/reportes/usuarios/pdf', [ReporteController::class, 'usuariosPDF'])->name('admin.reportes.usuarios.pdf');
 
-        // REPORTE DEPARTAMENTOS
-        Route::get(
-            '/reportes/departamentos',
-            [ReporteController::class, 'departamentos']
-        )->name('admin.reportes.departamentos');
-        Route::get('/reportes/departamentos/pdf', [ReporteController::class, 'departamentosPDF'])->name('admin.reportes.departamentos.pdf');
-
         // REPORTE DERIVACIONES
         Route::get(
             '/reportes/derivaciones',
@@ -380,10 +385,6 @@ Route::middleware(['auth', 'verified'])
         // REPORTE PERSONAS
         Route::get('/reportes/personas', [ReporteController::class, 'personas'])->name('admin.reportes.personas');
         Route::get('/reportes/personas/pdf', [ReporteController::class, 'personasPDF'])->name('admin.reportes.personas.pdf');
-
-        // REPORTE DOCUMENTOS
-        Route::get('/reportes/documentos', [ReporteController::class, 'documentos'])->name('admin.reportes.documentos');
-        Route::get('/reportes/documentos/pdf', [ReporteController::class, 'documentosPDF'])->name('admin.reportes.documentos.pdf');
 
         // API ENDPOINTS PARA GRÁFICOS - PROTEGIDOS
         Route::get(

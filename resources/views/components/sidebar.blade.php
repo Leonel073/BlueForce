@@ -151,9 +151,8 @@
 
     </a>
 
-    {{-- REPORTES SOLO ADMIN --}}
+    {{-- REPORTES --}}
     @if(Auth::user()->idRol == 1)
-
         <a href="{{ route('admin.reportes.index') }}"
 
            class="nav-link
@@ -176,7 +175,52 @@
             </span>
 
         </a>
+    @else
+        <a href="{{ route('admin.reportes.documentos') }}"
 
+           class="nav-link
+           {{ request()->routeIs('admin.reportes.documentos*')
+                ? 'active'
+                : '' }}"
+
+           data-label="Reportes Documentos">
+
+            <span class="nav-icon">
+
+                <i class="bi bi-file-earmark-text-fill"></i>
+
+            </span>
+
+            <span class="nav-label-text">
+
+                Reportes Documentos
+
+            </span>
+
+        </a>
+
+        <a href="{{ route('admin.reportes.departamentos') }}"
+
+           class="nav-link
+           {{ request()->routeIs('admin.reportes.departamentos*')
+                ? 'active'
+                : '' }}"
+
+           data-label="Reportes Departamentos">
+
+            <span class="nav-icon">
+
+                <i class="bi bi-building"></i>
+
+            </span>
+
+            <span class="nav-label-text">
+
+                Reportes Departamentos
+
+            </span>
+
+        </a>
     @endif
 
 </div>

@@ -8,11 +8,14 @@
 
     {{-- HEADER --}}
     <div class="card border-0 shadow-lg rounded-4 mb-4" style="background: linear-gradient(135deg,#0B2D59,#2E608C);">
-        <div class="card-body">
-            <h1 class="fw-bold text-white">
-                <i class="bi bi-bar-chart-fill"></i> Reportes Administrativos
-            </h1>
-            <p class="text-light mb-0">Estadísticas y control documental institucional</p>
+        <div class="card-body d-flex align-items-center">
+            <img src="{{ asset('images/LogoEmpresa.png') }}" alt="Logo Empresa" style="width: 80px; margin-right: 20px;">
+            <div>
+                <h1 class="fw-bold text-white mb-1">
+                    <i class="bi bi-bar-chart-fill"></i> Reportes Administrativos
+                </h1>
+                <p class="text-light mb-0">Estadísticas y control documental institucional</p>
+            </div>
         </div>
     </div>
 
@@ -106,7 +109,7 @@
             <a href="{{ route('admin.reportes.documentos') }}" class="text-decoration-none">
                 <div class="card border-0 shadow-sm rounded-4 h-100">
                     <div class="card-body text-center p-4">
-                        <i class="bi bi-file-earmark-text-fill fs-1" style="color:#6f42c1;"></i>
+                        <i class="bi bi-file-earmark-text-fill fs-1" style="color:#2E608C;"></i>
                         <h5 class="fw-bold mt-3 text-dark">Documentos</h5>
                         <p class="text-muted mb-0 small">Inventario por Tipos y Estados</p>
                     </div>
@@ -127,39 +130,6 @@
             </a>
         </div>
 
-    </div>
-
-    {{-- ÚLTIMOS DOCUMENTOS --}}
-    <div class="card border-0 shadow-lg rounded-4">
-        <div class="card-header text-white rounded-top-4" style="background-color:#0B2D59;">
-            Últimos Documentos Registrados
-        </div>
-        <div class="card-body">
-            <div class="table-responsive">
-                <table class="table table-hover align-middle">
-                    <thead>
-                        <tr>
-                            <th>Cite</th>
-                            <th>Asunto</th>
-                            <th>Fecha</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        @forelse($ultimosDocumentos as $doc)
-                            <tr>
-                                <td>{{ $doc->cite }}</td>
-                                <td>{{ $doc->asunto }}</td>
-                                <td>{{ $doc->fecha }}</td>
-                            </tr>
-                        @empty
-                            <tr>
-                                <td colspan="3" class="text-center text-muted">No existen registros.</td>
-                            </tr>
-                        @endforelse
-                    </tbody>
-                </table>
-            </div>
-        </div>
     </div>
 
 </div>

@@ -6,9 +6,12 @@
 
 <div class="container-fluid py-4">
     <div class="card border-0 shadow-lg rounded-4 mb-4" style="background: linear-gradient(135deg,#0B2D59,#2E608C);">
-        <div class="card-body">
-            <h1 class="fw-bold text-white"><i class="bi bi-building-fill"></i> Reporte por Departamentos</h1>
-            <p class="text-light mb-0">Flujo documental institucional por áreas - Estadísticas detalladas con análisis gráfico</p>
+        <div class="card-body d-flex align-items-center">
+            <img src="{{ asset('images/LogoEmpresa.png') }}" alt="Logo Empresa" style="width: 80px; margin-right: 20px;">
+            <div>
+                <h1 class="fw-bold text-white mb-1"><i class="bi bi-building-fill"></i> Reporte por Departamentos</h1>
+                <p class="text-light mb-0">Flujo documental institucional por áreas - Estadísticas detalladas con análisis gráfico</p>
+            </div>
         </div>
     </div>
 
@@ -34,7 +37,7 @@
                         <button type="button" class="btn btn-secondary btn-sm" onclick="resetFiltrosDepartamentos()">
                             <i class="bi bi-arrow-clockwise"></i> Limpiar
                         </button>
-                        <button type="button" class="btn btn-success btn-sm" onclick="mostrarEstadisticasDepartamentos()">
+                        <button type="button" class="btn btn-sm text-white" style="background-color:#2E608C;" onclick="mostrarEstadisticasDepartamentos()">
                             <i class="bi bi-bar-chart"></i> Estadísticas
                         </button>
                         <a href="{{ route('admin.reportes.departamentos.pdf', request()->query()) }}" class="btn btn-danger btn-sm">
@@ -159,7 +162,7 @@
                             <span class="ms-2 badge bg-warning text-dark"> {{ $dep->documentos_originarios }}</span>
                         </button>
                     </h2>
-                    <div id="depto{{ $dep->idDepartamento }}" class="accordion-collapse collapse" data-bs-parent="#departamentosAccordion">
+                    <div id="depto{{ $dep->idDepartamento }}" class="accordion-collapse collapse">
                         <div class="accordion-body pt-0">
                             
                             {{-- ENCARGADO --}}
@@ -262,8 +265,6 @@
         </div>
     </div>
 </div>
-
-<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
 
 @php
     $top5Deps = $departamentos->sortByDesc(function($d) { return $d->documentos_originarios; })->take(5);

@@ -169,6 +169,38 @@
 
     </a>
 
+    </div>
+
+@else
+
+<div class="nav-section">
+    <div class="nav-section-label">
+        Reportes
+    </div>
+
+    <a href="{{ route('admin.reportes.documentos') }}"
+       class="nav-link {{ request()->routeIs('admin.reportes.documentos*') ? 'active' : '' }}">
+
+        <span class="nav-icon">
+            <i class="bi bi-file-earmark-text-fill"></i>
+        </span>
+
+        <span class="nav-label-text">
+            Reportes Documentos
+        </span>
+    </a>
+
+    <a href="{{ route('admin.reportes.departamentos') }}"
+       class="nav-link {{ request()->routeIs('admin.reportes.departamentos*') ? 'active' : '' }}">
+
+        <span class="nav-icon">
+            <i class="bi bi-building"></i>
+        </span>
+
+        <span class="nav-label-text">
+            Reportes Departamentos
+        </span>
+    </a>
 </div>
 
 @endif

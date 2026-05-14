@@ -4,120 +4,282 @@
 
 @section('content')
 
-<div class="py-12">
-    <div class="max-w-7xl mx-auto sm:px-6 lg:px-8">
-        {{-- HEADER CARDS --}}
-        <div class="grid grid-cols-1 md:grid-cols-4 gap-4 mb-6">
-            {{-- Total Documentos --}}
-            <div class="bg-white rounded-lg shadow-sm p-6 border-l-4" style="border-color: #0B2D59;">
-                <div class="flex items-center justify-between">
-                    <div>
-                        <p class="text-gray-600 text-sm">Total Documentos</p>
-                        <h3 class="text-3xl font-bold text-gray-800">{{ $totalDocumentos ?? 0 }}</h3>
-                    </div>
-                    <div class="text-4xl text-blue-600"><i class="bi bi-file-earmark-text"></i></div>
-                </div>
-            </div>
+<div class="container-fluid py-4">
 
-            {{-- Documentos Pendientes --}}
-            <div class="bg-white rounded-lg shadow-sm p-6 border-l-4 border-yellow-400">
-                <div class="flex items-center justify-between">
-                    <div>
-                        <p class="text-gray-600 text-sm">Documentos Pendientes</p>
-                        <h3 class="text-3xl font-bold text-yellow-600">{{ collect($estadosPorTipo)->where('nombre', '!=', 'Finalizado')->sum('cantidad') ?? 0 }}</h3>
-                    </div>
-                    <div class="text-4xl text-yellow-600"><i class="bi bi-hourglass-split"></i></div>
-                </div>
-            </div>
+    {{-- ESTILOS --}}
+    <style>
+        .dashboard-gradient {
+            background: linear-gradient(135deg,#0B2D59,#2E608C);
+        }
 
-            {{-- Derivaciones Realizadas --}}
-            <div class="bg-white rounded-lg shadow-sm p-6 border-l-4" style="border-color: #6f42c1;">
-                <div class="flex items-center justify-between">
-                    <div>
-                        <p class="text-gray-600 text-sm">Derivaciones</p>
-                        <h3 class="text-3xl font-bold" style="color: #6f42c1;">{{ $derivacionesRealizadas ?? 0 }}</h3>
-                    </div>
-                    <div class="text-4xl" style="color: #6f42c1;"><i class="bi bi-arrow-left-right"></i></div>
-                </div>
-            </div>
+        .glass-card {
+            border: none;
+            border-radius: 1.5rem;
+            overflow: hidden;
+            background: #fff;
+            transition: all .3s ease;
+        }
 
-            {{-- Documentos Urgentes --}}
-            <div class="bg-white rounded-lg shadow-sm p-6 border-l-4 border-red-600">
-                <div class="flex items-center justify-between">
-                    <div>
-                        <p class="text-gray-600 text-sm">Documentos Urgentes</p>
-                        <h3 class="text-3xl font-bold text-red-600">{{ $urgentes ?? 0 }}</h3>
-                    </div>
-                    <div class="text-4xl text-red-600"><i class="bi bi-exclamation-circle"></i></div>
-                </div>
-            </div>
-        </div>
+        .glass-card:hover {
+            transform: translateY(-4px);
+            box-shadow: 0 1rem 2rem rgba(0,0,0,.08);
+        }
 
-        {{-- CHARTS ROW 1 --}}
-        <div class="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-6">
-            {{-- Estados por Tipo (Pie Chart) --}}
-            <div class="bg-white rounded-lg shadow-sm p-6">
-                <h3 class="text-lg font-semibold text-gray-800 mb-4">📊 Estado de Documentos</h3>
-                <div style="position: relative; height: 300px;">
-                    <canvas id="estadosChart"></canvas>
-                </div>
-            </div>
+        .stat-icon {
+            width: 70px;
+            height: 70px;
+            border-radius: 20px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 2rem;
+        }
 
-            {{-- Documentos por Mes (Line Chart) --}}
-            <div class="bg-white rounded-lg shadow-sm p-6">
-                <h3 class="text-lg font-semibold text-gray-800 mb-4">📈 Documentos Últimos 6 Meses</h3>
-                <div style="position: relative; height: 300px;">
-                    <canvas id="documentosPorMesChart"></canvas>
-                </div>
-            </div>
-        </div>
+        .quick-link {
+            transition: all .25s ease;
+        }
 
-        {{-- CHARTS ROW 2 --}}
-        <div class="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-6">
-            {{-- Tipos de Documentos --}}
-            <div class="bg-white rounded-lg shadow-sm p-6">
-                <h3 class="text-lg font-semibold text-gray-800 mb-4">📋 Documentos por Tipo</h3>
-                <div style="position: relative; height: 300px;">
-                    <canvas id="documentosPorTipoChart"></canvas>
-                </div>
-            </div>
+        .quick-link:hover {
+            transform: scale(1.03);
+        }
 
-            {{-- Últimos Documentos --}}
-            <div class="bg-white rounded-lg shadow-sm p-6">
-                <h3 class="text-lg font-semibold text-gray-800 mb-4">🕐 Últimos 5 Documentos</h3>
-                <div class="space-y-2">
-                    @forelse($ultimosDocumentos as $doc)
-                    <div class="flex items-center justify-between p-3 bg-gray-50 rounded border-l-2" style="border-color: #0B2D59;">
-                        <div>
-                            <p class="font-semibold text-sm text-gray-800">{{ $doc->cite }}</p>
-                            <p class="text-xs text-gray-600">{{ substr($doc->asunto, 0, 40) }}...</p>
-                        </div>
-                        <span class="text-xs badge px-2 py-1 rounded" style="background-color: #0B2D59; color: white;">
-                            {{ \Carbon\Carbon::parse($doc->fecha)->format('d/m') }}
-                        </span>
-                    </div>
-                    @empty
-                    <p class="text-gray-500 text-center py-4">No hay documentos recientes</p>
-                    @endforelse
+        .table thead {
+            background-color: #f8f9fa;
+        }
+
+        .table thead th {
+            border: 0;
+            color: #0B2D59;
+            font-weight: 700;
+        }
+    </style>
+
+    {{-- HEADER --}}
+    <div class="card glass-card shadow-lg mb-4 dashboard-gradient">
+        <div class="card-body p-5 dashboard-gradient">
+            <div class="d-flex flex-column flex-md-row justify-content-between align-items-md-center dashboard-gradient">
+                <div>
+                    <h1 class="fw-bold text-white mb-2">
+                        <i class="bi bi-speedometer2 me-2"></i>
+                        Dashboard Personal
+                    </h1>
+                    <p class="text-light mb-0">
+                        Panel de seguimiento de tus documentos
+                    </p>
+                </div>
+                <div class="mt-4 mt-md-0">
+                    <span class="badge bg-light text-dark px-4 py-3 rounded-pill fs-6">
+                        <i class="bi bi-calendar-event me-2"></i>
+                        {{ now()->format('d/m/Y') }}
+                    </span>
                 </div>
             </div>
         </div>
     </div>
+
+    @php
+        $documentosPendientes =
+            collect($estadosPorTipo)
+                ->where('nombre', '!=', 'Finalizado')
+                ->sum('cantidad');
+    @endphp
+
+    {{-- ESTADÍSTICAS --}}
+    <div class="row mb-4">
+        <div class="col-lg-3 col-md-6 mb-3">
+            <div class="card glass-card shadow-sm h-100">
+                <div class="card-body p-4 d-flex align-items-center">
+                    <div class="stat-icon bg-primary bg-opacity-10 text-primary me-4">
+                        <i class="bi bi-file-earmark-text-fill"></i>
+                    </div>
+                    <div>
+                        <h2 class="fw-bold mb-1">{{ $totalDocumentos ?? 0 }}</h2>
+                        <div class="text-muted">Total Documentos</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-lg-3 col-md-6 mb-3">
+            <div class="card glass-card shadow-sm h-100">
+                <div class="card-body p-4 d-flex align-items-center">
+                    <div class="stat-icon bg-warning bg-opacity-10 text-warning me-4">
+                        <i class="bi bi-hourglass-split"></i>
+                    </div>
+                    <div>
+                        <h2 class="fw-bold mb-1">{{ $documentosPendientes ?? 0 }}</h2>
+                        <div class="text-muted">Documentos Pendientes</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-lg-3 col-md-6 mb-3">
+            <div class="card glass-card shadow-sm h-100">
+                <div class="card-body p-4 d-flex align-items-center">
+                    <div class="stat-icon bg-success bg-opacity-10 text-success me-4">
+                        <i class="bi bi-arrow-left-right"></i>
+                    </div>
+                    <div>
+                        <h2 class="fw-bold mb-1">{{ $derivacionesRealizadas ?? 0 }}</h2>
+                        <div class="text-muted">Derivaciones Realizadas</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-lg-3 col-md-6 mb-3">
+            <div class="card glass-card shadow-sm h-100">
+                <div class="card-body p-4 d-flex align-items-center">
+                    <div class="stat-icon bg-danger bg-opacity-10 text-danger me-4">
+                        <i class="bi bi-exclamation-circle"></i>
+                    </div>
+                    <div>
+                        <h2 class="fw-bold mb-1">{{ $urgentes ?? 0 }}</h2>
+                        <div class="text-muted">Documentos Urgentes</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    {{-- ACCESOS RÁPIDOS --}}
+    <div class="row mb-4">
+        <div class="col-md-3 mb-3">
+            <a href="{{ route('documentos.index') }}" class="text-decoration-none quick-link">
+                <div class="card glass-card shadow-sm text-center p-4">
+                    <div class="stat-icon bg-primary bg-opacity-10 text-primary mx-auto mb-3">
+                        <i class="bi bi-file-text-fill"></i>
+                    </div>
+                    <h5 class="fw-bold mb-0">Documentos</h5>
+                </div>
+            </a>
+        </div>
+        <div class="col-md-3 mb-3">
+            <a href="{{ route('envios.bandeja') }}" class="text-decoration-none quick-link">
+                <div class="card glass-card shadow-sm text-center p-4">
+                    <div class="stat-icon bg-warning bg-opacity-10 text-warning mx-auto mb-3">
+                        <i class="bi bi-inbox-fill"></i>
+                    </div>
+                    <h5 class="fw-bold mb-0">Mi Bandeja</h5>
+                </div>
+            </a>
+        </div>
+        <div class="col-md-3 mb-3">
+            <a href="{{ route('envios.index') }}" class="text-decoration-none quick-link">
+                <div class="card glass-card shadow-sm text-center p-4">
+                    <div class="stat-icon bg-success bg-opacity-10 text-success mx-auto mb-3">
+                        <i class="bi bi-send-fill"></i>
+                    </div>
+                    <h5 class="fw-bold mb-0">Enviados</h5>
+                </div>
+            </a>
+        </div>
+        <div class="col-md-3 mb-3">
+            <a href="{{ route('admin.reportes.documentos') }}" class="text-decoration-none quick-link">
+                <div class="card glass-card shadow-sm text-center p-4">
+                    <div class="stat-icon bg-danger bg-opacity-10 text-danger mx-auto mb-3">
+                        <i class="bi bi-bar-chart-fill"></i>
+                    </div>
+                    <h5 class="fw-bold mb-0">Reportes Documentos</h5>
+                </div>
+            </a>
+        </div>
+    </div>
+
+    {{-- ESTADOS Y TIPOS --}}
+    <div class="row mb-4">
+        <div class="col-lg-6 mb-3">
+            <div class="card glass-card shadow-lg">
+                <div class="card-header dashboard-gradient text-white p-4 border-0">
+                    <h5 class="mb-0 fw-bold"><i class="bi bi-pie-chart me-2"></i>Estado de Documentos</h5>
+                </div>
+                <div class="card-body p-4">
+                    <div style="position: relative; height: 300px;">
+                        <canvas id="estadosChart"></canvas>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-lg-6 mb-3">
+            <div class="card glass-card shadow-lg">
+                <div class="card-header dashboard-gradient text-white p-4 border-0">
+                    <h5 class="mb-0 fw-bold"><i class="bi bi-bar-chart me-2"></i>Documentos por Tipo</h5>
+                </div>
+                <div class="card-body p-4">
+                    <div style="position: relative; height: 300px;">
+                        <canvas id="tiposChart"></canvas>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    {{-- TENDENCIA --}}
+    <div class="card glass-card shadow-lg mb-4">
+        <div class="card-header dashboard-gradient text-white p-4 border-0">
+            <h5 class="mb-0 fw-bold"><i class="bi bi-graph-up me-2"></i>Tendencia de Documentos Últimos 6 Meses</h5>
+        </div>
+        <div class="card-body p-4">
+            <div style="position: relative; height: 300px;">
+                <canvas id="tendenciaChart"></canvas>
+            </div>
+        </div>
+    </div>
+
+    {{-- ÚLTIMOS DOCUMENTOS --}}
+    <div class="card glass-card shadow-lg">
+        <div class="card-header dashboard-gradient text-white p-4 border-0">
+            <h5 class="mb-0 fw-bold">
+                <i class="bi bi-clock-history me-2"></i>
+                Últimos Documentos
+            </h5>
+        </div>
+        <div class="card-body p-4">
+            <div class="table-responsive">
+                <table class="table align-middle table-hover">
+                    <thead>
+                        <tr>
+                            <th>Cite</th>
+                            <th>Asunto</th>
+                            <th>Fecha</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @forelse($ultimosDocumentos as $doc)
+                            <tr>
+                                <td class="fw-semibold">{{ $doc->cite }}</td>
+                                <td>{{ $doc->asunto }}</td>
+                                <td>
+                                    <span class="badge bg-light text-dark">
+                                        {{ \Carbon\Carbon::parse($doc->fecha)->format('d/m/Y') }}
+                                    </span>
+                                </td>
+                            </tr>
+                        @empty
+                            <tr>
+                                <td colspan="3" class="text-center text-muted py-3">
+                                    No hay documentos recientes.
+                                </td>
+                            </tr>
+                        @endforelse
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
 </div>
 
 {{-- CHART.JS LIBRARY --}}
 <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
 
 <script>
-// GLOBAL COLORS
 const primaryColor = '#0B2D59';
 const secondaryColor = '#2E608C';
-const successColor = '#28a745';
-const warningColor = '#ffc107';
-const dangerColor = '#dc3545';
-const infoColor = '#17a2b8';
 
-// CHART 1: Estados por Tipo (Pie Chart)
+// CHART 1: Estados
 const estadosCtx = document.getElementById('estadosChart')?.getContext('2d');
 if (estadosCtx) {
     new Chart(estadosCtx, {
@@ -134,9 +296,7 @@ if (estadosCtx) {
                     {{ $estado["cantidad"] }},
                     @endforeach
                 ],
-                backgroundColor: [
-                    '#28a745', '#ffc107', '#dc3545', '#17a2b8', '#6c757d', '#fd7e14'
-                ],
+                backgroundColor: ['#28a745', '#ffc107', '#dc3545', '#17a2b8', '#6c757d', '#fd7e14'],
                 borderColor: '#fff',
                 borderWidth: 2
             }]
@@ -144,19 +304,48 @@ if (estadosCtx) {
         options: {
             responsive: true,
             maintainAspectRatio: false,
-            plugins: {
-                legend: {
-                    position: 'bottom'
-                }
-            }
+            plugins: { legend: { position: 'bottom' } }
         }
     });
 }
 
-// CHART 2: Documentos por Mes (Line Chart)
-const mesCtx = document.getElementById('documentosPorMesChart')?.getContext('2d');
-if (mesCtx) {
-    new Chart(mesCtx, {
+// CHART 2: Tipos
+const tiposCtx = document.getElementById('tiposChart')?.getContext('2d');
+if (tiposCtx) {
+    new Chart(tiposCtx, {
+        type: 'bar',
+        data: {
+            labels: [
+                @foreach($documentosPorTipo as $tipo)
+                '{{ $tipo["nombre"] }}',
+                @endforeach
+            ],
+            datasets: [{
+                label: 'Cantidad',
+                data: [
+                    @foreach($documentosPorTipo as $tipo)
+                    {{ $tipo["cantidad"] }},
+                    @endforeach
+                ],
+                backgroundColor: secondaryColor,
+                borderColor: primaryColor,
+                borderWidth: 1
+            }]
+        },
+        options: {
+            indexAxis: 'y',
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: { legend: { display: false } },
+            scales: { x: { beginAtZero: true } }
+        }
+    });
+}
+
+// CHART 3: Tendencia
+const tendenciaCtx = document.getElementById('tendenciaChart')?.getContext('2d');
+if (tendenciaCtx) {
+    new Chart(tendenciaCtx, {
         type: 'line',
         data: {
             labels: [
@@ -185,58 +374,8 @@ if (mesCtx) {
         options: {
             responsive: true,
             maintainAspectRatio: false,
-            plugins: {
-                legend: {
-                    display: true,
-                    position: 'top'
-                }
-            },
-            scales: {
-                y: {
-                    beginAtZero: true
-                }
-            }
-        }
-    });
-}
-
-// CHART 3: Documentos por Tipo (Bar Chart)
-const tipoCtx = document.getElementById('documentosPorTipoChart')?.getContext('2d');
-if (tipoCtx) {
-    new Chart(tipoCtx, {
-        type: 'bar',
-        data: {
-            labels: [
-                @foreach($documentosPorTipo as $tipo)
-                '{{ substr($tipo["nombre"], 0, 15) }}',
-                @endforeach
-            ],
-            datasets: [{
-                label: 'Cantidad',
-                data: [
-                    @foreach($documentosPorTipo as $tipo)
-                    {{ $tipo["cantidad"] }},
-                    @endforeach
-                ],
-                backgroundColor: secondaryColor,
-                borderColor: primaryColor,
-                borderWidth: 1
-            }]
-        },
-        options: {
-            indexAxis: 'y',
-            responsive: true,
-            maintainAspectRatio: false,
-            plugins: {
-                legend: {
-                    display: false
-                }
-            },
-            scales: {
-                x: {
-                    beginAtZero: true
-                }
-            }
+            plugins: { legend: { display: true, position: 'top' } },
+            scales: { y: { beginAtZero: true } }
         }
     });
 }

@@ -73,39 +73,18 @@
                         </div>
 
                         {{-- TIPO --}}
-                        <div class="row">
-                            <div class="col-md-6 mb-3">
-                                <label class="form-label fw-semibold">
-                                    Tipo de Persona
-                                    <span class="text-danger">*</span>
-                                </label>
-                                <select name="tipo" id="tipo" class="form-select @error('tipo') is-invalid @enderror" required>
-                                    <option value="">Seleccione tipo</option>
-                                    <option value="INTERNO" @selected(old('tipo') === 'INTERNO')>Interno</option>
-                                    <option value="EXTERNO" @selected(old('tipo') === 'EXTERNO')>Externo</option>
-                                </select>
-                                @error('tipo')
-                                    <div class="invalid-feedback d-block">{{ $message }}</div>
-                                @enderror
-                            </div>
-
-                            <div class="col-md-6 mb-3">
-                                <label class="form-label fw-semibold">
-                                    Departamento
-                                    <span class="text-danger">*</span>
-                                </label>
-                                <select name="idDepartamento" class="form-select @error('idDepartamento') is-invalid @enderror" required>
-                                    <option value="">Seleccione departamento</option>
-                                    @foreach($departamentos as $depto)
-                                        <option value="{{ $depto->idDepartamento }}" @selected(old('idDepartamento') === (string)$depto->idDepartamento)>
-                                            {{ $depto->nombre }}
-                                        </option>
-                                    @endforeach
-                                </select>
-                                @error('idDepartamento')
-                                    <div class="invalid-feedback d-block">{{ $message }}</div>
-                                @enderror
-                            </div>
+                        <div class="mb-3">
+                            <label class="form-label fw-semibold">
+                                Tipo de Persona
+                                <span class="text-danger">*</span>
+                            </label>
+                            <select name="tipo" id="tipo" class="form-select @error('tipo') is-invalid @enderror">
+                                <option value="INTERNO" @selected(old('tipo') === 'INTERNO' || true)>Interno</option>
+                                <option value="EXTERNO" @selected(old('tipo') === 'EXTERNO')>Externo</option>
+                            </select>
+                            @error('tipo')
+                                <div class="invalid-feedback d-block">{{ $message }}</div>
+                            @enderror
                         </div>
 
                         {{-- CARGO --}}
@@ -114,14 +93,19 @@
                                 Cargo
                                 <span class="text-danger">*</span>
                             </label>
-                            <select name="idCargo" class="form-select @error('idCargo') is-invalid @enderror" required>
-                                <option value="">Seleccione cargo</option>
-                                @foreach($cargos as $cargo)
-                                    <option value="{{ $cargo->idCargo }}" @selected(old('idCargo') === (string)$cargo->idCargo)>
-                                        {{ $cargo->nombre }}
-                                    </option>
-                                @endforeach
-                            </select>
+                            <div class="input-group">
+                                <select name="idCargo" id="cargoSelect" class="form-select @error('idCargo') is-invalid @enderror">
+                                    <option value="">Seleccione o ingrese cargo</option>
+                                    @foreach($cargos as $cargo)
+                                        <option value="{{ $cargo->idCargo }}" @selected(old('idCargo') === (string)$cargo->idCargo)>
+                                            {{ $cargo->nombre }}
+                                        </option>
+                                    @endforeach
+                                </select>
+                            </div>
+                            <small class="d-block text-muted mt-2">
+                                Seleccione un cargo existente o ingrese uno nuevo directamente.
+                            </small>
                             @error('idCargo')
                                 <div class="invalid-feedback d-block">{{ $message }}</div>
                             @enderror
@@ -194,28 +178,22 @@
             </div>
 
             <div class="col-lg-4">
-                {{-- RESPONSABILIDAD --}}
+                {{-- RESUMEN --}}
                 <div class="card border-0 shadow-sm rounded-4">
                     <div class="card-header text-white rounded-top-4" style="background: linear-gradient(135deg,#0B2D59,#2E608C);">
-                        <i class="bi bi-shield-check"></i>
-                        Responsabilidad
+                        <i class="bi bi-info-circle-fill"></i>
+                        Información
                     </div>
                     <div class="card-body">
-                        <div class="form-check">
-                            <input class="form-check-input" type="checkbox" name="es_responsable" 
-                                   id="es_responsable" value="1" @checked(old('es_responsable'))>
-                            <label class="form-check-label" for="es_responsable">
-                                <strong>Asignar como Responsable del Departamento</strong>
-                            </label>
-                            <small class="d-block text-muted mt-2">
-                                Si marca esta opción, esta persona será asignada como responsable del departamento seleccionado.
-                            </small>
-                        </div>
-
-                        {{-- INFO --}}
-                        <div class="alert alert-info mt-4 mb-0">
+                        <p class="text-muted mb-3">
+                            <strong>Tipo por defecto:</strong> Interno
+                        </p>
+                        <p class="text-muted mb-3">
+                            <strong>Cargo:</strong> Obligatorio. Seleccione de la lista o ingrese uno nuevo.
+                        </p>
+                        <div class="alert alert-info mb-0">
                             <small>
-                                <strong>Nota:</strong> Esta información es importante para auditoría y seguimiento de responsabilidades departamentales.
+                                <strong>Nota:</strong> Los remitentes se asignan automáticamente al registrar documentos.
                             </small>
                         </div>
                     </div>

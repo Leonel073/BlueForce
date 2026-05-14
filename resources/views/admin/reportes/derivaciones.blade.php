@@ -7,27 +7,14 @@
 <div class="container-fluid py-4">
 
     {{-- HEADER --}}
-    <div class="card border-0 shadow-lg rounded-4 mb-4"
-         style="background: linear-gradient(135deg,#0B2D59,#2E608C);">
-
-        <div class="card-body">
-
-            <h1 class="fw-bold text-white">
-
-                <i class="bi bi-arrow-left-right"></i>
-
-                Reporte de Derivaciones
-
-            </h1>
-
-            <p class="text-light mb-0">
-
-                Seguimiento y trazabilidad documental
-
-            </p>
-
+    <div class="card border-0 shadow-lg rounded-4 mb-4" style="background: linear-gradient(135deg,#0B2D59,#2E608C);">
+        <div class="card-body d-flex align-items-center">
+            <img src="{{ asset('images/LogoEmpresa.png') }}" alt="Logo Empresa" style="width: 80px; margin-right: 20px;">
+            <div>
+                <h1 class="fw-bold text-white mb-1"><i class="bi bi-arrow-left-right"></i> Reporte de Derivaciones</h1>
+                <p class="text-light mb-0">Seguimiento y trazabilidad documental</p>
+            </div>
         </div>
-
     </div>
     {{-- FILTROS --}}
 <div class="card border-0 shadow-sm rounded-4 mb-4">

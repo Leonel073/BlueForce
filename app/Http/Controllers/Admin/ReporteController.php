@@ -15,9 +15,36 @@ use App\Models\TipoDocumento;
 use Barryvdh\DomPDF\Facade\Pdf;
 use App\Models\Persona;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Http\Response;
 
 class ReporteController extends Controller
 {
+    private function buildPdfOrPrintableResponse(
+        string $view,
+        array $data,
+        string $fileName,
+        string $paper = 'letter',
+        ?string $orientation = null
+    ): Response
+    {
+        if (!extension_loaded('gd')) {
+            return response()
+                ->view($view, $data)
+                ->header('Content-Type', 'text/html; charset=UTF-8')
+                ->header('Content-Disposition', 'inline; filename="' . $fileName . '.html"');
+        }
+
+        $pdf = Pdf::loadView($view, $data);
+
+        if ($orientation) {
+            $pdf->setPaper($paper, $orientation);
+        } else {
+            $pdf->setPaper($paper);
+        }
+
+        return $pdf->download($fileName . '.pdf');
+    }
+
     public function index()
     {
         /*
@@ -95,7 +122,7 @@ class ReporteController extends Controller
           $query = Persona::with([
         'cargo',
         'departamento'
-    ]);
+    ])->whereNull('idDepartamento');
 
         // FILTRO: Solo personas que hicieron trámites (tienen documentos)
         if ($request->filled('solo_con_tramites') && $request->solo_con_tramites == '1') {
@@ -273,7 +300,7 @@ class ReporteController extends Controller
 
 public function personasPDF(Request $request)
     {
-        $query = Persona::query();
+        $query = Persona::query()->whereNull('idDepartamento');
 
         if ($request->filled('nombre')) {
             $query->where('nombre', 'like', '%' . $request->nombre . '%');
@@ -301,9 +328,11 @@ public function personasPDF(Request $request)
             $persona->documentos = $docQuery->get();
         }
 
-        $pdf = Pdf::loadView('admin.reportes.pdf.personas', compact('personas'));
-
-        return $pdf->download('reporte-integral-personas.pdf');
+        return $this->buildPdfOrPrintableResponse(
+            'admin.reportes.pdf.personas',
+            compact('personas'),
+            'reporte-integral-personas'
+        );
     }
  public function usuarios(Request $request)
     {
@@ -377,8 +406,12 @@ public function personasPDF(Request $request)
         if ($request->filled('estado')) $query->where('activo', $request->estado);
 
         $usuarios = $query->withCount(['correspondencias'])->get();
-        $pdf = Pdf::loadView('admin.reportes.pdf.usuarios', compact('usuarios'));
-        return $pdf->download('reporte-usuarios.pdf');
+
+        return $this->buildPdfOrPrintableResponse(
+            'admin.reportes.pdf.usuarios',
+            compact('usuarios'),
+            'reporte-usuarios'
+        );
     }
     public function documentos(Request $request)
     {
@@ -438,8 +471,13 @@ if ($request->filled('idTipo')) $query->where('idTipoDocumento', $request->idTip
 
     $documentos = $query->latest('idDocumento')->get();
 
-    $pdf = Pdf::loadView('admin.reportes.pdf.documentos', compact('documentos'));
-    return $pdf->setPaper('letter', 'landscape')->download('reporte-general-documentos.pdf');
+    return $this->buildPdfOrPrintableResponse(
+        'admin.reportes.pdf.documentos',
+        compact('documentos'),
+        'reporte-general-documentos',
+        'letter',
+        'landscape'
+    );
 }
     public function departamentos(Request $request)
     {
@@ -590,8 +628,13 @@ if ($request->filled('idTipo')) $query->where('idTipoDocumento', $request->idTip
             $dep->documentos_destinatarios = Derivacion::where('idDepartamentoDestino', $dep->idDepartamento)->count();
         }
 
-        $pdf = Pdf::loadView('admin.reportes.pdf.departamentos', compact('departamentos'));
-        return $pdf->setPaper('letter', 'landscape')->download('reporte-flujo-departamentos.pdf');
+        return $this->buildPdfOrPrintableResponse(
+            'admin.reportes.pdf.departamentos',
+            compact('departamentos'),
+            'reporte-flujo-departamentos',
+            'letter',
+            'landscape'
+        );
     }
     public function derivaciones(Request $request)
     {
@@ -743,13 +786,10 @@ public function derivacionesPDF(Request $request)
     |--------------------------------------------------------------------------
     */
 
-    $pdf = Pdf::loadView(
+    return $this->buildPdfOrPrintableResponse(
         'admin.reportes.pdf.derivaciones',
-        compact('derivaciones')
-    );
-
-    return $pdf->download(
-        'reporte-derivaciones.pdf'
+        compact('derivaciones'),
+        'reporte-derivaciones'
     );
 }
 }

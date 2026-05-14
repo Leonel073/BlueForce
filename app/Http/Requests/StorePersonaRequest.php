@@ -11,7 +11,7 @@ class StorePersonaRequest extends FormRequest
      */
     public function authorize(): bool
     {
-        return auth()->check() && auth()->user()->hasPermission('admin');
+        return auth()->check() && auth()->user()->idRol == 1;
     }
 
     /**
@@ -88,12 +88,6 @@ class StorePersonaRequest extends FormRequest
 
             'idCargo' => 
                 'required|exists:CARGO,idCargo',
-
-            'idDepartamento' => 
-                'required|exists:DEPARTAMENTO,idDepartamento',
-
-            'es_responsable' => 
-                'nullable|boolean',
         ];
     }
 
@@ -125,9 +119,6 @@ class StorePersonaRequest extends FormRequest
 
             'idCargo.required' => 'Debe asignar un cargo a la persona.',
             'idCargo.exists' => 'El cargo seleccionado no existe.',
-
-            'idDepartamento.required' => 'Debe asignar un departamento.',
-            'idDepartamento.exists' => 'El departamento no existe.',
         ];
     }
 
@@ -145,8 +136,6 @@ class StorePersonaRequest extends FormRequest
             'correo' => 'Correo',
             'institucion' => 'Institución',
             'idCargo' => 'Cargo',
-            'idDepartamento' => 'Departamento',
-            'es_responsable' => 'Responsable',
         ];
     }
 }

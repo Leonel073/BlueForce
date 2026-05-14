@@ -27,11 +27,9 @@ class DocumentoController extends Controller
 
 public function index()
 {
-    $usuario = Auth::user();
-
     /*
     |--------------------------------------------------------------------------
-    | DOCUMENTOS DEL USUARIO
+    | DOCUMENTOS DEL SISTEMA
     |--------------------------------------------------------------------------
     */
 
@@ -44,11 +42,7 @@ public function index()
         'derivaciones.departamentoDestino'
 
     ])
-
-    ->where('idUsuario', $usuario->id)
-
     ->orderByDesc('fecha')
-
     ->get();
 
     /*

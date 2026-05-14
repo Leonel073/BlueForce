@@ -6,10 +6,13 @@
 <div class="container-fluid py-4">
 
     {{-- HEADER --}}
-    <div class="card border-0 shadow-lg rounded-4 mb-4" style="background: linear-gradient(135deg,#0B2D59,#198754);">
-        <div class="card-body">
-            <h1 class="fw-bold text-white"><i class="bi bi-person-lines-fill"></i> Reporte Integral de Personas</h1>
-            <p class="text-light mb-0">Historial completo de remitentes, CI y documentos emitidos</p>
+    <div class="card border-0 shadow-lg rounded-4 mb-4" style="background: linear-gradient(135deg,#0B2D59,#2E608C);">
+        <div class="card-body d-flex align-items-center">
+            <img src="{{ asset('images/LogoEmpresa.png') }}" alt="Logo Empresa" style="width: 80px; margin-right: 20px;">
+            <div>
+                <h1 class="fw-bold text-white mb-1"><i class="bi bi-person-lines-fill"></i> Reporte Integral de Personas</h1>
+                <p class="text-light mb-0">Historial completo de remitentes, CI y documentos emitidos</p>
+            </div>
         </div>
     </div>
 
@@ -79,7 +82,7 @@
                         <button type="button" class="btn btn-secondary shadow-sm" onclick="resetFiltros()">
                             <i class="bi bi-arrow-clockwise"></i> Limpiar
                         </button>
-                        <button type="button" class="btn btn-success shadow-sm" onclick="mostrarEstadisticas()">
+                        <button type="button" class="btn shadow-sm text-white" style="background-color:#2E608C;" onclick="mostrarEstadisticas()">
                             <i class="bi bi-bar-chart"></i> Ver Estadísticas
                         </button>
                         <a href="{{ route('admin.reportes.personas.pdf', request()->query()) }}" class="btn btn-danger shadow-sm">
@@ -140,7 +143,7 @@
         <div class="card-body">
             <div class="table-responsive">
                 <table class="table table-hover align-middle">
-                    <thead class="table-dark" style="--bs-table-bg: #010303;">
+                    <thead class="table-dark" style="--bs-table-bg: #0B2D59;">
                         <tr>
                             <th class="text-white" width="25%">Datos de la Persona</th>
                             <th class="text-white" width="20%">Contacto e Institución</th>
