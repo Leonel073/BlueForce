@@ -159,8 +159,9 @@
 
                     </div>
 
-                    {{-- CARGO --}}
-                    <div class="col-md-6 mb-3">
+                    {{-- CARGO (Solo para internos) --}}
+                    <div class="col-md-6 mb-3" id="cargo_section"
+                         style="display: {{ $persona->tipo === 'INTERNO' ? 'block' : 'none' }};">
 
                         <label class="form-label fw-semibold">
 
@@ -168,10 +169,36 @@
 
                         </label>
 
-                        <input type="text"
-                               name="cargo"
-                               class="form-control"
-                               value="{{ old('cargo', $persona->cargo) }}">
+                        <select name="idCargo"
+                               id="idCargo"
+                               class="form-select">
+
+                            <option value="">
+
+                                -- Seleccione cargo --
+
+                            </option>
+
+                            @foreach($cargos as $cargo)
+
+                                <option value="{{ $cargo->idCargo }}"
+                                    {{ $persona->idCargo == $cargo->idCargo ? 'selected' : '' }}>
+
+                                    {{ $cargo->nombre }}
+
+                                </option>
+
+                            @endforeach
+
+                        </select>
+
+                        <small class="text-muted d-block mt-2">
+
+                            <i class="bi bi-info-circle me-1"></i>
+
+                            Solo disponible para personas INTERNAS
+
+                        </small>
 
                     </div>
 
@@ -290,3 +317,26 @@
 </div>
 
 @endsection
+
+<script>
+    /*
+    |--------------------------------------------------------------------------
+    | MOSTRAR/OCULTAR CAMPO DE CARGO SEGÚN TIPO
+    |--------------------------------------------------------------------------
+    */
+
+    const tipoSelect = document.querySelector('select[name="tipo"]');
+    const cargoSection = document.getElementById('cargo_section');
+    const idCargoSelect = document.getElementById('idCargo');
+
+    function toggleCargoField() {
+        if (tipoSelect.value === 'INTERNO') {
+            cargoSection.style.display = 'block';
+        } else {
+            cargoSection.style.display = 'none';
+            idCargoSelect.value = ''; // Limpia el cargo si es externo
+        }
+    }
+
+    tipoSelect.addEventListener('change', toggleCargoField);
+</script>

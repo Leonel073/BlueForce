@@ -414,7 +414,10 @@ public function index()
     */
     public function buscarPersona($ci)
     {
-        $persona = Persona::where('ci', $ci)->first();
+        $persona = Persona::with('cargo', 'departamento')
+            ->where('ci', $ci)
+            ->where('activo', true)
+            ->first();
 
         if (!$persona) {
             return response()->json([
@@ -424,9 +427,44 @@ public function index()
 
         return response()->json([
             'success' => true,
-            'persona' => $persona
+            'persona' => [
+                'nombre' => $persona->nombre ?? '',
+                'correo' => $persona->correo ?? '',
+                'cargo' => $persona->tipo === 'INTERNO' && $persona->cargo 
+                    ? $persona->cargo->nombre 
+                    : null,
+                'institucion' => $persona->institucion ?? '',
+                'telefono_celular' => $persona->telefono_celular ?? '',
+                'telefono_fijo' => $persona->telefono_fijo ?? '',
+                'tipo' => $persona->tipo,
+                'idDepartamento' => $persona->idDepartamento,
+                'es_interno' => $persona->tipo === 'INTERNO'
+            ]
         ]);
     }
+
+    public function obtenerPersonasPorDepartamento($idDepartamento)
+    {
+        $personas = Persona::where('idDepartamento', $idDepartamento)
+            ->where('tipo', 'INTERNO')
+            ->where('activo', true)
+            ->with('cargo')
+            ->get([
+                'idPersona',
+                'nombre',
+                'idCargo'
+            ])
+            ->map(function ($persona) {
+                return [
+                    'idPersona' => $persona->idPersona,
+                    'nombre' => $persona->nombre,
+                    'cargo' => $persona->cargo ? $persona->cargo->nombre : 'Sin cargo'
+                ];
+            });
+
+        return response()->json($personas);
+    }
+
     public function adminIndex()
     {
         $documentos = Correspondencia::with([

@@ -36,5 +36,13 @@ class Departamento extends Model
         'idPersona'
     );
 }
+public function derivacionesDestino()
+{
+    return $this->hasMany(
+        Derivacion::class,
+        'idDepartamentoDestino',
+        'idDepartamento'
+    );
+}
 
 }

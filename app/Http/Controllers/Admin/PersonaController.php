@@ -6,6 +6,7 @@ use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
 use App\Models\Persona;
 use App\Models\Departamento;
+use App\Models\Cargo;
 
 class PersonaController extends Controller
 {
@@ -25,12 +26,15 @@ public function edit($id)
     $persona = Persona::findOrFail($id);
 
     $departamentos = Departamento::orderBy('nombre')->get();
+    
+    $cargos = Cargo::where('activo', true)->orderBy('nombre')->get();
 
     return view(
         'admin.personas.edit',
         compact(
             'persona',
-            'departamentos'
+            'departamentos',
+            'cargos'
         )
     );
 }
@@ -57,8 +61,8 @@ public function update(Request $request, $id)
         'telefono_fijo' =>
             'nullable|string|max:20',
 
-        'cargo' =>
-            'nullable|string|max:150',
+        'idCargo' =>
+            'nullable|exists:CARGO,idCargo',
 
         'institucion' =>
             'nullable|string|max:200',
@@ -70,6 +74,11 @@ public function update(Request $request, $id)
             'nullable|exists:DEPARTAMENTO,idDepartamento',
 
     ]);
+
+    // Si es EXTERNO, no puede tener cargo
+    if ($validated['tipo'] === 'EXTERNO') {
+        $validated['idCargo'] = null;
+    }
 
     $persona->update([
 
@@ -88,8 +97,8 @@ public function update(Request $request, $id)
         'telefono_fijo' =>
             $validated['telefono_fijo'] ?? null,
 
-        'cargo' =>
-            $validated['cargo'] ?? null,
+        'idCargo' =>
+            $validated['idCargo'] ?? null,
 
         'institucion' =>
             $validated['institucion'] ?? null,
@@ -128,22 +137,36 @@ public function buscar(Request $request)
 {
     $q = trim($request->q);
 
+    if (strlen($q) < 2) {
+        return response()->json([]);
+    }
+
     $personas = Persona::query()
-
+        ->where('activo', true)
         ->where(function ($query) use ($q) {
-
             $query->where('nombre', 'LIKE', "%{$q}%")
                   ->orWhere('ci', 'LIKE', "%{$q}%");
-
         })
-
+        ->with('cargo', 'departamento')
         ->limit(10)
-
         ->get([
             'idPersona',
             'nombre',
-            'ci'
-        ]);
+            'ci',
+            'tipo',
+            'idCargo',
+            'idDepartamento'
+        ])
+        ->map(function ($persona) {
+            return [
+                'idPersona' => $persona->idPersona,
+                'nombre' => $persona->nombre,
+                'ci' => $persona->ci,
+                'tipo' => $persona->tipo,
+                'cargo' => $persona->cargo ? $persona->cargo->nombre : null,
+                'departamento' => $persona->departamento ? $persona->departamento->nombre : null
+            ];
+        });
 
     return response()->json($personas);
 }

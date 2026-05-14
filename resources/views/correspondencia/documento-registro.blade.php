@@ -563,8 +563,8 @@
 
                             </div>
 
-                            {{-- CARGO --}}
-                            <div class="col-md-6 mb-3">
+                            {{-- CARGO (Solo para internos) --}}
+                            <div class="col-md-6 mb-3" id="cargo_remitente_section" style="display: none;">
 
                                 <label class="form-label fw-semibold">
 
@@ -575,31 +575,17 @@
                                 <input type="text"
                                     id="cargo_remitente"
                                     name="cargo_remitente"
-                                    class="form-control @error('cargo_remitente') is-invalid @enderror"
-                                    placeholder="Ej: Director, Analista"
-                                    value="{{ old('cargo_remitente') }}">
+                                    class="form-control"
+                                    placeholder="Auto completado para internos"
+                                    readonly>
 
-                                @error('cargo_remitente')
+                                <small class="text-muted d-block mt-2">
 
-                                    <div class="invalid-feedback d-block">
+                                    <i class="bi bi-info-circle me-1"></i>
 
-                                        <i class="bi bi-exclamation-circle me-1"></i>
+                                    Se completa automáticamente para personas internas del sistema.
 
-                                        {{ $message }}
-
-                                    </div>
-
-                                @else
-
-                                    <small class="text-muted">
-
-                                        <i class="bi bi-info-circle me-1"></i>
-
-                                        Opcional - Solo letras y espacios.
-
-                                    </small>
-
-                                @enderror
+                                </small>
 
                             </div>
 
@@ -801,6 +787,39 @@
 
                         </div>
 
+                        {{-- PERSONA DESTINATARIA (Cargada dinámicamente) --}}
+                        <div class="mb-3" id="destinatario_section" style="display: none;">
+
+                            <label class="form-label fw-semibold">
+
+                                <i class="bi bi-person-check"></i>
+
+                                Persona Destinataria
+
+                            </label>
+
+                            <select id="persona_destinataria"
+                                    name="persona_destinataria"
+                                    class="form-select">
+
+                                <option value="">
+
+                                    -- Seleccione una persona --
+
+                                </option>
+
+                            </select>
+
+                            <small class="text-muted d-block mt-2">
+
+                                <i class="bi bi-info-circle me-1"></i>
+
+                                Personas activas del departamento seleccionado.
+
+                            </small>
+
+                        </div>
+
                         {{-- ALERTA --}}
                         <div class="alert alert-warning small">
 
@@ -969,9 +988,6 @@
                 document.getElementById('correo_remitente')
                     .value = p.correo || '';
 
-                document.getElementById('cargo_remitente')
-                    .value = p.cargo || '';
-
                 document.getElementById('institucion_remitente')
                     .value = p.institucion || '';
 
@@ -987,6 +1003,18 @@
                 document.getElementById('departamento_remitente')
                     .value = p.idDepartamento || '';
 
+                // Mostrar/ocultar cargo según tipo
+                toggleCargoField();
+
+                // Si es interno y tiene cargo, mostrar
+                if (p.es_interno && p.cargo) {
+                    document.getElementById('cargo_remitente').value = p.cargo;
+                    document.getElementById('cargo_remitente_section').style.display = 'block';
+                } else {
+                    document.getElementById('cargo_remitente').value = '';
+                    document.getElementById('cargo_remitente_section').style.display = 'none';
+                }
+
                 document.getElementById('personaEncontrada')
                     .classList.remove('d-none');
             }
@@ -994,10 +1022,83 @@
             {
                 document.getElementById('personaEncontrada')
                     .classList.add('d-none');
+                    
+                // Limpiar cargo
+                document.getElementById('cargo_remitente').value = '';
+                document.getElementById('cargo_remitente_section').style.display = 'none';
             }
 
         });
 
+    });
+
+    /*
+    |--------------------------------------------------------------------------
+    | MOSTRAR/OCULTAR CARGO SEGÚN TIPO DE REMITENTE
+    |--------------------------------------------------------------------------
+    */
+
+    const tipoRemitenteSelect = document.getElementById('tipo_remitente');
+    const cargoRemitenteSection = document.getElementById('cargo_remitente_section');
+    const cargoRemitenteInput = document.getElementById('cargo_remitente');
+
+    function toggleCargoField() {
+        const tipoValue = tipoRemitenteSelect.value;
+
+        if (tipoValue === 'INTERNO') {
+            cargoRemitenteSection.style.display = 'block';
+        } else {
+            cargoRemitenteSection.style.display = 'none';
+            cargoRemitenteInput.value = '';
+        }
+    }
+
+    tipoRemitenteSelect.addEventListener('change', toggleCargoField);
+
+    /*
+    |--------------------------------------------------------------------------
+    | CARGAR PERSONAS AL SELECCIONAR DEPARTAMENTO
+    |--------------------------------------------------------------------------
+    */
+
+    const departamentoSelect = document.getElementById('departamento');
+    const destinatarioSection = document.getElementById('destinatario_section');
+    const personaDestinaria = document.getElementById('persona_destinataria');
+
+    departamentoSelect.addEventListener('change', function () {
+        const idDepartamento = this.value;
+
+        if (!idDepartamento) {
+            destinatarioSection.style.display = 'none';
+            personaDestinaria.innerHTML = '<option value="">-- Seleccione una persona --</option>';
+            return;
+        }
+
+        // Cargar personas del departamento
+        fetch(`/documentos/departamento/${idDepartamento}/personas`)
+            .then(response => response.json())
+            .then(personas => {
+                let html = '<option value="">-- Seleccione una persona --</option>';
+
+                if (personas.length > 0) {
+                    personas.forEach(persona => {
+                        html += `<option value="${persona.idPersona}">
+                            ${persona.nombre} (${persona.cargo})
+                        </option>`;
+                    });
+
+                    destinatarioSection.style.display = 'block';
+                } else {
+                    html += '<option disabled>No hay personas en este departamento</option>';
+                    destinatarioSection.style.display = 'block';
+                }
+
+                personaDestinaria.innerHTML = html;
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                personaDestinaria.innerHTML = '<option value="">Error al cargar personas</option>';
+            });
     });
 
 </script>

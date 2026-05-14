@@ -108,7 +108,7 @@
 
                                 <td>
 
-                                    {{ $persona->cargo ?? 'N/A' }}
+                                    {{ $persona->cargo->nombre ?? 'N/A' }}
 
                                 </td>
 

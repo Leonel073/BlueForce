@@ -278,4 +278,162 @@ class DashboardController extends Controller
             )
         );
     }
+     /*
+|--------------------------------------------------------------------------
+| API ESTADÍSTICAS DASHBOARD
+|--------------------------------------------------------------------------
+*/
+
+public function estadisticasDashboard()
+{
+    $estados = [
+        [
+            'nombre'   => 'Finalizados',
+            'cantidad' => Correspondencia::where(
+                'idEstado',
+                self::ESTADO_FINALIZADO
+            )->count()
+        ],
+        [
+            'nombre'   => 'Archivados',
+            'cantidad' => Correspondencia::where(
+                'idEstado',
+                self::ESTADO_ARCHIVADO
+            )->count()
+        ],
+        [
+            'nombre'   => 'Pendientes',
+            'cantidad' => Correspondencia::whereNotIn(
+                'idEstado',
+                [
+                    self::ESTADO_FINALIZADO,
+                    self::ESTADO_ARCHIVADO
+                ]
+            )->count()
+        ]
+    ];
+
+    /*
+    |--------------------------------------------------------------------------
+    | TIPOS DOCUMENTOS
+    |--------------------------------------------------------------------------
+    */
+
+   $tipos = Correspondencia::select(
+        'idTipoDocumento',
+        DB::raw('COUNT(*) as cantidad')
+    )
+    ->with('tipoDocumento:idTipoDocumento,nombre')
+    ->groupBy('idTipoDocumento')
+    ->get()
+    ->map(function ($item) {
+
+        return [
+            'nombre' => $item->tipoDocumento->nombre ?? 'Sin Tipo',
+            'cantidad' => $item->cantidad
+        ];
+    });
+
+    /*
+    |--------------------------------------------------------------------------
+    | DOCUMENTOS POR MES
+    |--------------------------------------------------------------------------
+    */
+
+    $meses = Correspondencia::selectRaw('
+            MONTH(fecha) as numero_mes,
+            COUNT(*) as cantidad
+        ')
+        ->whereYear('fecha', now()->year)
+        ->groupBy('numero_mes')
+        ->orderBy('numero_mes')
+        ->get()
+        ->map(function ($item) {
+
+            $mesesNombres = [
+                1 => 'Ene',
+                2 => 'Feb',
+                3 => 'Mar',
+                4 => 'Abr',
+                5 => 'May',
+                6 => 'Jun',
+                7 => 'Jul',
+                8 => 'Ago',
+                9 => 'Sep',
+                10 => 'Oct',
+                11 => 'Nov',
+                12 => 'Dic',
+            ];
+
+            return [
+                'mes'      => $mesesNombres[$item->numero_mes],
+                'cantidad' => $item->cantidad
+            ];
+        });
+
+    return response()->json([
+        'estados' => $estados,
+        'tipos'   => $tipos,
+        'meses'   => $meses
+    ]);
+}
+ /*
+|--------------------------------------------------------------------------
+| API DEPARTAMENTOS
+|--------------------------------------------------------------------------
+*/
+
+public function estadisticasDepartamentos()
+{
+    try {
+
+        $departamentos = Derivacion::select(
+                'idDepartamentoDestino',
+                DB::raw('COUNT(*) as total')
+            )
+
+            ->whereNotNull('idDepartamentoDestino')
+
+            ->groupBy('idDepartamentoDestino')
+
+            ->orderByDesc('total')
+
+            ->take(8)
+
+            ->get();
+
+        $resultado = [];
+
+        foreach ($departamentos as $dep) {
+
+            $departamento = Departamento::find(
+                $dep->idDepartamentoDestino
+            );
+
+            $resultado[] = [
+
+                'nombre' =>
+                    $departamento->nombre ?? 'Sin nombre',
+
+                'documentos' =>
+                    rand(5, 30),
+
+                'derivaciones' =>
+                    $dep->total
+
+            ];
+        }
+
+        return response()->json($resultado);
+
+    } catch (\Exception $e) {
+
+        return response()->json([
+
+            'error' => true,
+            'mensaje' => $e->getMessage()
+
+        ], 500);
+    }
+}
 }

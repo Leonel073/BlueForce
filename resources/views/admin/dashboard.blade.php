@@ -332,7 +332,7 @@
 
     </div>
 
-    {{-- FLUJO DE DEPARTAMENTOS --}}
+    {{-- FLUJO DE DEPARTAMENTOS CON GRÁFICO --}}
     <div class="card glass-card shadow-lg mb-4">
 
         <div class="card-header border-0 dashboard-gradient text-white p-4">
@@ -343,13 +343,13 @@
 
                     <i class="bi bi-diagram-3-fill me-2"></i>
 
-                    Departamentos con Mayor Flujo
+                    Estadísticas de Departamentos
 
                 </h5>
 
                 <span class="badge bg-light text-dark rounded-pill px-3 py-2">
 
-                    TOP 5
+                    SISTEMA
 
                 </span>
 
@@ -359,136 +359,9 @@
 
         <div class="card-body p-4">
 
-            {{-- EJEMPLO VISUAL SIN CHART.JS --}}
-            {{-- Puedes reemplazar los datos por foreach dinámico --}}
+            <div style="position: relative; height: 300px;">
 
-            <div class="mb-4">
-
-                <div class="d-flex justify-content-between mb-2">
-
-                    <span class="fw-semibold">
-
-                        Recursos Humanos
-
-                    </span>
-
-                    <span class="text-muted">
-
-                        90%
-
-                    </span>
-
-                </div>
-
-                <div class="mini-bar">
-
-                    <div class="mini-bar-fill" style="width:90%"></div>
-
-                </div>
-
-            </div>
-
-            <div class="mb-4">
-
-                <div class="d-flex justify-content-between mb-2">
-
-                    <span class="fw-semibold">
-
-                        Finanzas
-
-                    </span>
-
-                    <span class="text-muted">
-
-                        75%
-
-                    </span>
-
-                </div>
-
-                <div class="mini-bar">
-
-                    <div class="mini-bar-fill" style="width:75%"></div>
-
-                </div>
-
-            </div>
-
-            <div class="mb-4">
-
-                <div class="d-flex justify-content-between mb-2">
-
-                    <span class="fw-semibold">
-
-                        Jurídica
-
-                    </span>
-
-                    <span class="text-muted">
-
-                        65%
-
-                    </span>
-
-                </div>
-
-                <div class="mini-bar">
-
-                    <div class="mini-bar-fill" style="width:65%"></div>
-
-                </div>
-
-            </div>
-
-            <div class="mb-4">
-
-                <div class="d-flex justify-content-between mb-2">
-
-                    <span class="fw-semibold">
-
-                        Sistemas
-
-                    </span>
-
-                    <span class="text-muted">
-
-                        55%
-
-                    </span>
-
-                </div>
-
-                <div class="mini-bar">
-
-                    <div class="mini-bar-fill" style="width:55%"></div>
-
-                </div>
-
-            </div>
-
-            <div>
-
-                <div class="d-flex justify-content-between mb-2">
-
-                    <span class="fw-semibold">
-
-                        Archivo
-
-                    </span>
-
-                    <span class="text-muted">
-
-                        40%
-
-                    </span>
-
-                </div>
-
-                <div class="mini-bar">
-
-                    <div class="mini-bar-fill" style="width:40%"></div>
-
-                </div>
+                <canvas id="departamentosChart"></canvas>
 
             </div>
 
@@ -496,105 +369,45 @@
 
     </div>
 
-    {{-- ESTADOS --}}
+    {{-- ESTADOS CON GRÁFICOS --}}
     <div class="row mb-4">
-
-        <div class="col-lg-3 col-md-6 mb-3">
-
-            <div class="card glass-card shadow-sm bg-success text-white">
-
-                <div class="card-body p-4">
-
-                    <h2 class="fw-bold">
-
-                        {{ $documentosFinalizados }}
-
-                    </h2>
-
-                    <div>
-
-                        Documentos Finalizados
-
-                    </div>
-
+        <div class="col-lg-6 mb-3">
+            <div class="card glass-card shadow-lg">
+                <div class="card-header dashboard-gradient text-white p-4 border-0">
+                    <h5 class="mb-0 fw-bold"><i class="bi bi-pie-chart me-2"></i>Estado de Documentos</h5>
                 </div>
-
+                <div class="card-body p-4">
+                    <div style="position: relative; height: 300px;">
+                        <canvas id="estadosChart"></canvas>
+                    </div>
+                </div>
             </div>
-
         </div>
 
-        <div class="col-lg-3 col-md-6 mb-3">
-
-            <div class="card glass-card shadow-sm bg-secondary text-white">
-
-                <div class="card-body p-4">
-
-                    <h2 class="fw-bold">
-
-                        {{ $documentosArchivados }}
-
-                    </h2>
-
-                    <div>
-
-                        Documentos Archivados
-
-                    </div>
-
+        <div class="col-lg-6 mb-3">
+            <div class="card glass-card shadow-lg">
+                <div class="card-header dashboard-gradient text-white p-4 border-0">
+                    <h5 class="mb-0 fw-bold"><i class="bi bi-bar-chart me-2"></i>Tipos de Documentos</h5>
                 </div>
-
-            </div>
-
-        </div>
-
-        <div class="col-lg-3 col-md-6 mb-3">
-
-            <div class="card glass-card shadow-sm bg-warning text-dark">
-
                 <div class="card-body p-4">
-
-                    <h2 class="fw-bold">
-
-                        {{ $documentosPendientes }}
-
-                    </h2>
-
-                    <div>
-
-                        Documentos en Flujo
-
+                    <div style="position: relative; height: 300px;">
+                        <canvas id="tiposChart"></canvas>
                     </div>
-
                 </div>
-
             </div>
-
         </div>
+    </div>
 
-        <div class="col-lg-3 col-md-6 mb-3">
-
-            <div class="card glass-card shadow-sm bg-danger text-white">
-
-                <div class="card-body p-4">
-
-                    <h2 class="fw-bold">
-
-                        {{ $documentosUrgentes }}
-
-                    </h2>
-
-                    <div>
-
-                        Alta Prioridad
-
-                    </div>
-
-                </div>
-
+    {{-- LÍNEA TEMPORAL DE DOCUMENTOS --}}
+    <div class="card glass-card shadow-lg mb-4">
+        <div class="card-header dashboard-gradient text-white p-4 border-0">
+            <h5 class="mb-0 fw-bold"><i class="bi bi-graph-up me-2"></i>Tendencia de Documentos Últimos 6 Meses</h5>
+        </div>
+        <div class="card-body p-4">
+            <div style="position: relative; height: 300px;">
+                <canvas id="tendenciaChart"></canvas>
             </div>
-
         </div>
-
     </div>
 
     {{-- DOCUMENTOS RECIENTES --}}
@@ -761,5 +574,196 @@
     </div>
 
 </div>
+
+{{-- CHART.JS LIBRARY --}}
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
+
+<script>
+// GLOBAL COLORS
+const primaryColor = '#0B2D59';
+const secondaryColor = '#2E608C';
+const successColor = '#28a745';
+const warningColor = '#ffc107';
+const dangerColor = '#dc3545';
+const infoColor = '#17a2b8';
+
+// CHART 1: Estados de Documentos (Pie Chart)
+const estadosCtx = document.getElementById('estadosChart')?.getContext('2d');
+if (estadosCtx) {
+    fetch('{{ route("admin.api.estadisticas.dashboard") }}')
+        .then(res => res.json())
+        .then(data => {
+            new Chart(estadosCtx, {
+                type: 'doughnut',
+                data: {
+                    labels: data.estados.map(e => e.nombre),
+                    datasets: [{
+                        data: data.estados.map(e => e.cantidad),
+                        backgroundColor: ['#28a745', '#ffc107', '#dc3545', '#17a2b8', '#6c757d', '#fd7e14'],
+                        borderColor: '#fff',
+                        borderWidth: 2
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: { position: 'bottom' }
+                    }
+                }
+            });
+        });
+}
+
+// CHART 2: Tipos de Documentos (Bar Chart)
+const tiposCtx = document.getElementById('tiposChart')?.getContext('2d');
+if (tiposCtx) {
+    fetch('{{ route("admin.api.estadisticas.dashboard") }}')
+        .then(res => res.json())
+        .then(data => {
+            new Chart(tiposCtx, {
+                type: 'bar',
+                data: {
+                    labels: data.tipos.map(t => t.nombre),
+                    datasets: [{
+                        label: 'Cantidad',
+                        data: data.tipos.map(t => t.cantidad),
+                        backgroundColor: secondaryColor,
+                        borderColor: primaryColor,
+                        borderWidth: 1
+                    }]
+                },
+                options: {
+                    indexAxis: 'y',
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: { display: false }
+                    },
+                    scales: {
+                        x: { beginAtZero: true }
+                    }
+                }
+            });
+        });
+}
+
+// CHART 3: Tendencia de Documentos (Line Chart)
+const tendenciaCtx = document.getElementById('tendenciaChart')?.getContext('2d');
+if (tendenciaCtx) {
+    fetch('{{ route("admin.api.estadisticas.dashboard") }}')
+        .then(res => res.json())
+        .then(data => {
+            new Chart(tendenciaCtx, {
+                type: 'line',
+                data: {
+                    labels: data.meses.map(m => m.mes),
+                    datasets: [{
+                        label: 'Documentos',
+                        data: data.meses.map(m => m.cantidad),
+                        borderColor: primaryColor,
+                        backgroundColor: primaryColor + '20',
+                        fill: true,
+                        tension: 0.4,
+                        borderWidth: 2,
+                        pointRadius: 5,
+                        pointBackgroundColor: primaryColor,
+                        pointBorderColor: '#fff',
+                        pointBorderWidth: 2
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: {
+                            display: true,
+                            position: 'top'
+                        }
+                    },
+                    scales: {
+                        y: { beginAtZero: true }
+                    }
+                }
+            });
+        });
+}
+
+
+const departamentosCanvas =
+    document.getElementById('departamentosChart');
+
+if (departamentosCanvas) {
+
+    const ctx =
+        departamentosCanvas.getContext('2d');
+
+    fetch('{{ route("admin.api.estadisticas.departamentos") }}')
+
+        .then(response => response.json())
+
+        .then(data => {
+
+            console.log('Datos departamentos:', data);
+
+            new Chart(ctx, {
+
+                type: 'bar',
+
+                data: {
+
+                    labels: data.map(d => d.nombre),
+
+                    datasets: [
+
+                        {
+                            label: 'Documentos',
+
+                            data: data.map(d => d.documentos),
+
+                            backgroundColor: '#0B2D59'
+                        },
+
+                        {
+                            label: 'Derivaciones',
+
+                            data: data.map(d => d.derivaciones),
+
+                            backgroundColor: '#2E608C'
+                        }
+
+                    ]
+                },
+
+                options: {
+
+                    responsive: true,
+
+                    maintainAspectRatio: false,
+
+                    indexAxis: 'y',
+
+                    scales: {
+
+                        x: {
+
+                            beginAtZero: true
+                        }
+                    }
+                }
+            });
+
+        })
+
+        .catch(error => {
+
+            console.error('ERROR:', error);
+
+        });
+
+}
+
+
+</script>
 
 @endsection

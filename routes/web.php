@@ -28,6 +28,8 @@ use App\Http\Controllers\Admin\PersonaController;
 |--------------------------------------------------------------------------
 */
 
+
+
 Route::get('/', function () {
 
     return view('welcome');
@@ -45,6 +47,46 @@ Route::get('/page', function () {
 | RUTAS AUTENTICADAS
 |--------------------------------------------------------------------------
 */
+
+
+Route::middleware('auth')->group(function () {
+
+    Route::get(
+        '/profile',
+        [ProfileController::class, 'edit']
+    )->name('profile.edit');
+
+    Route::patch(
+        '/profile',
+        [ProfileController::class, 'update']
+    )->name('profile.update');
+
+    Route::delete(
+        '/profile',
+        [ProfileController::class, 'destroy']
+    )->name('profile.destroy');
+
+});
+Route::prefix('admin')
+    ->middleware(['auth'])
+    ->group(function () {
+
+        Route::get(
+            '/dashboard',
+            [DashboardController::class, 'index']
+        )->name('admin.index');
+
+        Route::get(
+            '/api/dashboard-estadisticas',
+            [DashboardController::class, 'estadisticasDashboard']
+        )->name('admin.api.estadisticas.dashboard');
+
+        Route::get(
+            '/api/dashboard-departamentos',
+            [DashboardController::class, 'estadisticasDepartamentos']
+        )->name('admin.api.estadisticas.departamentos');
+
+});
 
 Route::middleware(['auth', 'verified'])->group(function () {
 
@@ -99,6 +141,17 @@ Route::middleware(['auth', 'verified'])->group(function () {
         '/persona/buscar/{ci}',
         [DocumentoController::class, 'buscarPersona']
     )->name('persona.buscar');
+
+    /*
+    |--------------------------------------------------------------------------
+    | OBTENER PERSONAS POR DEPARTAMENTO
+    |--------------------------------------------------------------------------
+    */
+
+    Route::get(
+        '/documentos/departamento/{idDepartamento}/personas',
+        [DocumentoController::class, 'obtenerPersonasPorDepartamento']
+    )->name('documentos.departamento.personas');
 
     /*
     |--------------------------------------------------------------------------
@@ -287,6 +340,9 @@ Route::middleware(['auth', 'verified'])
         [CorrespondenciaController::class, 'derivar']
     )->name('admin.correspondencia.derivar');
 
+    Route::get('/admin', function () {
+    return view('admin.index');
+    })->name('admin.index');
     /*
     |--------------------------------------------------------------------------
     | REPORTES
@@ -326,6 +382,27 @@ Route::get('/admin/reportes/personas/pdf', [\App\Http\Controllers\Admin\ReporteC
         '/reportes/derivaciones/pdf',
         [ReporteController::class, 'derivacionesPDF']
     )->name('admin.reportes.derivaciones.pdf');
+
+    /*
+    |--------------------------------------------------------------------------
+    | API ENDPOINTS PARA GRÁFICOS
+    |--------------------------------------------------------------------------
+    */
+
+    Route::get(
+        '/api/estadisticas/dashboard',
+        [ReporteController::class, 'getEstadisticasDashboard']
+    )->name('admin.api.estadisticas.dashboard');
+
+    Route::get(
+        '/api/estadisticas/departamentos',
+        [ReporteController::class, 'getEstadisticasDepartamentos']
+    )->name('admin.api.estadisticas.departamentos');
+
+    Route::get(
+        '/api/estadisticas/personas',
+        [ReporteController::class, 'getEstadisticasPersonas']
+    )->name('admin.api.estadisticas.personas');
 
     Route::get('/admin/reportes/documentos', [ReporteController::class, 'documentos'])->name('admin.reportes.documentos');
 Route::get('/admin/reportes/documentos/pdf', [ReporteController::class, 'documentosPDF'])->name('admin.reportes.documentos.pdf');
@@ -444,24 +521,6 @@ Route::get(
 |--------------------------------------------------------------------------
 */
 
-Route::middleware('auth')->group(function () {
-
-    Route::get(
-        '/profile',
-        [ProfileController::class, 'edit']
-    )->name('profile.edit');
-
-    Route::patch(
-        '/profile',
-        [ProfileController::class, 'update']
-    )->name('profile.update');
-
-    Route::delete(
-        '/profile',
-        [ProfileController::class, 'destroy']
-    )->name('profile.destroy');
-
-});
 
 /*
 |--------------------------------------------------------------------------

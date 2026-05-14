@@ -16,9 +16,9 @@
     {{-- FILTROS AVANZADOS --}}
     <div class="card border-0 shadow-sm rounded-4 mb-4">
         <div class="card-body">
-            <form method="GET" action="{{ route('admin.reportes.personas') }}">
+            <form method="GET" action="{{ route('admin.reportes.personas') }}" id="filtros-form">
                 <div class="row">
-                    <div class="col-md-3 mb-3">
+                    <div class="col-md-2 mb-3">
                         <label class="form-label fw-semibold">Nombre de Persona</label>
                         <input type="text" name="nombre" class="form-control" placeholder="Ej: Juan Pérez" value="{{ request('nombre') }}">
                     </div>
@@ -35,6 +35,34 @@
                         </select>
                     </div>
                     <div class="col-md-2 mb-3">
+                        <label class="form-label fw-semibold">Departamento</label>
+                        <select name="idDepartamento" class="form-select">
+                            <option value="">Todos</option>
+                            @foreach($departamentos as $depto)
+                                <option value="{{ $depto->idDepartamento }}" {{ request('idDepartamento') == $depto->idDepartamento ? 'selected' : '' }}>
+                                    {{ $depto->nombre }}
+                                </option>
+                            @endforeach
+                        </select>
+                    </div>
+                    <div class="col-md-1 mb-3">
+                        <label class="form-label fw-semibold">Estado</label>
+                        <select name="activo" class="form-select">
+                            <option value="">Todos</option>
+                            <option value="1" {{ request('activo') == '1' ? 'selected' : '' }}>Activo</option>
+                            <option value="0" {{ request('activo') == '0' ? 'selected' : '' }}>Inactivo</option>
+                        </select>
+                    </div>
+                    <div class="col-md-1 mb-3">
+                        <div class="form-check mt-4">
+                            <input class="form-check-input" type="checkbox" name="solo_con_tramites" value="1" 
+                                {{ request('solo_con_tramites') == '1' ? 'checked' : '' }} id="soloTramites">
+                            <label class="form-check-label small" for="soloTramites">
+                                Solo con Trámites
+                            </label>
+                        </div>
+                    </div>
+                    <div class="col-md-2 mb-3">
                         <label class="form-label fw-semibold">Doc. Desde</label>
                         <input type="date" name="fecha_inicio" class="form-control" value="{{ request('fecha_inicio') }}">
                     </div>
@@ -42,23 +70,72 @@
                         <label class="form-label fw-semibold">Doc. Hasta</label>
                         <input type="date" name="fecha_fin" class="form-control" value="{{ request('fecha_fin') }}">
                     </div>
-                    <div class="col-md-1 d-flex align-items-end mb-3">
-                        <button type="submit" class="btn text-white w-100" style="background-color:#0B2D59;"><i class="bi bi-search"></i></button>
+                </div>
+                <div class="row">
+                    <div class="col-md-12">
+                        <button type="submit" class="btn btn-primary shadow-sm">
+                            <i class="bi bi-search"></i> Buscar
+                        </button>
+                        <button type="button" class="btn btn-secondary shadow-sm" onclick="resetFiltros()">
+                            <i class="bi bi-arrow-clockwise"></i> Limpiar
+                        </button>
+                        <button type="button" class="btn btn-success shadow-sm" onclick="mostrarEstadisticas()">
+                            <i class="bi bi-bar-chart"></i> Ver Estadísticas
+                        </button>
+                        <a href="{{ route('admin.reportes.personas.pdf', request()->query()) }}" class="btn btn-danger shadow-sm">
+                            <i class="bi bi-file-pdf-fill"></i> Exportar a PDF
+                        </a>
+                        <button type="button" class="btn btn-secondary shadow-sm" onclick="cerrar()">
+                            <i class="bi bi-x-lg"></i> Salida
+                        </button>
                     </div>
                 </div>
             </form>
         </div>
     </div>
 
-    {{-- TABLA --}}
-    <div class="card border-0 shadow-lg rounded-4">
-        {{-- BOTÓN EXPORTAR EN LA CABECERA --}}
-        <div class="card-header bg-white border-0 pt-4 pb-0 d-flex justify-content-between align-items-center">
-            <h5 class="mb-0 fw-bold text-secondary">Resultados de la búsqueda</h5>
-            <a href="{{ route('admin.reportes.personas.pdf', request()->query()) }}" class="btn btn-danger shadow-sm">
-                <i class="bi bi-file-pdf-fill"></i> Exportar a PDF
-            </a>
+    {{-- ESTADÍSTICAS PRE-VISUALIZACIÓN --}}
+    @if($estadisticas['total_personas'] > 0)
+    <div class="card border-0 shadow-sm rounded-4 mb-4" id="estadisticas-section" style="display: none;">
+        <div class="card-body">
+            <h5 class="fw-bold mb-3">📊 Estadísticas del Reporte</h5>
+            <div class="row">
+                <div class="col-md-3">
+                    <div class="card bg-light">
+                        <div class="card-body text-center">
+                            <h6 class="text-muted">Total Personas</h6>
+                            <h2 class="fw-bold">{{ $estadisticas['total_personas'] }}</h2>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-3">
+                    <div class="card bg-light">
+                        <div class="card-body text-center">
+                            <h6 class="text-muted">Internas</h6>
+                            <h2 class="fw-bold text-success">{{ $estadisticas['personas_internas'] }}</h2>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-3">
+                    <div class="card bg-light">
+                        <div class="card-body text-center">
+                            <h6 class="text-muted">Externas</h6>
+                            <h2 class="fw-bold text-warning">{{ $estadisticas['personas_externas'] }}</h2>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-3">
+                    <div class="card bg-light">
+                        <div class="card-body text-center">
+                            <h6 class="text-muted">Total Documentos</h6>
+                            <h2 class="fw-bold text-primary">{{ $estadisticas['total_documentos'] }}</h2>
+                        </div>
+                    </div>
+                </div>
+            </div>
         </div>
+    </div>
+    @endif
         
         <div class="card-body">
             <div class="table-responsive">
@@ -85,12 +162,26 @@
                                 </td>
                                 
                                 {{-- COLUMNA CONTACTO --}}
-                                <td>
-                                    <small><i class="bi bi-envelope"></i> {{ $p->correo ?? 'N/A' }}</small><br>
-                                    <small><i class="bi bi-telephone"></i> {{ $p->telefono ?? 'N/A' }}</small><br>
+                               <td>
+                                    <small>
+                                        <i class="bi bi-envelope"></i>
+                                        {{ $p->correo ?? 'N/A' }}
+                                    </small><br>
+
+                                    <small>
+                                        <i class="bi bi-telephone"></i>
+                                        {{ $p->telefono ?? 'N/A' }}
+                                    </small><br>
+
                                     <hr class="my-1">
-                                    <small class="fw-bold">{{ $p->institucion ?? 'Independiente' }}</small><br>
-                                    <small class="text-muted">{{ $p->cargo ?? 'Sin cargo' }}</small>
+
+                                    <small class="fw-bold">
+                                        {{ $p->institucion ?? 'Independiente' }}
+                                    </small><br>
+
+                                    <small class="text-muted">
+                                        {{ $p->cargo->nombre ?? 'Sin cargo' }}
+                                    </small>
                                 </td>
                                 
                                 {{-- COLUMNA DOCUMENTOS --}}
@@ -124,4 +215,22 @@
     </div>
 
 </div>
+
+<script>
+function resetFiltros() {
+    document.getElementById('filtros-form').reset();
+    document.getElementById('filtros-form').submit();
+}
+
+function mostrarEstadisticas() {
+    const seccion = document.getElementById('estadisticas-section');
+    seccion.style.display = seccion.style.display === 'none' ? 'block' : 'none';
+}
+
+function cerrar() {
+    if (confirm('¿Deseas cerrar este reporte?')) {
+        window.location.href = '{{ route("admin.index") }}';
+    }
+}
+</script>
 @endsection

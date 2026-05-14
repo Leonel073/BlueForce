@@ -58,12 +58,7 @@ class StoreDocumentoRequest extends FormRequest
             'correo_remitente' => 
                 'nullable|email|max:150',
 
-            'cargo_remitente' => [
-                'nullable',
-                'string',
-                'max:150',
-                'regex:/^[\pL\s]+$/u'
-            ],
+            // Cargo es read-only y se valida en el servidor (no incluir validación aquí)
 
             'institucion_remitente' => [
                 'nullable',
@@ -107,6 +102,9 @@ class StoreDocumentoRequest extends FormRequest
 
             'departamento' => 
                 'required|exists:DEPARTAMENTO,idDepartamento',
+
+            'persona_destinataria' => 
+                'nullable|exists:PERSONA,idPersona',
         ];
     }
 
