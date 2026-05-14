@@ -240,19 +240,51 @@
                                 {{-- URGENCIA --}}
                                 <td>
 
-                                    @if(
-                                        optional($doc->urgencia)->nombre == 'Urgente'
-                                    )
+                                    @php
 
-                                        <span class="badge bg-danger rounded-pill">
+                                        $u =
+                                            strtolower(
+                                                $doc->urgencia->nombre ?? ''
+                                            );
 
-                                            Urgente
+                                    @endphp
+
+                                    @if(str_contains($u, 'urg') || str_contains($u, 'crit'))
+
+                                        <span class="badge rounded-pill px-3 py-2 bg-danger">
+
+                                            <i class="bi bi-exclamation-octagon-fill me-1"></i>
+
+                                            {{ $doc->urgencia->nombre ?? 'N/A' }}
+
+                                        </span>
+
+                                    @elseif(str_contains($u, 'alta'))
+
+                                        <span class="badge rounded-pill px-3 py-2"
+                                              style="background:#ea580c;color:#fff;">
+
+                                            <i class="bi bi-exclamation-triangle-fill me-1"></i>
+
+                                            {{ $doc->urgencia->nombre ?? 'N/A' }}
+
+                                        </span>
+
+                                    @elseif(str_contains($u, 'media') || str_contains($u, 'moder'))
+
+                                        <span class="badge rounded-pill px-3 py-2 bg-warning text-dark">
+
+                                            <i class="bi bi-exclamation-circle-fill me-1"></i>
+
+                                            {{ $doc->urgencia->nombre ?? 'N/A' }}
 
                                         </span>
 
                                     @else
 
-                                        <span class="badge bg-secondary rounded-pill">
+                                        <span class="badge rounded-pill px-3 py-2 bg-success">
+
+                                            <i class="bi bi-check-circle-fill me-1"></i>
 
                                             {{ $doc->urgencia->nombre ?? 'N/A' }}
 
@@ -318,19 +350,29 @@
                                 {{-- ACCIONES --}}
                                 <td class="text-center">
 
-                                    <div class="btn-group">
+                                    <div class="d-flex justify-content-center">
 
-                                        {{-- VER --}}
-                                       <a href="{{ route('correspondencia.show', $doc->idDocumento) }}"
-                                           class="btn btn-sm text-white"
-                                           style="background-color:#0B2D59;"
-                                           title="Ver Documento">
+                                        @if(auth()->user()->idRol == 1)
 
-                                            <i class="bi bi-eye-fill"></i>
+                                            <a href="{{ route('admin.correspondencia.show', $doc->idDocumento) }}?volver=admin"
+                                               class="btn btn-sm btn-doc btn-doc-view"
+                                               title="Ver documento">
 
-                                        </a>
+                                                <i class="bi bi-eye-fill"></i>
 
-                                      
+                                            </a>
+
+                                        @else
+
+                                            <a href="{{ route('correspondencia.show', $doc->idDocumento) }}?volver=documentos"
+                                               class="btn btn-sm btn-doc btn-doc-view"
+                                               title="Ver documento">
+
+                                                <i class="bi bi-eye-fill"></i>
+
+                                            </a>
+
+                                        @endif
 
                                     </div>
 
@@ -362,6 +404,12 @@
                     </tbody>
 
                 </table>
+
+            </div>
+
+            <div class="d-flex justify-content-center mt-3">
+
+                {{ $documentos->links() }}
 
             </div>
 

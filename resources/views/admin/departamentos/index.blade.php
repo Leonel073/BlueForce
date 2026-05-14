@@ -387,6 +387,12 @@
 
             </div>
 
+            <div class="d-flex justify-content-center mt-3">
+
+                {{ $departamentos->links() }}
+
+            </div>
+
         </div>
 
     </div>

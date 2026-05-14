@@ -66,8 +66,6 @@ use Illuminate\Support\Str;
 
                             <th>Estado</th>
 
-                            <th>Activo</th>
-
                             <th class="text-center">
 
                                 Acciones
@@ -110,11 +108,57 @@ use Illuminate\Support\Str;
 
                                 <td>
 
-                                    <span class="badge bg-danger">
+                                    @php
 
-                                        {{ $doc->urgencia->nombre ?? 'N/A' }}
+                                        $u =
+                                            strtolower(
+                                                $doc->urgencia->nombre ?? ''
+                                            );
 
-                                    </span>
+                                    @endphp
+
+                                    @if(str_contains($u, 'urg') || str_contains($u, 'crit'))
+
+                                        <span class="badge rounded-pill px-3 py-2 bg-danger">
+
+                                            <i class="bi bi-exclamation-octagon-fill me-1"></i>
+
+                                            {{ $doc->urgencia->nombre ?? 'N/A' }}
+
+                                        </span>
+
+                                    @elseif(str_contains($u, 'alta'))
+
+                                        <span class="badge rounded-pill px-3 py-2"
+                                              style="background:#ea580c;color:#fff;">
+
+                                            <i class="bi bi-exclamation-triangle-fill me-1"></i>
+
+                                            {{ $doc->urgencia->nombre ?? 'N/A' }}
+
+                                        </span>
+
+                                    @elseif(str_contains($u, 'media') || str_contains($u, 'moder'))
+
+                                        <span class="badge rounded-pill px-3 py-2 bg-warning text-dark">
+
+                                            <i class="bi bi-exclamation-circle-fill me-1"></i>
+
+                                            {{ $doc->urgencia->nombre ?? 'N/A' }}
+
+                                        </span>
+
+                                    @else
+
+                                        <span class="badge rounded-pill px-3 py-2 bg-success">
+
+                                            <i class="bi bi-check-circle-fill me-1"></i>
+
+                                            {{ $doc->urgencia->nombre ?? 'N/A' }}
+
+                                        </span>
+
+                                    @endif
 
                                 </td>
 
@@ -128,55 +172,18 @@ use Illuminate\Support\Str;
 
                                 </td>
 
-                                <td>
-
-                                    @if($doc->activo)
-
-                                        <span class="badge bg-success">
-
-                                            Activo
-
-                                        </span>
-
-                                    @else
-
-                                        <span class="badge bg-danger">
-
-                                            Archivado
-
-                                        </span>
-
-                                    @endif
-
-                                </td>
-
                                 <td class="text-center">
 
-                                    <div class="btn-group">
+                                    <div class="d-flex justify-content-center align-items-center gap-2 flex-wrap">
 
                                         {{-- EDITAR --}}
                                         <a href="{{ route('admin.documentos.edit', $doc->idDocumento) }}"
-                                           class="btn btn-warning btn-sm">
+                                           class="btn btn-sm btn-doc btn-doc-edit"
+                                           title="Editar documento">
 
                                             <i class="bi bi-pencil-fill"></i>
 
                                         </a>
-
-                                        {{-- TOGGLE --}}
-                                        <form action="{{ route('admin.documentos.toggle', $doc->idDocumento) }}"
-                                              method="POST">
-
-                                            @csrf
-                                            @method('PUT')
-
-                                            <button type="submit"
-                                                    class="btn btn-sm {{ $doc->activo ? 'btn-danger' : 'btn-success' }}">
-
-                                                <i class="bi {{ $doc->activo ? 'bi-archive-fill' : 'bi-arrow-clockwise' }}"></i>
-
-                                            </button>
-
-                                        </form>
 
                                     </div>
 
@@ -188,7 +195,7 @@ use Illuminate\Support\Str;
 
                             <tr>
 
-                                <td colspan="8"
+                                <td colspan="7"
                                     class="text-center text-muted py-5">
 
                                     No existen documentos.
@@ -202,6 +209,12 @@ use Illuminate\Support\Str;
                     </tbody>
 
                 </table>
+
+            </div>
+
+            <div class="d-flex justify-content-center mt-3">
+
+                {{ $documentos->links() }}
 
             </div>
 

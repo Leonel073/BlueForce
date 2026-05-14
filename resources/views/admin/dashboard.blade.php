@@ -519,6 +519,8 @@
 
                             <th>Destino</th>
 
+                            <th>Realizada por</th>
+
                             <th>Fecha</th>
 
                         </tr>
@@ -546,6 +548,30 @@
                                 <td>
 
                                     {{ $d->departamentoDestino->nombre ?? 'N/A' }}
+
+                                </td>
+
+                                <td>
+
+                                    @if($d->usuarioEnvio)
+
+                                        <span class="text-muted small">
+
+                                            <i class="bi bi-person-badge me-1"></i>
+
+                                            {{ $d->usuarioEnvio->name }}
+
+                                        </span>
+
+                                    @else
+
+                                        <span class="badge bg-secondary bg-opacity-25 text-secondary">
+
+                                            No registrado
+
+                                        </span>
+
+                                    @endif
 
                                 </td>
 
@@ -704,7 +730,13 @@ if (departamentosCanvas) {
 
         .then(data => {
 
-            console.log('Datos departamentos:', data);
+            if (!Array.isArray(data)) {
+
+                console.error('API departamentos: respuesta inválida', data);
+
+                return;
+
+            }
 
             new Chart(ctx, {
 

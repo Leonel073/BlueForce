@@ -278,6 +278,66 @@ body.sidebar-collapsed .main-content { margin-left: var(--sidebar-collapsed); }
 }
 .btn-sidebar-mobile:hover { background: #243554; }
 @media (max-width: 992px) { .btn-sidebar-mobile { display: flex; } }
+
+/* ── Acciones documento (estándar EPAB) ── */
+.btn-doc {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-width: 2.35rem;
+    height: 2.35rem;
+    padding: 0 0.55rem;
+    border-radius: 0.5rem;
+    border: none;
+    font-size: 0.9rem;
+    line-height: 1;
+    box-shadow: 0 2px 8px rgba(11, 45, 89, 0.18);
+    transition: transform 0.15s ease, box-shadow 0.15s ease, filter 0.15s ease;
+    text-decoration: none !important;
+}
+.btn-doc:hover:not(:disabled) {
+    transform: translateY(-1px);
+    filter: brightness(1.06);
+    box-shadow: 0 4px 12px rgba(11, 45, 89, 0.22);
+}
+.btn-doc:disabled {
+    opacity: 0.55;
+    cursor: not-allowed;
+}
+.btn-doc-view {
+    background: linear-gradient(135deg, #2E608C, #0B2D59);
+    color: #fff !important;
+}
+.btn-doc-edit {
+    background: linear-gradient(135deg, #2563eb, #1d4ed8);
+    color: #fff !important;
+}
+.btn-doc-derive {
+    background: linear-gradient(135deg, #D9A23D, #b8892a);
+    color: #1e293b !important;
+}
+.btn-doc-finalize {
+    background: linear-gradient(135deg, #0B2D59, #16477D);
+    color: #fff !important;
+}
+.btn-doc-archive {
+    background: linear-gradient(135deg, #64748b, #475569);
+    color: #fff !important;
+}
+.btn-doc-restore {
+    background: linear-gradient(135deg, #16a34a, #15803d);
+    color: #fff !important;
+}
+.btn-doc-lg {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-width: auto;
+    height: auto;
+    padding: 0.5rem 1.15rem;
+    font-size: 0.9rem;
+    gap: 0.35rem;
+}
 </style>
 </head>
 <body>

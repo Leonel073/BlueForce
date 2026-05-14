@@ -75,21 +75,6 @@
 
                 </div>
 
-                {{-- DESCRIPCIÓN --}}
-                <div class="mb-4">
-
-                    <label class="form-label fw-semibold">
-
-                        Descripción
-
-                    </label>
-
-                    <textarea name="descripcion"
-                              rows="4"
-                              class="form-control"></textarea>
-
-                </div>
-
                 {{-- BUSCADOR --}}
                 <div class="mb-3">
 

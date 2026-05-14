@@ -22,8 +22,14 @@
                         Administración institucional de personas registradas
                     </p>
                 </div>
-                <a href="{{ route('admin.personas.create') }}" class="btn btn-light btn-lg">
-                    <i class="bi bi-plus-circle-fill"></i> Nueva Persona
+                <a href="{{ route('admin.personas.create') }}"
+                   class="btn text-white rounded-4 px-4 shadow-sm"
+                   style="background: linear-gradient(135deg,#D9A23D,#BF8A2E); border:none;">
+
+                    <i class="bi bi-plus-circle-fill me-1"></i>
+
+                    Nueva Persona
+
                 </a>
             </div>
 
@@ -34,20 +40,44 @@
     {{-- TABS --}}
     <div class="card border-0 shadow-lg rounded-4">
 
-        <ul class="nav nav-tabs card-header rounded-top-4" role="tablist" style="background-color:#0B2D59; border-bottom: 2px solid #ddd;">
-            
+        <ul class="nav nav-tabs card-header border-0 rounded-top-4 px-2 pt-2 gap-1"
+            role="tablist"
+            style="background: linear-gradient(135deg,#0B2D59,#2E608C);">
+
             <li class="nav-item" role="presentation">
-                <button class="nav-link active text-white fw-bold" id="trabajadores-tab" data-bs-toggle="tab" 
-                        data-bs-target="#trabajadores" type="button" role="tab">
-                    <i class="bi bi-briefcase-fill"></i> Trabajadores ({{ $personas->filter(fn($p) => !is_null($p->idDepartamento) && is_null($p->fecha_deshabilitacion))->count() }})
+
+                <button class="nav-link active fw-semibold rounded-top-3 text-white"
+                        id="trabajadores-tab"
+                        data-bs-toggle="tab"
+                        data-bs-target="#trabajadores"
+                        type="button"
+                        role="tab"
+                        style="border: none;">
+
+                    <i class="bi bi-briefcase-fill me-1"></i>
+
+                    Trabajadores ({{ $personas->filter(fn($p) => !is_null($p->idDepartamento) && is_null($p->fecha_deshabilitacion))->count() }})
+
                 </button>
+
             </li>
 
             <li class="nav-item" role="presentation">
-                <button class="nav-link text-white fw-bold" id="remitentes-tab" data-bs-toggle="tab" 
-                        data-bs-target="#remitentes" type="button" role="tab">
-                    <i class="bi bi-send-fill"></i> Remitentes ({{ $personas->filter(fn($p) => is_null($p->idDepartamento) && is_null($p->fecha_deshabilitacion))->count() }})
+
+                <button class="nav-link fw-semibold rounded-top-3 text-white-50"
+                        id="remitentes-tab"
+                        data-bs-toggle="tab"
+                        data-bs-target="#remitentes"
+                        type="button"
+                        role="tab"
+                        style="border: none;">
+
+                    <i class="bi bi-send-fill me-1"></i>
+
+                    Remitentes ({{ $personas->filter(fn($p) => is_null($p->idDepartamento) && is_null($p->fecha_deshabilitacion))->count() }})
+
                 </button>
+
             </li>
 
         </ul>
@@ -60,37 +90,97 @@
                 <h5 class="mb-4">Personal que trabaja en la institución</h5>
 
                 {{-- FILTROS --}}
-                <div class="row mb-4">
-                    <div class="col-md-2">
-                        <input type="text" class="form-control" id="filtro-ci" placeholder="Filtrar por CI">
+                <div class="rounded-4 border bg-light p-3 mb-4">
+
+                    <div class="row g-2 g-md-3 align-items-end">
+
+                        <div class="col-md-2">
+
+                            <label class="form-label small text-muted mb-0">CI</label>
+
+                            <input type="text"
+                                   class="form-control form-control-sm rounded-3"
+                                   id="filtro-ci"
+                                   placeholder="Filtrar por CI">
+
+                        </div>
+
+                        <div class="col-md-2">
+
+                            <label class="form-label small text-muted mb-0">Nombre</label>
+
+                            <input type="text"
+                                   class="form-control form-control-sm rounded-3"
+                                   id="filtro-nombre"
+                                   placeholder="Nombre">
+
+                        </div>
+
+                        <div class="col-md-2">
+
+                            <label class="form-label small text-muted mb-0">Departamento</label>
+
+                            <select class="form-select form-select-sm rounded-3"
+                                    id="filtro-departamento">
+
+                                <option value="">Todos</option>
+
+                                @foreach($personas->pluck('departamento')->filter()->unique('idDepartamento') as $depto)
+
+                                    <option value="{{ $depto->idDepartamento }}">{{ $depto->nombre }}</option>
+
+                                @endforeach
+
+                            </select>
+
+                        </div>
+
+                        <div class="col-md-2">
+
+                            <label class="form-label small text-muted mb-0">Celular</label>
+
+                            <input type="text"
+                                   class="form-control form-control-sm rounded-3"
+                                   id="filtro-celular"
+                                   placeholder="Celular">
+
+                        </div>
+
+                        <div class="col-md-2">
+
+                            <label class="form-label small text-muted mb-0">Cargo</label>
+
+                            <select class="form-select form-select-sm rounded-3"
+                                    id="filtro-cargo">
+
+                                <option value="">Todos</option>
+
+                                @foreach($personas->pluck('cargo')->filter()->unique('idCargo') as $cargo)
+
+                                    <option value="{{ $cargo->idCargo }}">{{ $cargo->nombre }}</option>
+
+                                @endforeach
+
+                            </select>
+
+                        </div>
+
+                        <div class="col-md-2">
+
+                            <button type="button"
+                                    class="btn btn-sm btn-outline-secondary rounded-3 w-100"
+                                    id="btn-limpiar-filtros">
+
+                                <i class="bi bi-arrow-clockwise me-1"></i>
+
+                                Limpiar
+
+                            </button>
+
+                        </div>
+
                     </div>
-                    <div class="col-md-2">
-                        <input type="text" class="form-control" id="filtro-nombre" placeholder="Filtrar por Nombre">
-                    </div>
-                    <div class="col-md-2">
-                        <select class="form-control" id="filtro-departamento">
-                            <option value="">-- Departamento --</option>
-                            @foreach($personas->pluck('departamento')->filter()->unique('idDepartamento') as $depto)
-                                <option value="{{ $depto->idDepartamento }}">{{ $depto->nombre }}</option>
-                            @endforeach
-                        </select>
-                    </div>
-                    <div class="col-md-2">
-                        <input type="text" class="form-control" id="filtro-celular" placeholder="Filtrar por Celular">
-                    </div>
-                    <div class="col-md-2">
-                        <select class="form-control" id="filtro-cargo">
-                            <option value="">-- Cargo --</option>
-                            @foreach($personas->pluck('cargo')->filter()->unique('idCargo') as $cargo)
-                                <option value="{{ $cargo->idCargo }}">{{ $cargo->nombre }}</option>
-                            @endforeach
-                        </select>
-                    </div>
-                    <div class="col-md-2">
-                        <button class="btn btn-sm btn-outline-primary w-100" id="btn-limpiar-filtros">
-                            <i class="bi bi-arrow-clockwise"></i> Limpiar
-                        </button>
-                    </div>
+
                 </div>
 
                 {{-- TABLA TRABAJADORES --}}
@@ -131,25 +221,37 @@
                                         @endif
                                     </td>
                                     <td class="text-center">
-                                        <div class="btn-group btn-group-sm" role="group">
-                                            {{-- EDIT --}}
-                                            <a href="{{ route('admin.personas.edit', $persona->idPersona) }}" 
-                                               class="btn btn-outline-primary">
+
+                                        <div class="d-flex justify-content-center gap-2 flex-wrap">
+
+                                            <a href="{{ route('admin.personas.edit', $persona->idPersona) }}"
+                                               class="btn btn-sm btn-doc btn-doc-edit"
+                                               title="Editar">
+
                                                 <i class="bi bi-pencil-fill"></i>
+
                                             </a>
 
-                                            {{-- TOGGLE --}}
                                             <form action="{{ route('admin.personas.toggle', $persona->idPersona) }}"
-                                                  method="POST" style="display:inline;">
+                                                  method="POST"
+                                                  class="d-inline"
+                                                  onsubmit="return confirm('¿Confirmar cambio de estado?');">
+
                                                 @csrf
                                                 @method('PUT')
+
                                                 <button type="submit"
-                                                        class="btn btn-sm {{ $persona->activo ? 'btn-outline-danger' : 'btn-outline-success' }}"
-                                                        onclick="return confirm('¿Confirmar cambio de estado?')">
+                                                        class="btn btn-sm btn-doc {{ $persona->activo ? 'btn-doc-archive' : 'btn-doc-restore' }}"
+                                                        title="{{ $persona->activo ? 'Desactivar' : 'Activar' }}">
+
                                                     <i class="bi {{ $persona->activo ? 'bi-x-circle' : 'bi-check-circle' }}"></i>
+
                                                 </button>
+
                                             </form>
+
                                         </div>
+
                                     </td>
                                 </tr>
                             @empty
@@ -202,10 +304,15 @@
                                         @endif
                                     </td>
                                     <td class="text-center">
-                                        <a href="{{ route('admin.personas.edit', $persona->idPersona) }}" 
-                                           class="btn btn-sm btn-outline-primary">
-                                            <i class="bi bi-pencil-fill"></i> Editar
+
+                                        <a href="{{ route('admin.personas.edit', $persona->idPersona) }}"
+                                           class="btn btn-sm btn-doc btn-doc-edit"
+                                           title="Editar">
+
+                                            <i class="bi bi-pencil-fill"></i>
+
                                         </a>
+
                                     </td>
                                 </tr>
                             @empty

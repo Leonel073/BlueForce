@@ -4,6 +4,36 @@
 
 @section('content')
 
+@php
+
+    $volverMap = [
+
+        'bandeja' => route('envios.bandeja'),
+
+        'envios' => route('envios.index'),
+
+        'documentos' => route('documentos.index'),
+
+        'correspondencia' => route('correspondencia.index'),
+
+        'admin' => route('admin.correspondencia'),
+
+    ];
+
+    $volverKey = request()->query('volver');
+
+    $volverUrl = $volverMap[$volverKey] ?? (
+
+        request()->routeIs('admin.correspondencia.show')
+
+            ? route('admin.correspondencia')
+
+            : route('correspondencia.index')
+
+    );
+
+@endphp
+
 <div class="container-fluid py-4">
 
     {{-- HEADER --}}
@@ -32,7 +62,7 @@
 
                 </div>
 
-                <a href="{{ route('admin.correspondencia') }}"
+                <a href="{{ $volverUrl }}"
                    class="btn btn-light rounded-4">
 
                     <i class="bi bi-arrow-left"></i>
@@ -167,11 +197,49 @@
 
                             <div>
 
-                                <span class="badge bg-danger">
+                                @php
 
-                                    {{ $documento->urgencia->nombre ?? 'N/A' }}
+                                    $u =
+                                        strtolower(
+                                            $documento->urgencia->nombre ?? ''
+                                        );
 
-                                </span>
+                                @endphp
+
+                                @if(str_contains($u, 'urg') || str_contains($u, 'crit'))
+
+                                    <span class="badge bg-danger rounded-pill px-3 py-2">
+
+                                        {{ $documento->urgencia->nombre ?? 'N/A' }}
+
+                                    </span>
+
+                                @elseif(str_contains($u, 'alta'))
+
+                                    <span class="badge rounded-pill px-3 py-2"
+                                          style="background:#ea580c;color:#fff;">
+
+                                        {{ $documento->urgencia->nombre ?? 'N/A' }}
+
+                                    </span>
+
+                                @elseif(str_contains($u, 'media') || str_contains($u, 'moder'))
+
+                                    <span class="badge bg-warning text-dark rounded-pill px-3 py-2">
+
+                                        {{ $documento->urgencia->nombre ?? 'N/A' }}
+
+                                    </span>
+
+                                @else
+
+                                    <span class="badge bg-success rounded-pill px-3 py-2">
+
+                                        {{ $documento->urgencia->nombre ?? 'N/A' }}
+
+                                    </span>
+
+                                @endif
 
                             </div>
 
@@ -195,33 +263,155 @@
 
                 <div class="card-body">
 
-                    @forelse($documento->seguimientos as $seguimiento)
+                    @php
 
-                        <div class="border-start border-4 border-primary ps-3 mb-4">
+                        $nombresDeptosDerivacion =
+                            $documento->derivaciones
+                                ->flatMap(function ($d) {
+                                    return [
+                                        strtolower(
+                                            trim(
+                                                $d->departamentoOrigen->nombre ?? ''
+                                            )
+                                        ),
+                                        strtolower(
+                                            trim(
+                                                $d->departamentoDestino->nombre ?? ''
+                                            )
+                                        ),
+                                    ];
+                                })
+                                ->filter()
+                                ->unique();
 
-                            <h6 class="fw-bold">
+                        $seguimientosVisibles =
+                            $documento->seguimientos->filter(
+                                function ($s) use ($nombresDeptosDerivacion) {
 
-                                {{ $seguimiento->ubicacion }}
+                                    $loc =
+                                        strtolower(
+                                            trim($s->ubicacion ?? '')
+                                        );
 
-                            </h6>
+                                    if ($loc === '') {
+                                        return false;
+                                    }
 
-                            <small class="text-muted">
+                                    if (
+                                        str_contains($loc, 'derivado')
+                                        || str_contains($loc, 'derivación')
+                                    ) {
+                                        return false;
+                                    }
 
-                                {{ \Carbon\Carbon::parse($seguimiento->fecha)->format('d/m/Y H:i') }}
+                                    if (
+                                        $nombresDeptosDerivacion->contains(
+                                            $loc
+                                        )
+                                    ) {
+                                        return false;
+                                    }
 
-                            </small>
+                                    return true;
+
+                                }
+                            );
+
+                    @endphp
+
+                    @if($seguimientosVisibles->isNotEmpty())
+
+                        @foreach($seguimientosVisibles as $seguimiento)
+
+                            <div class="border-start border-4 border-primary ps-3 mb-4">
+
+                                <h6 class="fw-bold">
+
+                                    {{ $seguimiento->ubicacion }}
+
+                                </h6>
+
+                                <small class="text-muted">
+
+                                    {{ \Carbon\Carbon::parse($seguimiento->fecha)->format('d/m/Y H:i') }}
+
+                                </small>
+
+                            </div>
+
+                        @endforeach
+
+                    @elseif($documento->derivaciones->isEmpty())
+
+                        <div class="text-muted text-center py-2 small">
+
+                            No hay movimientos de seguimiento registrados.
 
                         </div>
 
-                    @empty
+                    @endif
 
-                        <div class="text-muted text-center py-4">
+                    @if($documento->derivaciones->isNotEmpty())
 
-                            No existe seguimiento registrado.
+                        @if($seguimientosVisibles->isNotEmpty())
 
-                        </div>
+                            <hr class="my-4">
 
-                    @endforelse
+                        @endif
+
+                        <h6 class="fw-bold mb-3" style="color:#0B2D59;">
+
+                            <i class="bi bi-arrow-left-right me-2"></i>
+
+                            Derivaciones del documento
+
+                        </h6>
+
+                        @foreach($documento->derivaciones->sortBy('orden') as $der)
+
+                            <div class="border-start border-4 border-warning ps-3 mb-4 pb-1">
+
+                                <div class="small text-muted mb-1">
+
+                                    {{ \Carbon\Carbon::parse($der->fechaEnvio)->format('d/m/Y H:i') }}
+
+                                </div>
+
+                                <div class="fw-semibold">
+
+                                    {{ $der->departamentoOrigen->nombre ?? 'N/A' }}
+
+                                    <i class="bi bi-arrow-right mx-1 text-muted"></i>
+
+                                    {{ $der->departamentoDestino->nombre ?? 'N/A' }}
+
+                                </div>
+
+                                <div class="mt-2 small">
+
+                                    <span class="text-muted">Derivado por:</span>
+
+                                    @if($der->usuarioEnvio)
+
+                                        <strong>{{ $der->usuarioEnvio->name }}</strong>
+
+                                    @else
+
+                                        <span class="badge bg-secondary bg-opacity-50 text-dark">
+
+                                            No registrado
+
+                                        </span>
+
+                                    @endif
+
+                                </div>
+
+                            </div>
+
+                        @endforeach
+
+                    @endif
 
                 </div>
 

@@ -104,73 +104,51 @@ class CorrespondenciaController extends Controller
         |--------------------------------------------------------------------------
         */
 
-        if ($usuario->idRol == 1) {
+        if ($usuario->idRol != 1) {
 
-            $documentos = $query
-                ->orderByDesc('fecha')
-                ->get();
+            $query->where('activo', 1);
 
         }
 
-        /*
-        |--------------------------------------------------------------------------
-        | USER VE DOCUMENTOS ACTIVOS
-        |--------------------------------------------------------------------------
-        */
+        $totalDocumentos = (clone $query)->count();
 
-        else {
+        $pendientes = (clone $query)
 
-            $documentos = $query
-                ->where('activo', 1)
-                ->orderByDesc('fecha')
-                ->get();
+            ->whereHas('estado', function ($q) {
 
-        }
+                $q->whereRaw('LOWER(nombre) = ?', ['pendiente']);
 
-        /*
-        |--------------------------------------------------------------------------
-        | CONTADORES
-        |--------------------------------------------------------------------------
-        */
+            })
 
-        $totalDocumentos =
-            $documentos->count();
+            ->count();
 
-        $pendientes =
-            $documentos
-                ->filter(function ($doc) {
+        $finalizados = (clone $query)
 
-                    return strtolower(
-                        $doc->estado->nombre ?? ''
-                    ) == 'pendiente';
+            ->whereHas('estado', function ($q) {
 
-                })
-                ->count();
+                $q->whereRaw('LOWER(nombre) = ?', ['finalizado']);
 
-        $finalizados =
-            $documentos
-                ->filter(function ($doc) {
+            })
 
-                    return strtolower(
-                        $doc->estado->nombre ?? ''
-                    ) == 'finalizado';
+            ->count();
 
-                })
-                ->count();
+        $urgentes = (clone $query)
 
-        $urgentes =
-            $documentos
-                ->filter(function ($doc) {
+            ->whereHas('urgencia', function ($q) {
 
-                    return str_contains(
-                        strtolower(
-                            $doc->urgencia->nombre ?? ''
-                        ),
-                        'alta'
-                    );
+                $q->whereRaw('LOWER(nombre) LIKE ?', ['%alta%']);
 
-                })
-                ->count();
+            })
+
+            ->count();
+
+        $documentos = (clone $query)
+
+            ->orderByDesc('fecha')
+
+            ->paginate(20)
+
+            ->withQueryString();
 
         /*
         |--------------------------------------------------------------------------
@@ -220,7 +198,7 @@ class CorrespondenciaController extends Controller
 
             'derivaciones.departamentoOrigen',
             'derivaciones.departamentoDestino',
-           
+            'derivaciones.usuarioEnvio:id,name',
 
             'seguimientos'
 
@@ -378,6 +356,9 @@ class CorrespondenciaController extends Controller
 
             'idUsuarioAsignado'
                 => $request->idUsuarioAsignado,
+
+            'idUsuarioEnvio'
+                => Auth::id(),
 
             'instruccion'
                 => $request->instruccion,

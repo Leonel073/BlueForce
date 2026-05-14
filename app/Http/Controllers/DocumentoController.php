@@ -82,7 +82,7 @@ public function index()
     */
 
     return view(
-        'user.correspondencia.index',
+        'correspondencia.index',
         compact(
             'documentos',
             'totalDocumentos',
@@ -326,6 +326,9 @@ public function index()
                 'idUsuarioAsignado' =>
                     Auth::id(),
 
+                'idUsuarioEnvio' =>
+                    Auth::id(),
+
                 'instruccion' =>
                     e('Derivación automática inicial'),
 
@@ -475,7 +478,8 @@ public function index()
 
         ])
         ->orderByDesc('idDocumento')
-        ->get();
+        ->paginate(20)
+        ->withQueryString();
 
         return view(
             'admin.documentos.index',

@@ -44,7 +44,7 @@
 
                         <div class="fs-3 fw-bold text-warning">
 
-                            {{ $documentos->count() }}
+                            {{ $documentos->total() }}
 
                         </div>
 
@@ -90,6 +90,125 @@
         </div>
 
     @endif
+
+    {{-- FILTROS --}}
+    <div class="card border-0 shadow-sm rounded-4 mb-4">
+
+        <div class="card-body">
+
+            <form method="GET"
+                  action="{{ route('envios.bandeja') }}"
+                  class="row g-3 align-items-end">
+
+                <div class="col-lg-4 col-md-6">
+
+                    <label class="form-label small text-muted mb-1">Buscar</label>
+
+                    <input type="text"
+                           name="buscar"
+                           value="{{ request('buscar') }}"
+                           class="form-control rounded-3"
+                           placeholder="Cite o asunto">
+
+                </div>
+
+                <div class="col-lg-3 col-md-6">
+
+                    <label class="form-label small text-muted mb-1">Departamento (derivación)</label>
+
+                    <select name="idDepartamentoDestino"
+                            class="form-select rounded-3">
+
+                        <option value="">Todos</option>
+
+                        @foreach($departamentos as $dep)
+
+                            <option value="{{ $dep->idDepartamento }}"
+                                @selected(request('idDepartamentoDestino') == $dep->idDepartamento)>
+
+                                {{ $dep->nombre }}
+
+                            </option>
+
+                        @endforeach
+
+                    </select>
+
+                </div>
+
+                <div class="col-lg-2 col-md-6">
+
+                    <label class="form-label small text-muted mb-1">Estado</label>
+
+                    <select name="idEstado"
+                            class="form-select rounded-3">
+
+                        <option value="">Todos</option>
+
+                        @foreach($estados as $est)
+
+                            <option value="{{ $est->idEstado }}"
+                                @selected(request('idEstado') == $est->idEstado)>
+
+                                {{ $est->nombre }}
+
+                            </option>
+
+                        @endforeach
+
+                    </select>
+
+                </div>
+
+                <div class="col-lg-2 col-md-6">
+
+                    <label class="form-label small text-muted mb-1">Urgencia</label>
+
+                    <select name="idUrgencia"
+                            class="form-select rounded-3">
+
+                        <option value="">Todas</option>
+
+                        @foreach($urgencias as $urg)
+
+                            <option value="{{ $urg->idUrgencia }}"
+                                @selected(request('idUrgencia') == $urg->idUrgencia)>
+
+                                {{ $urg->nombre }}
+
+                            </option>
+
+                        @endforeach
+
+                    </select>
+
+                </div>
+
+                <div class="col-lg-1 col-md-6 d-flex gap-2">
+
+                    <button type="submit"
+                            class="btn text-white rounded-3 flex-grow-1"
+                            style="background-color:#0B2D59;">
+
+                        <i class="bi bi-funnel-fill"></i>
+
+                    </button>
+
+                    <a href="{{ route('envios.bandeja') }}"
+                       class="btn btn-outline-secondary rounded-3"
+                       title="Limpiar">
+
+                        <i class="bi bi-x-lg"></i>
+
+                    </a>
+
+                </div>
+
+            </form>
+
+        </div>
+
+    </div>
 
     {{-- TABLA --}}
     <div class="card border-0 shadow-lg rounded-4 overflow-hidden">
@@ -241,9 +360,20 @@
                                 {{-- URGENCIA --}}
                                 <td class="text-center">
 
-                                    @if(str_contains($urgencia, 'alta'))
+                                    @if(str_contains($urgencia, 'urg') || str_contains($urgencia, 'crit'))
 
                                         <span class="badge bg-danger rounded-pill px-3 py-2">
+
+                                            <i class="bi bi-exclamation-octagon-fill me-1"></i>
+
+                                            {{ $doc->urgencia->nombre }}
+
+                                        </span>
+
+                                    @elseif(str_contains($urgencia, 'alta'))
+
+                                        <span class="badge rounded-pill px-3 py-2"
+                                              style="background:#ea580c;color:#fff;">
 
                                             <i class="bi bi-exclamation-triangle-fill me-1"></i>
 
@@ -251,7 +381,7 @@
 
                                         </span>
 
-                                    @elseif(str_contains($urgencia, 'media'))
+                                    @elseif(str_contains($urgencia, 'media') || str_contains($urgencia, 'moder'))
 
                                         <span class="badge bg-warning text-dark rounded-pill px-3 py-2">
 
@@ -309,9 +439,8 @@
                                     <div class="d-flex justify-content-center flex-wrap gap-2">
 
                                         {{-- VER --}}
-                                        <a href="{{ route('admin.correspondencia.show', $doc->idDocumento) }}"
-                                           class="btn btn-sm rounded-3 text-white shadow-sm"
-                                           style="background-color:#2E608C;"
+                                        <a href="{{ route('admin.correspondencia.show', $doc->idDocumento) }}?volver=bandeja"
+                                           class="btn btn-sm btn-doc btn-doc-view"
                                            title="Ver detalle">
 
                                             <i class="bi bi-eye-fill"></i>
@@ -321,10 +450,9 @@
                                         {{-- DERIVAR --}}
                                         @if(!$bloqueado)
 
-                                            <a href="{{ route('envios.derivar.form', $doc->idDocumento) }}"
-                                            class="btn btn-sm rounded-3 shadow-sm text-dark"
-                                            style="background-color:#D9A23D;"
-                                            title="Derivar documento">
+                                            <a href="{{ route('envios.derivar.form', $doc->idDocumento) }}?volver=bandeja"
+                                               class="btn btn-sm btn-doc btn-doc-derive"
+                                               title="Derivar documento">
 
                                                 <i class="bi bi-arrow-left-right"></i>
 
@@ -332,7 +460,8 @@
 
                                         @else
 
-                                            <button class="btn btn-sm rounded-3 btn-secondary shadow-sm"
+                                            <button type="button"
+                                                    class="btn btn-sm btn-doc btn-doc-archive"
                                                     disabled
                                                     title="Documento archivado o finalizado">
 
@@ -346,8 +475,7 @@
                                         @if(!$bloqueado)
 
                                             <button type="button"
-                                                    class="btn btn-sm rounded-3 text-white shadow-sm"
-                                                    style="background: linear-gradient(135deg,#0B2D59,#16477D);"
+                                                    class="btn btn-sm btn-doc btn-doc-finalize"
                                                     data-bs-toggle="modal"
                                                     data-bs-target="#modalFinalizar{{ $doc->idDocumento }}"
                                                     title="Finalizar documento">
@@ -447,10 +575,9 @@
                                                     @method('PUT')
 
                                                     <button type="submit"
-                                                            class="btn text-white rounded-3 px-4"
-                                                            style="background-color:#0B2D59;">
+                                                            class="btn btn-doc btn-doc-finalize btn-doc-lg rounded-3">
 
-                                                        <i class="bi bi-check-circle-fill me-1"></i>
+                                                        <i class="bi bi-check-circle-fill"></i>
 
                                                         Finalizar
 
@@ -496,6 +623,12 @@
                     </tbody>
 
                 </table>
+
+            </div>
+
+            <div class="d-flex justify-content-center mt-3">
+
+                {{ $documentos->links() }}
 
             </div>
 

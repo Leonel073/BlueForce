@@ -141,42 +141,6 @@
 
                 </div>
 
-                {{-- BUSCADOR REMITENTE --}}
-                <div class="card border-0 shadow-sm rounded-4 mb-4">
-
-                    <div class="card-header text-white rounded-top-4"
-                         style="background-color:#0B2D59;">
-
-                        Buscar Remitente
-
-                    </div>
-
-                    <div class="card-body">
-
-                        <label class="form-label fw-semibold">
-
-                            Buscar por nombre o carnet
-
-                        </label>
-
-                        <input type="text"
-                               id="buscar_remitente"
-                               class="form-control"
-                               placeholder="Ej: Juan o 1234567"
-                               autocomplete="off"
-                               {{ $documentoBloqueado ? 'disabled' : '' }}>
-
-                        {{-- RESULTADOS --}}
-                        <div id="resultadoBusqueda"
-                             class="list-group mt-2"
-                             style="max-height:250px; overflow-y:auto;">
-
-                        </div>
-
-                    </div>
-
-                </div>
-
                 <div class="row">
 
                     {{-- REMITENTE --}}
@@ -330,85 +294,5 @@
     </div>
 
 </div>
-
-@if(!$documentoBloqueado)
-
-<script>
-
-const inputBusqueda =
-    document.getElementById('buscar_remitente');
-
-const resultadoBusqueda =
-    document.getElementById('resultadoBusqueda');
-
-const selectRemitente =
-    document.querySelector('select[name="idRemitente"]');
-
-inputBusqueda.addEventListener('keyup', function () {
-
-    let valor = this.value.trim();
-
-    if(valor.length < 2)
-    {
-        resultadoBusqueda.innerHTML = '';
-        return;
-    }
-
-    fetch(`/admin/personas/buscar?q=${valor}`)
-
-    .then(response => response.json())
-
-    .then(data => {
-
-        resultadoBusqueda.innerHTML = '';
-
-        if(data.length === 0)
-        {
-            resultadoBusqueda.innerHTML = `
-                <div class="list-group-item">
-                    Sin coincidencias
-                </div>
-            `;
-            return;
-        }
-
-        data.forEach(persona => {
-
-            let item = document.createElement('button');
-
-            item.type = 'button';
-
-            item.className =
-                'list-group-item list-group-item-action';
-
-            item.innerHTML = `
-                <strong>${persona.nombre}</strong><br>
-                <small>
-                    CI: ${persona.ci}
-                </small>
-            `;
-
-            item.addEventListener('click', function () {
-
-                selectRemitente.value =
-                    persona.idPersona;
-
-                resultadoBusqueda.innerHTML = '';
-
-                inputBusqueda.value =
-                    persona.nombre;
-            });
-
-            resultadoBusqueda.appendChild(item);
-
-        });
-
-    });
-
-});
-
-</script>
-
-@endif
 
 @endsection

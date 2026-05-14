@@ -8,8 +8,11 @@ use Illuminate\Support\Facades\Auth;
 use App\Models\Correspondencia;
 use App\Models\Departamento;
 use App\Models\Derivacion;
-use App\Models\Seguimiento;
 use App\Models\EstadoDocumento;
+use App\Models\NivelUrgencia;
+use App\Models\Persona;
+use App\Models\Seguimiento;
+use App\Models\User;
 
 class EnvioController extends Controller
 {
@@ -19,15 +22,9 @@ class EnvioController extends Controller
     |--------------------------------------------------------------------------
     */
 
-public function index()
+public function index(Request $request)
 {
-    /*
-    |--------------------------------------------------------------------------
-    | DERIVACIONES GENERALES
-    |--------------------------------------------------------------------------
-    */
-
-    $derivaciones = Derivacion::with([
+    $query = Derivacion::with([
 
         'documento.estado',
         'documento.urgencia',
@@ -37,30 +34,88 @@ public function index()
         'departamentoDestino',
 
     ])
-    ->orderByDesc('fechaEnvio')
-    ->get();
+        ->orderByDesc('fechaEnvio');
 
-    /*
-    |--------------------------------------------------------------------------
-    | ESTADÍSTICAS
-    |--------------------------------------------------------------------------
-    */
+    if ($request->filled('buscar')) {
 
-    $totalDocumentos = $derivaciones->count();
+        $b = trim($request->buscar);
 
-    $enTransito = $derivaciones
-        ->whereNull('fechaRecepcion')
-        ->count();
+        $query->whereHas('documento', function ($q) use ($b) {
 
-    $recibidos = $derivaciones
-        ->whereNotNull('fechaRecepcion')
-        ->count();
+            $q->where('cite', 'LIKE', '%' . $b . '%')
+                ->orWhere('asunto', 'LIKE', '%' . $b . '%');
 
-    /*
-    |--------------------------------------------------------------------------
-    | RETORNO
-    |--------------------------------------------------------------------------
-    */
+        });
+
+    }
+
+    if ($request->filled('idDepartamentoDestino')) {
+
+        $query->where(
+            'idDepartamentoDestino',
+            $request->idDepartamentoDestino
+        );
+
+    }
+
+    if ($request->filled('idDepartamentoOrigen')) {
+
+        $query->where(
+            'idDepartamentoOrigen',
+            $request->idDepartamentoOrigen
+        );
+
+    }
+
+    if ($request->filled('transito')) {
+
+        if ($request->transito === '1') {
+
+            $query->whereNull('fechaRecepcion');
+
+        } elseif ($request->transito === '0') {
+
+            $query->whereNotNull('fechaRecepcion');
+
+        }
+
+    }
+
+    if ($request->filled('idEstado')) {
+
+        $query->whereHas('documento', function ($q) use ($request) {
+
+            $q->where('idEstado', $request->idEstado);
+
+        });
+
+    }
+
+    if ($request->filled('idUrgencia')) {
+
+        $query->whereHas('documento', function ($q) use ($request) {
+
+            $q->where('idUrgencia', $request->idUrgencia);
+
+        });
+
+    }
+
+    $totalDocumentos = (clone $query)->count();
+
+    $enTransito = (clone $query)->whereNull('fechaRecepcion')->count();
+
+    $recibidos = (clone $query)->whereNotNull('fechaRecepcion')->count();
+
+    $derivaciones = $query->paginate(20)->withQueryString();
+
+    $departamentos = Departamento::where('activo', true)
+        ->orderBy('nombre')
+        ->get();
+
+    $estados = EstadoDocumento::orderBy('nombre')->get();
+
+    $urgencias = NivelUrgencia::orderBy('nombre')->get();
 
     return view(
         'envio.index',
@@ -68,7 +123,10 @@ public function index()
             'derivaciones',
             'totalDocumentos',
             'enTransito',
-            'recibidos'
+            'recibidos',
+            'departamentos',
+            'estados',
+            'urgencias'
         )
     );
 }
@@ -79,9 +137,9 @@ public function index()
     |--------------------------------------------------------------------------
     */
 
-    public function bandeja()
+    public function bandeja(Request $request)
     {
-        $documentos = Correspondencia::with([
+        $query = Correspondencia::with([
 
             'estado',
             'urgencia',
@@ -90,12 +148,63 @@ public function index()
             'ultimaDerivacion.departamentoDestino',
 
         ])
-        ->orderByDesc('idDocumento')
-        ->get();
+            ->orderByDesc('idDocumento');
+
+        if ($request->filled('buscar')) {
+
+            $b = trim($request->buscar);
+
+            $query->where(function ($q) use ($b) {
+
+                $q->where('cite', 'LIKE', '%' . $b . '%')
+                    ->orWhere('asunto', 'LIKE', '%' . $b . '%');
+
+            });
+
+        }
+
+        if ($request->filled('idEstado')) {
+
+            $query->where('idEstado', $request->idEstado);
+
+        }
+
+        if ($request->filled('idUrgencia')) {
+
+            $query->where('idUrgencia', $request->idUrgencia);
+
+        }
+
+        if ($request->filled('idDepartamentoDestino')) {
+
+            $idDep = $request->idDepartamentoDestino;
+
+            $query->whereHas('derivaciones', function ($q) use ($idDep) {
+
+                $q->where('idDepartamentoDestino', $idDep);
+
+            });
+
+        }
+
+        $documentos = $query->paginate(20)->withQueryString();
+
+        $estados = EstadoDocumento::orderBy('nombre')->get();
+
+        $urgencias = NivelUrgencia::orderBy('nombre')->get();
+
+        $departamentos = Departamento::where('activo', true)
+            ->orderBy('nombre')
+            ->get();
 
         return view(
             'envio.bandeja',
-            compact('documentos')
+            compact(
+                'documentos',
+                'estados',
+                'urgencias',
+                'departamentos'
+            )
         );
     }
 
@@ -111,6 +220,7 @@ public function index()
 
             'derivaciones.departamentoOrigen',
             'derivaciones.departamentoDestino',
+            'derivaciones.usuarioAsignado.persona',
 
         ])->findOrFail($id);
 
@@ -143,6 +253,9 @@ public function index()
 
             'idDepartamentoDestino' =>
                 'required|exists:DEPARTAMENTO,idDepartamento',
+
+            'idPersonaResponsable' =>
+                'nullable|exists:PERSONA,idPersona',
 
             'instruccion' =>
                 'nullable|string|max:1000',
@@ -186,6 +299,37 @@ public function index()
                     'error',
                     'El documento ya se encuentra en ese departamento.'
                 );
+        }
+
+        $idUsuarioAsignado = null;
+
+        if ($request->filled('idPersonaResponsable'))
+        {
+            $personaResponsable = Persona::where(
+                'idPersona',
+                $request->idPersonaResponsable
+            )
+                ->where('idDepartamento', $request->idDepartamentoDestino)
+                ->where('tipo', 'INTERNO')
+                ->where('activo', true)
+                ->first();
+
+            if (!$personaResponsable)
+            {
+                return back()
+                    ->withInput()
+                    ->with(
+                        'error',
+                        'La persona seleccionada no es un responsable válido del departamento destino.'
+                    );
+            }
+
+            $idUsuarioAsignado = User::where(
+                'idPersona',
+                $personaResponsable->idPersona
+            )
+                ->where('activo', true)
+                ->value('id');
         }
 
         /*
@@ -242,6 +386,12 @@ public function index()
 
             'idDepartamentoDestino' =>
                 $request->idDepartamentoDestino,
+
+            'idUsuarioAsignado' =>
+                $idUsuarioAsignado,
+
+            'idUsuarioEnvio' =>
+                Auth::id(),
 
             'instruccion' =>
                 $request->instruccion,

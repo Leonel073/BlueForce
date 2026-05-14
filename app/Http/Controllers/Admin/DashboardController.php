@@ -176,26 +176,21 @@ class DashboardController extends Controller
 
         $departamentosActivos = Cache::remember(
 
-            'dashboard.departamentos_activos',
+            'dashboard.departamentos_activos_v2',
 
             self::CACHE_TTL,
 
             function () {
 
-                return Derivacion::select(
+                $filas = Derivacion::query()
 
-                        'idDepartamentoDestino',
-
-                        DB::raw('COUNT(*) as total')
-
+                    ->selectRaw(
+                        'idDepartamentoDestino, COUNT(*) as total'
                     )
+
                     ->where('activo', true)
 
-                    ->with([
-
-                        'departamentoDestino:idDepartamento,nombre'
-
-                    ])
+                    ->whereNotNull('idDepartamentoDestino')
 
                     ->groupBy('idDepartamentoDestino')
 
@@ -204,7 +199,30 @@ class DashboardController extends Controller
                     ->take(5)
 
                     ->get();
+
+                return $filas->map(function ($fila) {
+
+                    $dep = Departamento::query()
+
+                        ->where(
+                            'idDepartamento',
+                            $fila->idDepartamentoDestino
+                        )
+
+                        ->first();
+
+                    return (object) [
+
+                        'total' => $fila->total,
+
+                        'departamentoDestino' => $dep,
+
+                    ];
+
+                });
+
             }
+
         );
 
         /*
@@ -241,6 +259,8 @@ class DashboardController extends Controller
                 'departamentoOrigen:idDepartamento,nombre',
 
                 'departamentoDestino:idDepartamento,nombre',
+
+                'usuarioEnvio:id,name',
 
             ])
             ->latest('idDerivacion')
@@ -387,16 +407,19 @@ public function estadisticasDepartamentos()
 {
     try {
 
-        $departamentos = Derivacion::select(
-                'idDepartamentoDestino',
-                DB::raw('COUNT(*) as total')
+        $filas = Derivacion::query()
+
+            ->selectRaw(
+                'idDepartamentoDestino, ' .
+                'COUNT(*) as derivaciones, ' .
+                'COUNT(DISTINCT idDocumento) as documentos'
             )
 
             ->whereNotNull('idDepartamentoDestino')
 
             ->groupBy('idDepartamentoDestino')
 
-            ->orderByDesc('total')
+            ->orderByDesc('derivaciones')
 
             ->take(8)
 
@@ -404,10 +427,10 @@ public function estadisticasDepartamentos()
 
         $resultado = [];
 
-        foreach ($departamentos as $dep) {
+        foreach ($filas as $fila) {
 
             $departamento = Departamento::find(
-                $dep->idDepartamentoDestino
+                $fila->idDepartamentoDestino
             );
 
             $resultado[] = [
@@ -416,10 +439,10 @@ public function estadisticasDepartamentos()
                     $departamento->nombre ?? 'Sin nombre',
 
                 'documentos' =>
-                    rand(5, 30),
+                    (int) ($fila->documentos ?? 0),
 
                 'derivaciones' =>
-                    $dep->total
+                    (int) ($fila->derivaciones ?? 0),
 
             ];
         }

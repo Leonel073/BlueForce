@@ -18,6 +18,8 @@ class Derivacion extends Model
         'orden',
         'idDepartamentoOrigen',
         'idDepartamentoDestino',
+        'idUsuarioAsignado',
+        'idUsuarioEnvio',
         'instruccion',
         'fechaEnvio',
         'fechaRecepcion',
@@ -67,6 +69,24 @@ class Derivacion extends Model
             Departamento::class,
             'idDepartamentoDestino',
             'idDepartamento'
+        );
+    }
+
+    public function usuarioAsignado()
+    {
+        return $this->belongsTo(
+            User::class,
+            'idUsuarioAsignado',
+            'id'
+        );
+    }
+
+    public function usuarioEnvio()
+    {
+        return $this->belongsTo(
+            User::class,
+            'idUsuarioEnvio',
+            'id'
         );
     }
 }

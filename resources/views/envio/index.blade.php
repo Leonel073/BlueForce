@@ -134,6 +134,166 @@
 
     </div>
 
+    {{-- FILTROS --}}
+    <div class="card border-0 shadow-sm rounded-4 mb-4">
+
+        <div class="card-body">
+
+            <form method="GET"
+                  action="{{ route('envios.index') }}"
+                  class="row g-3 align-items-end">
+
+                <div class="col-lg-3 col-md-6">
+
+                    <label class="form-label small text-muted mb-1">Buscar</label>
+
+                    <input type="text"
+                           name="buscar"
+                           value="{{ request('buscar') }}"
+                           class="form-control rounded-3"
+                           placeholder="Cite o asunto">
+
+                </div>
+
+                <div class="col-lg-2 col-md-6">
+
+                    <label class="form-label small text-muted mb-1">Origen</label>
+
+                    <select name="idDepartamentoOrigen"
+                            class="form-select rounded-3">
+
+                        <option value="">Todos</option>
+
+                        @foreach($departamentos as $dep)
+
+                            <option value="{{ $dep->idDepartamento }}"
+                                @selected(request('idDepartamentoOrigen') == $dep->idDepartamento)>
+
+                                {{ $dep->nombre }}
+
+                            </option>
+
+                        @endforeach
+
+                    </select>
+
+                </div>
+
+                <div class="col-lg-2 col-md-6">
+
+                    <label class="form-label small text-muted mb-1">Destino</label>
+
+                    <select name="idDepartamentoDestino"
+                            class="form-select rounded-3">
+
+                        <option value="">Todos</option>
+
+                        @foreach($departamentos as $dep)
+
+                            <option value="{{ $dep->idDepartamento }}"
+                                @selected(request('idDepartamentoDestino') == $dep->idDepartamento)>
+
+                                {{ $dep->nombre }}
+
+                            </option>
+
+                        @endforeach
+
+                    </select>
+
+                </div>
+
+                <div class="col-lg-2 col-md-6">
+
+                    <label class="form-label small text-muted mb-1">Recepción</label>
+
+                    <select name="transito"
+                            class="form-select rounded-3">
+
+                        <option value="" @selected(request('transito') === null || request('transito') === '')>Todas</option>
+
+                        <option value="1" @selected(request('transito') === '1')>En tránsito</option>
+
+                        <option value="0" @selected(request('transito') === '0')>Recibidas</option>
+
+                    </select>
+
+                </div>
+
+                <div class="col-lg-1 col-md-6">
+
+                    <label class="form-label small text-muted mb-1">Estado doc.</label>
+
+                    <select name="idEstado"
+                            class="form-select rounded-3">
+
+                        <option value="">Todos</option>
+
+                        @foreach($estados as $est)
+
+                            <option value="{{ $est->idEstado }}"
+                                @selected(request('idEstado') == $est->idEstado)>
+
+                                {{ $est->nombre }}
+
+                            </option>
+
+                        @endforeach
+
+                    </select>
+
+                </div>
+
+                <div class="col-lg-1 col-md-6">
+
+                    <label class="form-label small text-muted mb-1">Urgencia</label>
+
+                    <select name="idUrgencia"
+                            class="form-select rounded-3">
+
+                        <option value="">Todas</option>
+
+                        @foreach($urgencias as $urg)
+
+                            <option value="{{ $urg->idUrgencia }}"
+                                @selected(request('idUrgencia') == $urg->idUrgencia)>
+
+                                {{ $urg->nombre }}
+
+                            </option>
+
+                        @endforeach
+
+                    </select>
+
+                </div>
+
+                <div class="col-lg-1 col-md-6 d-flex gap-2">
+
+                    <button type="submit"
+                            class="btn text-white rounded-3 flex-grow-1"
+                            style="background-color:#0B2D59;">
+
+                        <i class="bi bi-funnel-fill"></i>
+
+                    </button>
+
+                    <a href="{{ route('envios.index') }}"
+                       class="btn btn-outline-secondary rounded-3"
+                       title="Limpiar filtros">
+
+                        <i class="bi bi-x-lg"></i>
+
+                    </a>
+
+                </div>
+
+            </form>
+
+        </div>
+
+    </div>
+
     {{-- TABLA --}}
     <div class="card border-0 shadow-lg rounded-4">
 
@@ -246,17 +406,26 @@
                                         );
                                     @endphp
 
-                                    @if(str_contains($urgencia, 'alta'))
+                                    @if(str_contains($urgencia, 'urg') || str_contains($urgencia, 'crit'))
 
-                                        <span class="badge bg-danger">
+                                        <span class="badge bg-danger rounded-pill px-2 py-1">
 
                                             {{ $d->documento->urgencia->nombre }}
 
                                         </span>
 
-                                    @elseif(str_contains($urgencia, 'media'))
+                                    @elseif(str_contains($urgencia, 'alta'))
 
-                                        <span class="badge bg-warning text-dark">
+                                        <span class="badge rounded-pill px-2 py-1"
+                                              style="background:#ea580c;color:#fff;">
+
+                                            {{ $d->documento->urgencia->nombre }}
+
+                                        </span>
+
+                                    @elseif(str_contains($urgencia, 'media') || str_contains($urgencia, 'moder'))
+
+                                        <span class="badge bg-warning text-dark rounded-pill px-2 py-1">
 
                                             {{ $d->documento->urgencia->nombre }}
 
@@ -264,7 +433,7 @@
 
                                     @else
 
-                                        <span class="badge bg-success">
+                                        <span class="badge bg-success rounded-pill px-2 py-1">
 
                                             {{ $d->documento->urgencia->nombre ?? 'Normal' }}
 
@@ -343,10 +512,9 @@
                                 {{-- ACCIONES --}}
                                 <td class="text-center">
 
-                                    <a href="{{ route('correspondencia.show', $d->documento->idDocumento) }}"
-                                       class="btn btn-sm text-white rounded-3"
-                                       style="background-color:#0B2D59;"
-                                       title="Ver Documento">
+                                    <a href="{{ route('correspondencia.show', $d->documento->idDocumento) }}?volver=envios"
+                                       class="btn btn-sm btn-doc btn-doc-view"
+                                       title="Ver documento">
 
                                         <i class="bi bi-eye-fill"></i>
 
@@ -376,6 +544,12 @@
                     </tbody>
 
                 </table>
+
+            </div>
+
+            <div class="d-flex justify-content-center mt-3">
+
+                {{ $derivaciones->links() }}
 
             </div>
 
