@@ -14,11 +14,11 @@
         <div class="card-body">
             <form method="GET" action="{{ route('admin.reportes.usuarios') }}" id="filtros-auditoria">
                 <div class="row g-2">
-                    <div class="col-md-3">
+                    <div class="col-md-2">
                         <label class="form-label small fw-bold">Nombre del Usuario</label>
                         <input type="text" name="nombre" class="form-control" placeholder="Ej: Administrador..." value="{{ request('nombre') }}">
                     </div>
-                    <div class="col-md-3">
+                    <div class="col-md-2">
                         <label class="form-label small fw-bold">Correo Electrónico</label>
                         <input type="text" name="correo" class="form-control" placeholder="usuario@armada.mil.bo" value="{{ request('correo') }}">
                     </div>
@@ -29,6 +29,10 @@
                             <option value="1" {{ request('estado') == '1' ? 'selected' : '' }}>Activo</option>
                             <option value="0" {{ request('estado') == '0' ? 'selected' : '' }}>Inactivo</option>
                         </select>
+                    </div>
+                    <div class="col-md-2">
+                        <label class="form-label small fw-bold">Cite Documento</label>
+                        <input type="text" name="cite" class="form-control" placeholder="Buscar por cite..." value="{{ request('cite') }}">
                     </div>
                     <div class="col-md-2">
                         <label class="form-label small fw-bold">Desde</label>
@@ -151,7 +155,9 @@
                                         <thead class="table-light">
                                             <tr>
                                                 <th>Fecha</th>
+                                                <th>Cite</th>
                                                 <th>Asunto</th>
+                                                <th>Tipo</th>
                                                 <th>Estado</th>
                                             </tr>
                                         </thead>
@@ -159,7 +165,9 @@
                                             @foreach($usuario->ultimos_cambios as $cambio)
                                             <tr>
                                                 <td><small class="text-muted">{{ \Carbon\Carbon::parse($cambio['fecha'])->format('d/m/Y H:i') }}</small></td>
-                                                <td><small>{{ substr($cambio['asunto'], 0, 50) }}...</small></td>
+                                                <td><small class="fw-bold text-primary">{{ $cambio['cite'] }}</small></td>
+                                                <td><small>{{ substr($cambio['asunto'], 0, 40) }}...</small></td>
+                                                <td><small>{{ $cambio['tipo'] }}</small></td>
                                                 <td>
                                                     <span class="badge bg-info text-dark">{{ $cambio['estado'] }}</span>
                                                 </td>

@@ -48,15 +48,14 @@ public function derivacionesDestino()
 /**
  * Relación: Un departamento puede tener múltiples responsables (auditoría)
  */
-public function responsables()
+public function personaEncargada()
 {
-    return $this->hasMany(
-        DepartamentoResponsable::class,
-        'idDepartamento',
-        'idDepartamento'
+    return $this->belongsTo(
+        Persona::class,
+        'idPersonaEncargada',
+        'idPersona'
     );
 }
-
 /**
  * Relación: Personas que trabajan en este departamento
  */

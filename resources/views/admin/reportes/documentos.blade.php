@@ -170,7 +170,6 @@
             </div>
         </div>
     </div>
-    </div>
 
     <script>
     function resetFiltrosDocumentos() {
@@ -190,5 +189,8 @@
             window.location.href = '{{ route("admin.reportes.index") }}';
         }
     }
+
+
+    
     </script>
     @endsection

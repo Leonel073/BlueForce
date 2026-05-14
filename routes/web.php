@@ -343,69 +343,64 @@ Route::middleware(['auth', 'verified'])
     Route::get('/admin', function () {
     return view('admin.index');
     })->name('admin.index');
+    
     /*
     |--------------------------------------------------------------------------
-    | REPORTES
+    | REPORTES - PROTEGIDO SOLO PARA ADMIN
     |--------------------------------------------------------------------------
     */
+    Route::middleware('admin')->group(function () {
+        // PANEL REPORTES
+        Route::get(
+            '/reportes',
+            [ReporteController::class, 'index']
+        )->name('admin.reportes.index');
 
-    // PANEL REPORTES
-    Route::get(
-        '/reportes',
-        [ReporteController::class, 'index']
-    )->name('admin.reportes.index');
+        // REPORTE USUARIOS
+        Route::get(
+            '/reportes/usuarios',
+            [ReporteController::class, 'usuarios']
+        )->name('admin.reportes.usuarios');
+        Route::get('/reportes/usuarios/pdf', [ReporteController::class, 'usuariosPDF'])->name('admin.reportes.usuarios.pdf');
 
-    // REPORTE USUARIOS
-    Route::get(
-        '/reportes/usuarios',
-        [ReporteController::class, 'usuarios']
-    )->name('admin.reportes.usuarios');
+        // REPORTE DEPARTAMENTOS
+        Route::get(
+            '/reportes/departamentos',
+            [ReporteController::class, 'departamentos']
+        )->name('admin.reportes.departamentos');
+        Route::get('/reportes/departamentos/pdf', [ReporteController::class, 'departamentosPDF'])->name('admin.reportes.departamentos.pdf');
 
-    // REPORTE DEPARTAMENTOS
-    Route::get(
-        '/reportes/departamentos',
-        [ReporteController::class, 'departamentos']
-    )->name('admin.reportes.departamentos');
-    Route::get('/admin/reportes/usuarios/pdf', [ReporteController::class, 'usuariosPDF'])->name('admin.reportes.usuarios.pdf');
-Route::get('/admin/reportes/departamentos/pdf', [ReporteController::class, 'departamentosPDF'])->name('admin.reportes.departamentos.pdf');
+        // REPORTE DERIVACIONES
+        Route::get(
+            '/reportes/derivaciones',
+            [ReporteController::class, 'derivaciones']
+        )->name('admin.reportes.derivaciones');
+        Route::get('/reportes/derivaciones/pdf', [ReporteController::class, 'derivacionesPDF'])->name('admin.reportes.derivaciones.pdf');
 
-    // REPORTE DERIVACIONES
-    Route::get(
-        '/reportes/derivaciones',
-        [ReporteController::class, 'derivaciones']
-    )->name('admin.reportes.derivaciones');
-    Route::get('/admin/reportes/personas', [\App\Http\Controllers\Admin\ReporteController::class, 'personas'])->name('admin.reportes.personas');
-Route::get('/admin/reportes/personas/pdf', [\App\Http\Controllers\Admin\ReporteController::class, 'personasPDF'])->name('admin.reportes.personas.pdf');
+        // REPORTE PERSONAS
+        Route::get('/reportes/personas', [ReporteController::class, 'personas'])->name('admin.reportes.personas');
+        Route::get('/reportes/personas/pdf', [ReporteController::class, 'personasPDF'])->name('admin.reportes.personas.pdf');
 
-    // PDF DERIVACIONES
-    Route::get(
-        '/reportes/derivaciones/pdf',
-        [ReporteController::class, 'derivacionesPDF']
-    )->name('admin.reportes.derivaciones.pdf');
+        // REPORTE DOCUMENTOS
+        Route::get('/reportes/documentos', [ReporteController::class, 'documentos'])->name('admin.reportes.documentos');
+        Route::get('/reportes/documentos/pdf', [ReporteController::class, 'documentosPDF'])->name('admin.reportes.documentos.pdf');
 
-    /*
-    |--------------------------------------------------------------------------
-    | API ENDPOINTS PARA GRÁFICOS
-    |--------------------------------------------------------------------------
-    */
+        // API ENDPOINTS PARA GRÁFICOS - PROTEGIDOS
+        Route::get(
+            '/api/estadisticas/dashboard',
+            [ReporteController::class, 'getEstadisticasDashboard']
+        )->name('admin.api.estadisticas.dashboard');
 
-    Route::get(
-        '/api/estadisticas/dashboard',
-        [ReporteController::class, 'getEstadisticasDashboard']
-    )->name('admin.api.estadisticas.dashboard');
+        Route::get(
+            '/api/estadisticas/departamentos',
+            [ReporteController::class, 'getEstadisticasDepartamentos']
+        )->name('admin.api.estadisticas.departamentos');
 
-    Route::get(
-        '/api/estadisticas/departamentos',
-        [ReporteController::class, 'getEstadisticasDepartamentos']
-    )->name('admin.api.estadisticas.departamentos');
-
-    Route::get(
-        '/api/estadisticas/personas',
-        [ReporteController::class, 'getEstadisticasPersonas']
-    )->name('admin.api.estadisticas.personas');
-
-    Route::get('/admin/reportes/documentos', [ReporteController::class, 'documentos'])->name('admin.reportes.documentos');
-Route::get('/admin/reportes/documentos/pdf', [ReporteController::class, 'documentosPDF'])->name('admin.reportes.documentos.pdf');
+        Route::get(
+            '/api/estadisticas/personas',
+            [ReporteController::class, 'getEstadisticasPersonas']
+        )->name('admin.api.estadisticas.personas');
+    });
 
     /*=================== */
     //     creacion de modulos de reportes 
