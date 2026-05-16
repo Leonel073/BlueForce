@@ -17,7 +17,7 @@ class PersonaController extends Controller
 {
     $personas = Persona::with('departamento', 'cargo')
         ->orderBy('nombre')
-        ->get();
+        ->paginate(10);
 
     return view(
         'admin.personas.index',

@@ -66,7 +66,7 @@ public function index(Request $request)
         );
     }
 
-    $departamentos = $query->paginate(15)->withQueryString();
+    $departamentos = $query->paginate(10)->withQueryString();
 
     return view(
         'admin.departamentos.index',

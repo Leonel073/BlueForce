@@ -33,7 +33,7 @@ public function index()
     |--------------------------------------------------------------------------
     */
 
-    $documentos = Correspondencia::with([
+    $query = Correspondencia::with([
 
         'tipoDocumento',
         'estado',
@@ -41,9 +41,7 @@ public function index()
         'remitente',
         'derivaciones.departamentoDestino'
 
-    ])
-    ->orderByDesc('fecha')
-    ->get();
+    ])->orderByDesc('fecha');
 
     /*
     |--------------------------------------------------------------------------
@@ -52,22 +50,30 @@ public function index()
     */
 
     $totalDocumentos =
-        $documentos->count();
+        (clone $query)->count();
 
     $pendientes =
-        $documentos
-            ->where('estado.nombre', 'Pendiente')
+        (clone $query)
+            ->whereHas('estado', function ($q) {
+                $q->whereRaw('LOWER(nombre) = ?', ['pendiente']);
+            })
             ->count();
 
     $finalizados =
-        $documentos
-            ->where('estado.nombre', 'Finalizado')
+        (clone $query)
+            ->whereHas('estado', function ($q) {
+                $q->whereRaw('LOWER(nombre) = ?', ['finalizado']);
+            })
             ->count();
 
     $urgentes =
-        $documentos
-            ->where('urgencia.nombre', 'Urgente')
+        (clone $query)
+            ->whereHas('urgencia', function ($q) {
+                $q->whereRaw('LOWER(nombre) LIKE ?', ['%urgente%']);
+            })
             ->count();
+
+    $documentos = $query->paginate(10);
 
     /*
     |--------------------------------------------------------------------------
@@ -472,7 +478,7 @@ public function index()
 
         ])
         ->orderByDesc('idDocumento')
-        ->paginate(20)
+        ->paginate(10)
         ->withQueryString();
 
         return view(

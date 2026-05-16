@@ -146,7 +146,7 @@ class CorrespondenciaController extends Controller
 
             ->orderByDesc('fecha')
 
-            ->paginate(20)
+            ->paginate(10)
 
             ->withQueryString();
 

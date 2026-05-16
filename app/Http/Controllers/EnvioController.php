@@ -107,7 +107,7 @@ public function index(Request $request)
 
     $recibidos = (clone $query)->whereNotNull('fechaRecepcion')->count();
 
-    $derivaciones = $query->paginate(20)->withQueryString();
+    $derivaciones = $query->paginate(10)->withQueryString();
 
     $departamentos = Departamento::where('activo', true)
         ->orderBy('nombre')
@@ -140,15 +140,12 @@ public function index(Request $request)
     public function bandeja(Request $request)
     {
         $query = Correspondencia::with([
-
             'estado',
             'urgencia',
             'tipoDocumento',
             'remitente',
             'ultimaDerivacion.departamentoDestino',
-
-        ])
-            ->orderByDesc('idDocumento');
+        ])->orderByDesc('idDocumento');
 
         if ($request->filled('buscar')) {
 
@@ -157,10 +154,9 @@ public function index(Request $request)
             $query->where(function ($q) use ($b) {
 
                 $q->where('cite', 'LIKE', '%' . $b . '%')
-                    ->orWhere('asunto', 'LIKE', '%' . $b . '%');
+                ->orWhere('asunto', 'LIKE', '%' . $b . '%');
 
             });
-
         }
 
         if ($request->filled('idEstado')) {
@@ -184,10 +180,9 @@ public function index(Request $request)
                 $q->where('idDepartamentoDestino', $idDep);
 
             });
-
         }
 
-        $documentos = $query->paginate(20)->withQueryString();
+        $documentos = $query->paginate(10)->withQueryString();
 
         $estados = EstadoDocumento::orderBy('nombre')->get();
 

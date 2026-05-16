@@ -29,7 +29,7 @@ class RecibidasController extends Controller
 
         ])
         ->orderByDesc('idDocumento')
-        ->paginate(20)
+        ->paginate(10)
         ->withQueryString();
 
         return view(
