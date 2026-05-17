@@ -21,6 +21,7 @@ use App\Http\Controllers\Admin\UsuarioController;
 use App\Http\Controllers\Admin\ReporteController;
 use App\Http\Controllers\Admin\DepartamentoController;
 use App\Http\Controllers\Admin\PersonaController;
+use App\Http\Controllers\AuditoriaController;
 
 /*
 |--------------------------------------------------------------------------
@@ -440,6 +441,86 @@ Route::put(
     '/departamentos/{id}',
     [DepartamentoController::class, 'update']
 )->name('admin.departamentos.update');
+
+/*
+|--------------------------------------------------------------------------
+| RUTAS DE AUDITORÍA
+|--------------------------------------------------------------------------
+*/
+
+Route::prefix('admin/auditoria')
+    ->middleware(['auth', 'verified', 'admin'])
+    ->group(function () {
+
+        /*
+        |--------------------------------------------------------------------------
+        | ESTADÍSTICAS
+        |--------------------------------------------------------------------------
+        */
+
+        Route::get(
+            '/estadisticas',
+            [AuditoriaController::class, 'estadisticas']
+        )->name('auditoria.estadisticas');
+
+        /*
+        |--------------------------------------------------------------------------
+        | HISTORIAL
+        |--------------------------------------------------------------------------
+        */
+
+        Route::get(
+            '/historial/{modelo}/{idRegistro}',
+            [AuditoriaController::class, 'registroHistorial']
+        )->name('auditoria.historial');
+
+        /*
+        |--------------------------------------------------------------------------
+        | EXPORTAR CSV
+        |--------------------------------------------------------------------------
+        */
+
+        Route::get(
+            '/exportar/csv',
+            [AuditoriaController::class, 'exportar']
+        )->name('auditoria.exportar');
+
+        /*
+        |--------------------------------------------------------------------------
+        | API JSON
+        |--------------------------------------------------------------------------
+        */
+
+        Route::get(
+            '/api/data',
+            [AuditoriaController::class, 'api']
+        )->name('auditoria.api');
+
+        /*
+        |--------------------------------------------------------------------------
+        | INDEX
+        |--------------------------------------------------------------------------
+        */
+
+        Route::get(
+            '/',
+            [AuditoriaController::class, 'index']
+        )->name('auditoria.index');
+
+        /*
+        |--------------------------------------------------------------------------
+        | SHOW
+        |--------------------------------------------------------------------------
+        */
+
+        Route::get(
+            '/{idAuditoria}',
+            [AuditoriaController::class, 'show']
+        )
+        ->whereNumber('idAuditoria')
+        ->name('auditoria.show');
+    });
+
 
 Route::put(
     '/departamentos/{id}/toggle',

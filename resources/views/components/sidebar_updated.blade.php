@@ -168,6 +168,18 @@
         </span>
 
     </a>
+    <a href="{{ route('auditoria.index') }}"
+   class="nav-link {{ request()->routeIs('auditoria.*') ? 'active' : '' }}">
+
+    <span class="nav-icon">
+        <i class="bi bi-shield-check"></i>
+    </span>
+
+    <span class="nav-label-text">
+        Auditoría
+    </span>
+
+</a>
 
     </div>
 
