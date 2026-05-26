@@ -7,8 +7,7 @@
  * O crear una ruta de debug temporal
  */
 
-namespace App\Tests;
-
+use Illuminate\Support\Facades\DB;
 // ========================================
 // PRUEBA 1: Verificar que la tabla existe
 // ========================================

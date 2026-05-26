@@ -326,33 +326,36 @@
                                 {{-- ACCIONES --}}
                                 <td class="text-center">
 
-                                    <div class="btn-group">
+                                    <div class="d-flex justify-content-center gap-2 flex-wrap">
 
                                         {{-- EDITAR --}}
                                         <a href="{{ route('admin.departamentos.edit', $departamento->idDepartamento) }}"
-                                           class="btn btn-sm btn-warning text-dark"
+                                           class="btn btn-sm btn-doc btn-doc-edit"
                                            title="Editar">
 
                                             <i class="bi bi-pencil-fill"></i>
 
                                         </a>
 
-                                        {{-- ACTIVAR / DESACTIVAR --}}
-                                        <form action="{{ route('admin.departamentos.toggle', $departamento->idDepartamento) }}"
-                                              method="POST">
+                                   
+                                       {{-- ACTIVAR / DESACTIVAR --}}
+                                            <form action="{{ route('admin.departamentos.toggle', $departamento->idDepartamento) }}"
+                                                method="POST"
+                                                class="d-inline"
+                                                onsubmit="return confirm('¿Confirmar cambio de estado?');">
 
-                                            @csrf
-                                            @method('PUT')
+                                                @csrf
+                                                @method('PUT')
 
-                                            <button type="submit"
-                                                    class="btn btn-sm {{ $departamento->activo ? 'btn-danger' : 'btn-success' }}"
-                                                    title="{{ $departamento->activo ? 'Desactivar' : 'Activar' }}">
+                                                <button type="submit"
+                                                        class="btn btn-sm btn-doc {{ $departamento->activo ? 'btn-doc-archive' : 'btn-doc-restore' }}"
+                                                        title="{{ $departamento->activo ? 'Desactivar' : 'Activar' }}">
 
-                                                <i class="bi {{ $departamento->activo ? 'bi-x-circle-fill' : 'bi-check-circle-fill' }}"></i>
+                                                    <i class="bi {{ $departamento->activo ? 'bi-x-circle' : 'bi-check-circle' }}"></i>
 
-                                            </button>
+                                                </button>
 
-                                        </form>
+                                            </form>
 
                                     </div>
 

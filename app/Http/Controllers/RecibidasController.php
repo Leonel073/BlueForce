@@ -7,6 +7,8 @@ use Illuminate\Http\Request;
 use App\Models\Correspondencia;
 use App\Models\Derivacion;
 use App\Models\Seguimiento;
+use Illuminate\Support\Facades\DB;
+use Exception;
 
 class RecibidasController extends Controller
 {
@@ -44,60 +46,35 @@ class RecibidasController extends Controller
     |--------------------------------------------------------------------------
     */
 
-    public function recibir($id)
-    {
-        $derivacion = Derivacion::where(
-            'idDocumento',
-            $id
-        )
-        ->orderByDesc('orden')
-        ->first();
-
-        if (!$derivacion) {
-
-            return back()->with(
-                'error',
-                'El documento no tiene derivación.'
-            );
-
-        }
-
-        /*
-        |--------------------------------------------------------------------------
-        | REGISTRAR RECEPCIÓN
-        |--------------------------------------------------------------------------
-        */
-
-        $derivacion->fechaRecepcion = now();
-
-        $derivacion->save();
-
-        /*
-        |--------------------------------------------------------------------------
-        | SEGUIMIENTO
-        |--------------------------------------------------------------------------
-        */
-
-        Seguimiento::create([
-
-            'idDocumento' => $id,
-
-            'fecha' => now(),
-
-            'ubicacion'
-                => 'Documento recibido',
-
-            'idEstado' => 2,
-
-            'activo' => true,
-
-        ]);
-
-        return back()->with(
-            'success',
-            'Documento recibido correctamente.'
-        );
+    public function recibir($id) {
+    try {
+        DB::transaction(function () use ($id) {
+            $derivacion = Derivacion::where('idDocumento', $id)
+                ->orderByDesc('orden')
+                ->lockForUpdate()  // ← Evita race conditions
+                ->first();
+            
+            if (!$derivacion) {
+                throw new Exception('El documento no tiene derivación.');
+            }
+            
+            $derivacion->fechaRecepcion = now();
+            $derivacion->save();
+            
+            Seguimiento::create([
+                'idDocumento' => $id,
+                'fecha' => now(),
+                'ubicacion' => 'Documento recibido',
+                'idEstado' => 2,
+                'activo' => true,
+            ]);
+        });
+        
+        return back()->with('success', 'Documento recibido correctamente.');
+    } catch (Exception $e) {
+        return back()->with('error', 'Error: ' . $e->getMessage());
     }
+}
 
     /*
     |--------------------------------------------------------------------------
@@ -105,44 +82,31 @@ class RecibidasController extends Controller
     |--------------------------------------------------------------------------
     */
 
-    public function finalizar($id)
-    {
-        $documento = Correspondencia::findOrFail($id);
-
-        /*
-        |--------------------------------------------------------------------------
-        | ESTADO FINALIZADO
-        |--------------------------------------------------------------------------
-        */
-
-        $documento->idEstado = 3;
-
-        $documento->save();
-
-        /*
-        |--------------------------------------------------------------------------
-        | SEGUIMIENTO
-        |--------------------------------------------------------------------------
-        */
-
-        Seguimiento::create([
-
-            'idDocumento' => $id,
-
-            'fecha' => now(),
-
-            'ubicacion'
-                => 'Documento finalizado',
-
-            'idEstado' => 3,
-
-            'activo' => true,
-
-        ]);
-
-        return back()->with(
-            'success',
-            'Documento finalizado correctamente.'
-        );
+    public function finalizar($id) {
+    try {
+        DB::transaction(function () use ($id) {
+            $documento = Correspondencia::findOrFail($id);
+            
+            // Validar que está en estado correcto
+            if ($documento->idEstado !== 2) {  // No está en tránsito
+                throw new Exception('Solo documentos en tránsito pueden finalizarse.');
+            }
+            
+            $documento->idEstado = 3;  // Finalizado
+            $documento->save();
+            
+            Seguimiento::create([
+                'idDocumento' => $id,
+                'fecha' => now(),
+                'ubicacion' => 'Documento finalizado',
+                'idEstado' => 3,
+                'activo' => true,
+            ]);
+        });
+        
+        return back()->with('success', 'Documento finalizado correctamente.');
+    } catch (Exception $e) {
+        return back()->with('error', $e->getMessage());
     }
+}
 }

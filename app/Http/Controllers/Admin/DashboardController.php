@@ -29,9 +29,9 @@ class DashboardController extends Controller
     | AJUSTA ESTOS IDS SEGÚN TU BASE DE DATOS
     |--------------------------------------------------------------------------
     */
-
-    private const ESTADO_FINALIZADO = 3;
-    private const ESTADO_ARCHIVADO  = 4;
+    private const ESTADO_PENDIENTE   = 1;
+    private const ESTADO_ATENDIDO = 2;
+    private const ESTADO_ARCHIVADO  = 3;
 
     /*
     |--------------------------------------------------------------------------
@@ -117,11 +117,11 @@ class DashboardController extends Controller
 
                 ', [
 
-                    self::ESTADO_FINALIZADO,
+                    self::ESTADO_PENDIENTE,
 
                     self::ESTADO_ARCHIVADO,
 
-                    self::ESTADO_FINALIZADO,
+                    self::ESTADO_ATENDIDO,
                     self::ESTADO_ARCHIVADO,
 
                 ])->first();
@@ -308,13 +308,6 @@ public function estadisticasDashboard()
 {
     $estados = [
         [
-            'nombre'   => 'Finalizados',
-            'cantidad' => Correspondencia::where(
-                'idEstado',
-                self::ESTADO_FINALIZADO
-            )->count()
-        ],
-        [
             'nombre'   => 'Archivados',
             'cantidad' => Correspondencia::where(
                 'idEstado',
@@ -322,11 +315,18 @@ public function estadisticasDashboard()
             )->count()
         ],
         [
+            'nombre'   => 'Atendido',
+            'cantidad' => Correspondencia::where(
+                'idEstado',
+                self::ESTADO_ATENDIDO
+            )->count()
+        ],
+        [
             'nombre'   => 'Pendientes',
             'cantidad' => Correspondencia::whereNotIn(
                 'idEstado',
                 [
-                    self::ESTADO_FINALIZADO,
+                   
                     self::ESTADO_ARCHIVADO
                 ]
             )->count()

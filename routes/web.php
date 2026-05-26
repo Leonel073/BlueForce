@@ -126,7 +126,7 @@ Route::middleware(['auth', 'verified'])->group(function () {
         [DocumentoController::class, 'store']
     )->name('documentos.store');
 
-    // DETALLE DOCUMENTO
+    // DETALLE DOCUMENTsO
     Route::get(
         '/documentos/{id}',
         [DocumentoController::class, 'detalle']

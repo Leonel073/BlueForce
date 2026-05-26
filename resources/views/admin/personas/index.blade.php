@@ -5,7 +5,7 @@
 @section('content')
 
 <div class="container-fluid py-4">
-
+    
     {{-- HEADER --}}
     <div class="card border-0 shadow-lg rounded-4 mb-4"
          style="background: linear-gradient(135deg,#0B2D59,#2E608C);">
@@ -14,6 +14,7 @@
 
             <div class="d-flex justify-content-between align-items-center">
                 <div>
+                    
                     <h1 class="fw-bold text-white mb-2">
                         <i class="bi bi-person-vcard-fill"></i>
                         Gestión de Personas

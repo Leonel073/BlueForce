@@ -15,9 +15,10 @@
             </h2>
             <p class="text-muted mb-0">Crear nuevo registro de persona en la institución</p>
         </div>
-        <a href="{{ route('admin.personas.index') }}" class="btn btn-secondary">
-            <i class="bi bi-arrow-left"></i> Volver
+        <a href="{{ route('admin.personas.index') }}"class="text-decoration-none text-muted mb-3 d-inline-block">
+            <i class="bi bi-chevron-left"></i> Volver
         </a>
+         
     </div>
 
     {{-- ALERTAS DE ERROR --}}
