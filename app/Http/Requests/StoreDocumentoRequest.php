@@ -8,10 +8,14 @@ class StoreDocumentoRequest extends FormRequest
 {
     /**
      * Determine if the user is authorized to make this request.
+     * 
+     * ✅ SEGURIDAD: Ahora valida que el usuario esté autenticado
+     * Antes: return true ❌ (VULNERABILIDAD)
+     * Ahora: Requiere usuario autenticado ✅
      */
     public function authorize(): bool
     {
-        return true;
+        return auth()->check();
     }
 
     /**

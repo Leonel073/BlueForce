@@ -75,4 +75,70 @@ class User extends Authenticatable
     {
         return $this->belongsTo(Rol::class, 'idRol', 'idRol');
     }
+
+    /*
+    |--------------------------------------------------------------------------
+    | MÉTODOS HELPERS PARA AUTORIZACIÓN
+    |--------------------------------------------------------------------------
+    */
+
+    /**
+     * ¿Es el usuario administrador?
+     * 
+     * @return bool
+     */
+    public function isAdmin(): bool
+    {
+        return (int) $this->idRol === 1;
+    }
+
+    /**
+     * ¿Es el usuario activo?
+     * 
+     * @return bool
+     */
+    public function isActive(): bool
+    {
+        return (bool) $this->activo;
+    }
+
+    /**
+     * ¿El usuario está verificado?
+     * 
+     * @return bool
+     */
+    public function isVerified(): bool
+    {
+        return $this->email_verified_at !== null;
+    }
+
+    /**
+     * Obtener el rol del usuario
+     * 
+     * @return string|null
+     */
+    public function getNombreRol(): ?string
+    {
+        return $this->rol?->nombre;
+    }
+
+    /**
+     * ¿El usuario tiene un departamento asignado?
+     * 
+     * @return bool
+     */
+    public function hasDepartamento(): bool
+    {
+        return $this->persona?->idDepartamento !== null;
+    }
+
+    /**
+     * Obtener el ID del departamento del usuario
+     * 
+     * @return int|null
+     */
+    public function getDepartamentoId(): ?int
+    {
+        return $this->persona?->idDepartamento;
+    }
 }

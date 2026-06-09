@@ -4,6 +4,7 @@ namespace App\Providers;
 
 use Illuminate\Pagination\Paginator;
 use Illuminate\Support\ServiceProvider;
+use Illuminate\Support\Facades\Gate;
 use App\Observers\GenericAuditObserver;
 use App\Models\{
     Correspondencia,
@@ -16,9 +17,21 @@ use App\Models\{
     TipoDocumento,
     Seguimiento
 };
+use App\Policies\CorrespondenciaPolicy;
+use App\Policies\DerivacionPolicy;
 
 class AppServiceProvider extends ServiceProvider
 {
+    /**
+     * Mapeo de Policies
+     * 
+     * Define qué Policy se utiliza para cada modelo
+     */
+    protected $policies = [
+        Correspondencia::class => CorrespondenciaPolicy::class,
+        Derivacion::class => DerivacionPolicy::class,
+    ];
+
     /**
      * Register any application services.
      */
@@ -33,6 +46,13 @@ class AppServiceProvider extends ServiceProvider
     public function boot(): void
     {
         Paginator::useBootstrapFive();
+
+        // ==============================
+        // REGISTRAR POLICIES DE AUTORIZACIÓN
+        // ==============================
+        foreach ($this->policies as $model => $policy) {
+            Gate::policy($model, $policy);
+        }
 
         // ==============================
         // REGISTRAR OBSERVERS DE AUDITORÍA
@@ -56,3 +76,4 @@ class AppServiceProvider extends ServiceProvider
         }
     }
 }
+
