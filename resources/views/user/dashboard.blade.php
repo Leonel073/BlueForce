@@ -273,8 +273,7 @@
 </div>
 
 {{-- CHART.JS LIBRARY --}}
-<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
-
+<script src="{{ asset('js/chart.umd.min.js') }}"></script>
 <script>
 const primaryColor = '#0B2D59';
 const secondaryColor = '#2E608C';

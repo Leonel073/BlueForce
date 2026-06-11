@@ -2,7 +2,7 @@
 @section('title', 'Reporte por Departamentos')
 @section('content')
 <!-- CDN Chart.js -->
-<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+<script src="{{ asset('js/chart.umd.min.js') }}"></script>
 
 <div class="container-fluid py-4">
     <div class="card border-0 shadow-lg rounded-4 mb-4" style="background: linear-gradient(135deg,#0B2D59,#2E608C);">
