@@ -261,4 +261,17 @@ class UsuarioTest extends TestCase
 
         $response->assertSessionHasErrors('email');
     }
+    //no poder ver dashboard
+    public function test_no_puede_ver_dashboard_despues_de_logout()
+    {
+        $user = User::factory()->create();
+
+        $this->actingAs($user);
+
+        $this->post('/logout');
+
+        $response = $this->get('/admin/dashboard');
+
+        $response->assertRedirect('/login');
+    }
 }

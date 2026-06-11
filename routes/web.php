@@ -43,6 +43,7 @@ Route::get('/page', function () {
 
 })->name('page');
 
+
 /*
 |--------------------------------------------------------------------------
 | RUTAS AUTENTICADAS
@@ -50,7 +51,7 @@ Route::get('/page', function () {
 */
 
 
-Route::middleware('auth')->group(function () {
+Route::middleware('auth', 'nocache')->group(function () {
 
     Route::get(
         '/profile',
@@ -69,7 +70,7 @@ Route::middleware('auth')->group(function () {
 
 });
 Route::prefix('admin')
-    ->middleware(['auth'])
+    ->middleware(['auth', 'nocache', 'verified', 'admin'])
     ->group(function () {
 
         Route::get(
@@ -89,7 +90,7 @@ Route::prefix('admin')
 
 });
 
-Route::middleware(['auth', 'verified'])->group(function () {
+Route::middleware(['auth', 'nocache', 'verified'])->group(function () {
 
     /*
     |--------------------------------------------------------------------------
@@ -255,7 +256,7 @@ Route::middleware(['auth', 'verified'])->group(function () {
 |--------------------------------------------------------------------------
 */
 
-Route::middleware(['auth', 'verified'])
+Route::middleware(['auth', 'verified', 'nocache'])
     ->prefix('admin')
     ->group(function () {
 
@@ -362,7 +363,7 @@ Route::middleware(['auth', 'verified'])
     )->name('admin.reportes.departamentos');
     Route::get('/reportes/departamentos/pdf', [ReporteController::class, 'departamentosPDF'])->name('admin.reportes.departamentos.pdf');
 
-    Route::middleware('admin')->group(function () {
+    Route::middleware(['admin', 'nocache'])->group(function () {
         // PANEL REPORTES
         Route::get(
             '/reportes',
@@ -449,7 +450,7 @@ Route::put(
 */
 
 Route::prefix('admin/auditoria')
-    ->middleware(['auth', 'verified', 'admin'])
+    ->middleware(['auth', 'verified', 'admin', 'nocache'])
     ->group(function () {
 
         /*
@@ -530,8 +531,8 @@ Route::put(
 /*
 |--------------------------------------------------------------------------
 | PERSONAS
-|--------------------------------------------------------------------------
 */
+
 
 Route::get(
     '/personas',
