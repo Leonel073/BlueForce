@@ -4,42 +4,47 @@ namespace App\Http\Controllers;
 
 use App\Models\Correspondencia;
 use App\Models\EstadoDocumento;
-use App\Models\Derivacion;
+use Illuminate\Support\Facades\Auth;
 
 class UserDashboardController extends Controller
 {
+    /**
+     * Mostrar dashboard personal del usuario
+     */
     public function index()
     {
-        // TOTAL DOCUMENTOS
-        $totalDocumentos = Correspondencia::count();
+        $userId = Auth::id();
 
-        // APROBADOS
-        $aprobados = Correspondencia::where('idEstado', 1)->count();
+        // ESTADÍSTICAS PERSONALES DEL USUARIO
+        $totalMis = Correspondencia::where('idUsuario', $userId)->count();
 
-        // VIGENTES
-        $vigentes = Correspondencia::where('idEstado', 2)->count();
+        // DOCUMENTOS POR ESTADO (personal)
+        $pendientes = Correspondencia::where('idUsuario', $userId)
+            ->whereHas('estado', fn($q) => $q->where('nombre', 'Pendiente'))
+            ->count();
+        
+        $recibidos = Correspondencia::where('idUsuario', $userId)
+            ->whereHas('estado', fn($q) => $q->where('nombre', 'Recibido'))
+            ->count();
+        
+        $atendidos = Correspondencia::where('idUsuario', $userId)
+            ->whereHas('estado', fn($q) => $q->where('nombre', 'Atendido'))
+            ->count();
+        
+        $archivados = Correspondencia::where('idUsuario', $userId)
+            ->whereHas('estado', fn($q) => $q->where('nombre', 'Archivado'))
+            ->count();
 
-        // EN REVISIÓN
-        $revision = Correspondencia::where('idEstado', 3)->count();
-
-        // DATOS PARA GRÁFICOS - Estados de documentos
-        $estadosPorTipo = Correspondencia::with('estado')
-            ->get()
-            ->groupBy('idEstado')
-            ->map(fn($group) => [
-                'nombre' => $group->first()->estado->nombre ?? 'Desconocido',
-                'cantidad' => $group->count()
-            ])
-            ->values();
-
-        // ÚLTIMOS DOCUMENTOS
-        $ultimosDocumentos = Correspondencia::with(['tipoDocumento', 'estado'])
+        // ÚLTIMOS DOCUMENTOS DEL USUARIO
+        $ultimosDocumentos = Correspondencia::where('idUsuario', $userId)
+            ->with(['tipoDocumento', 'estado', 'usuario'])
             ->latest('fecha')
             ->take(5)
             ->get();
 
-        // DOCUMENTOS POR MES (últimos 6 meses)
-        $documentosPorMes = Correspondencia::selectRaw('DATE_FORMAT(fecha, "%Y-%m") as mes, COUNT(*) as cantidad')
+        // DOCUMENTOS POR MES (últimos 6 meses - personal)
+        $documentosPorMes = Correspondencia::where('idUsuario', $userId)
+            ->selectRaw('DATE_FORMAT(fecha, "%Y-%m") as mes, COUNT(*) as cantidad')
             ->groupByRaw('DATE_FORMAT(fecha, "%Y-%m")')
             ->orderBy('mes', 'desc')
             ->take(6)
@@ -47,8 +52,9 @@ class UserDashboardController extends Controller
             ->reverse()
             ->values();
 
-        // DOCUMENTOS POR TIPO
-        $documentosPorTipo = Correspondencia::with('tipoDocumento')
+        // DOCUMENTOS POR TIPO (personal)
+        $documentosPorTipo = Correspondencia::where('idUsuario', $userId)
+            ->with('tipoDocumento')
             ->get()
             ->groupBy('idTipoDocumento')
             ->map(fn($group) => [
@@ -57,31 +63,26 @@ class UserDashboardController extends Controller
             ])
             ->values();
 
-        // DERIVACIONES REALIZADAS
-        $derivacionesRealizadas = Derivacion::count();
-
-        // URGENCIAS
-        $urgentes = Correspondencia::where('idUrgencia', 1)->count();
-
-        // ESTADO GENERAL DEL SISTEMA
-        $estadoDocumentos = EstadoDocumento::all()
+        // DOCUMENTOS POR ESTADO (para gráficos)
+        $estadosPorEstado = EstadoDocumento::all()
             ->map(fn($estado) => [
                 'nombre' => $estado->nombre,
-                'cantidad' => Correspondencia::where('idEstado', $estado->idEstado)->count()
+                'cantidad' => Correspondencia::where('idUsuario', $userId)
+                    ->where('idEstado', $estado->idEstado)
+                    ->count()
             ]);
 
         return view('user.dashboard', compact(
-            'totalDocumentos',
-            'aprobados',
-            'vigentes',
-            'revision',
-            'estadosPorTipo',
+            'totalMis',
+            'pendientes',
+            'recibidos',
+            'atendidos',
+            'archivados',
             'ultimosDocumentos',
             'documentosPorMes',
             'documentosPorTipo',
-            'derivacionesRealizadas',
-            'urgentes',
-            'estadoDocumentos'
+            'estadosPorEstado'
         ));
     }
 }
+

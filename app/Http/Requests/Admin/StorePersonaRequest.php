@@ -117,6 +117,22 @@ class StorePersonaRequest extends FormRequest
 
             /*
             |--------------------------------------------------------------------------
+            | CLASIFICACIÓN DE ACCESO (NUEVO)
+            |--------------------------------------------------------------------------
+            */
+            'tipo_persona' => [
+                'required',
+                \Illuminate\Validation\Rule::in(['trabajador', 'externo']),
+                function ($attribute, $value, $fail) {
+                    // Una persona EXTERNA nunca puede ser trabajador
+                    if (request('tipo') === 'EXTERNO' && $value === 'trabajador') {
+                        $fail('Una persona externa no puede clasificarse como trabajador.');
+                    }
+                },
+            ],
+
+            /*
+            |--------------------------------------------------------------------------
             | ESTADO
             |--------------------------------------------------------------------------
             */
@@ -167,6 +183,10 @@ class StorePersonaRequest extends FormRequest
             // Departamento (condicional)
             'idDepartamento.required_if' => 'El departamento es obligatorio para personas INTERNAS.',
             'idDepartamento.exists' => 'El departamento especificado no existe o está inactivo.',
+
+            // tipo_persona
+            'tipo_persona.required' => 'Debe seleccionar la clasificación de la persona (trabajador o externo).',
+            'tipo_persona.in'       => 'La clasificación debe ser "trabajador" o "externo".',
 
             // Estado
             'activo.boolean' => 'El estado debe ser verdadero o falso.',

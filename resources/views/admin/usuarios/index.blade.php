@@ -30,16 +30,20 @@
 
             </div>
 
-            <div>
+            <div class="d-flex align-items-center gap-3 flex-wrap">
 
                 <span class="badge rounded-pill px-4 py-3"
                       style="background-color: #D9A23D;
                              color: #0B2D59;">
-
                     Total Usuarios:
                     {{ $usuarios->total() }}
-
                 </span>
+
+                <a href="{{ route('admin.usuarios.create') }}"
+                   class="btn btn-light fw-semibold rounded-3">
+                    <i class="bi bi-person-plus-fill me-1"></i>
+                    Nuevo Usuario
+                </a>
 
             </div>
 
@@ -188,6 +192,8 @@
 
                             <th class="text-dark">Correo</th>
 
+                            <th class="text-dark">Persona Vinculada</th>
+
                             <th class="text-dark">Rol</th>
 
                             <th class="text-dark text-center">Estado</th>
@@ -227,6 +233,21 @@
 
                                 {{ $usuario->email }}
 
+                            </td>
+
+                            {{-- PERSONA VINCULADA --}}
+                            <td>
+                                @if($usuario->persona)
+                                    <div class="small fw-semibold">{{ $usuario->persona->nombre }}</div>
+                                    <div class="small text-muted">CI: {{ $usuario->persona->ci ?? 'N/A' }}</div>
+                                    @if($usuario->persona->departamento)
+                                        <div class="small text-muted">
+                                            <i class="bi bi-building me-1"></i>{{ $usuario->persona->departamento->nombre }}
+                                        </div>
+                                    @endif
+                                @else
+                                    <span class="badge bg-danger">Sin persona</span>
+                                @endif
                             </td>
 
                             {{-- ROL --}}
@@ -349,7 +370,7 @@
 
                         <tr>
 
-                            <td colspan="6"
+                            <td colspan="7"
                                 class="text-center py-5 text-muted">
 
                                 <i class="bi bi-exclamation-circle fs-3"></i>

@@ -106,6 +106,18 @@ class StoreDocumentoRequest extends FormRequest
 
             'persona_destinataria' => 
                 'nullable|exists:PERSONA,idPersona',
+
+            /*
+            |--------------------------------------------------------------------------
+            | ARCHIVO PDF (OPCIONAL)
+            |--------------------------------------------------------------------------
+            */
+            'archivo_pdf' => [
+                'nullable',
+                'file',
+                'mimes:pdf',
+                'max:' . config('app.max_pdf_size_kb', 10240),
+            ],
         ];
     }
 
@@ -282,6 +294,15 @@ class StoreDocumentoRequest extends FormRequest
             
             'departamento.exists' => 
                 'El departamento seleccionado no existe en el sistema.',
+
+            /*
+            |--------------------------------------------------------------------------
+            | PDF
+            |--------------------------------------------------------------------------
+            */
+            'archivo_pdf.file'   => 'El archivo debe ser un fichero válido.',
+            'archivo_pdf.mimes'  => 'Solo se permiten archivos en formato PDF.',
+            'archivo_pdf.max'    => 'El archivo PDF no puede superar los 10 MB.',
         ];
     }
 

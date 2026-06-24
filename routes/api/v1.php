@@ -11,6 +11,7 @@ use App\Http\Controllers\Api\V1\SeguimientoController;
 use App\Http\Controllers\Api\V1\AuditoriaController;
 use App\Http\Controllers\Api\V1\ReporteController;
 use App\Http\Controllers\Api\V1\EstadisticasController;
+use App\Http\Controllers\EstadoTransicionController;
 
 /*
 |--------------------------------------------------------------------------
@@ -51,6 +52,15 @@ Route::middleware(['auth:sanctum'])->group(function () {
     Route::get('documentos/{id}/derivaciones', [CorrespondenciaController::class, 'derivaciones'])->name('api.documentos.derivaciones');
     Route::get('documentos/{id}/seguimiento', [CorrespondenciaController::class, 'seguimiento'])->name('api.documentos.seguimiento');
     Route::post('documentos/{id}/cambiar-estado', [CorrespondenciaController::class, 'cambiarEstado'])->name('api.documentos.cambiar-estado');
+
+    // Transiciones de Estado de Documentos
+    Route::prefix('documentos/{id}')->group(function () {
+        Route::get('historial-transiciones', [EstadoTransicionController::class, 'obtenerHistorial'])->name('api.documentos.historial-transiciones');
+        Route::post('recibir', [EstadoTransicionController::class, 'recibir'])->name('api.documentos.recibir');
+        Route::post('atender', [EstadoTransicionController::class, 'atender'])->name('api.documentos.atender');
+        Route::post('archivar', [EstadoTransicionController::class, 'archivar'])->name('api.documentos.archivar');
+        Route::get('transiciones-permitidas', [EstadoTransicionController::class, 'obtenerTransicionesPermitidas'])->name('api.documentos.transiciones-permitidas');
+    });
 
     // Derivaciones
     Route::apiResource('derivaciones', DerivacionController::class);

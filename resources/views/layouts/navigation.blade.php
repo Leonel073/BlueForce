@@ -12,9 +12,42 @@
 
                 <!-- Navigation Links -->
                 <div class="hidden space-x-8 sm:-my-px sm:ms-10 sm:flex">
+                    <!-- Panel Principal -->
                     <x-nav-link :href="Auth::user()->idRol == 1 ? route('admin.dashboard') : route('user.dashboard')" :active="request()->routeIs('admin.dashboard') || request()->routeIs('user.dashboard')">
-    {{ __('Panel Principal') }}
-</x-nav-link>
+                        {{ __('Panel Principal') }}
+                    </x-nav-link>
+
+                    @if(Auth::user()->idRol == 1)
+                        <!-- MENÚ ADMIN -->
+                        <x-nav-link :href="route('admin.usuarios')" :active="request()->routeIs('admin.usuarios*')">
+                            {{ __('Usuarios') }}
+                        </x-nav-link>
+
+                        <x-nav-link :href="route('admin.personas')" :active="request()->routeIs('admin.personas*')">
+                            {{ __('Personas') }}
+                        </x-nav-link>
+
+                        <x-nav-link :href="route('admin.departamentos')" :active="request()->routeIs('admin.departamentos*')">
+                            {{ __('Departamentos') }}
+                        </x-nav-link>
+
+                        <x-nav-link :href="route('admin.reportes')" :active="request()->routeIs('admin.reportes*')">
+                            {{ __('Reportes') }}
+                        </x-nav-link>
+
+                        <x-nav-link :href="route('admin.auditoria')" :active="request()->routeIs('admin.auditoria*')">
+                            {{ __('Auditoría') }}
+                        </x-nav-link>
+                    @else
+                        <!-- MENÚ USUARIO -->
+                        <x-nav-link :href="route('envios.bandeja')" :active="request()->routeIs('envios.bandeja') || request()->routeIs('bandeja.*')">
+                            {{ __('Mi Bandeja') }}
+                        </x-nav-link>
+
+                        <x-nav-link :href="route('user.configuracion')" :active="request()->routeIs('user.configuracion')">
+                            {{ __('Configuración') }}
+                        </x-nav-link>
+                    @endif
                 </div>
             </div>
 
@@ -67,9 +100,41 @@
     <!-- Responsive Navigation Menu -->
     <div :class="{'block': open, 'hidden': ! open}" class="hidden sm:hidden">
         <div class="pt-2 pb-3 space-y-1">
-   <x-responsive-nav-link :href="Auth::user()->idRol == 1 ? route('admin.dashboard') : route('user.dashboard')" :active="request()->routeIs('admin.dashboard') || request()->routeIs('user.dashboard')">
-    {{ __('Panel Principal') }}
-</x-responsive-nav-link>
+            <x-responsive-nav-link :href="Auth::user()->idRol == 1 ? route('admin.dashboard') : route('user.dashboard')" :active="request()->routeIs('admin.dashboard') || request()->routeIs('user.dashboard')">
+                {{ __('Panel Principal') }}
+            </x-responsive-nav-link>
+
+            @if(Auth::user()->idRol == 1)
+                <!-- MENÚ ADMIN (Mobile) -->
+                <x-responsive-nav-link :href="route('admin.usuarios')" :active="request()->routeIs('admin.usuarios*')">
+                    {{ __('Usuarios') }}
+                </x-responsive-nav-link>
+
+                <x-responsive-nav-link :href="route('admin.personas')" :active="request()->routeIs('admin.personas*')">
+                    {{ __('Personas') }}
+                </x-responsive-nav-link>
+
+                <x-responsive-nav-link :href="route('admin.departamentos')" :active="request()->routeIs('admin.departamentos*')">
+                    {{ __('Departamentos') }}
+                </x-responsive-nav-link>
+
+                <x-responsive-nav-link :href="route('admin.reportes')" :active="request()->routeIs('admin.reportes*')">
+                    {{ __('Reportes') }}
+                </x-responsive-nav-link>
+
+                <x-responsive-nav-link :href="route('admin.auditoria')" :active="request()->routeIs('admin.auditoria*')">
+                    {{ __('Auditoría') }}
+                </x-responsive-nav-link>
+            @else
+                <!-- MENÚ USUARIO (Mobile) -->
+                <x-responsive-nav-link :href="route('envios.bandeja')" :active="request()->routeIs('envios.bandeja') || request()->routeIs('bandeja.*')">
+                    {{ __('Mi Bandeja') }}
+                </x-responsive-nav-link>
+
+                <x-responsive-nav-link :href="route('user.configuracion')" :active="request()->routeIs('user.configuracion')">
+                    {{ __('Configuración') }}
+                </x-responsive-nav-link>
+            @endif
         </div>
 
         <!-- Responsive Settings Options -->

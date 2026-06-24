@@ -28,6 +28,7 @@ class Persona extends Model
         'ci',
         'institucion',
         'tipo',
+        'tipo_persona',
         'idDepartamento',
         'idCargo',
         'activo',
@@ -111,6 +112,21 @@ class Persona extends Model
         );
     }
 
+    /**
+     * Relación: Una persona trabajador puede tener un único usuario
+     * Una persona externa NUNCA tendrá usuario.
+     *
+     * @return \Illuminate\Database\Eloquent\Relations\HasOne
+     */
+    public function usuario()
+    {
+        return $this->hasOne(
+            User::class,
+            'idPersona',
+            'idPersona'
+        );
+    }
+
     /*
     |--------------------------------------------------------------------------
     | SCOPES PARA FILTROS
@@ -134,11 +150,38 @@ class Persona extends Model
     }
 
     /**
-     * Scope: Personas que trabajan en la institución (asignadas a departamento)
+     * Scope: Solo trabajadores (pueden tener cuenta de usuario)
      */
     public function scopeTrabajadores($query)
     {
-        return $query->whereNotNull('idDepartamento')->activas();
+        return $query->where('tipo_persona', 'trabajador');
+    }
+
+    /**
+     * Scope: Solo externos (no pueden tener cuenta de usuario)
+     */
+    public function scopeExternos($query)
+    {
+        return $query->where('tipo_persona', 'externo');
+    }
+
+    /**
+     * Scope: Trabajadores activos sin usuario asignado
+     */
+    public function scopeTrabajadoresSinUsuario($query)
+    {
+        return $query
+            ->where('tipo_persona', 'trabajador')
+            ->whereNull('fecha_deshabilitacion')
+            ->whereDoesntHave('usuario');
+    }
+
+    /**
+     * Scope: Personas que trabajan en la institución (asignadas a departamento)
+     */
+    public function scopeConDepartamento($query)
+    {
+        return $query->whereNotNull('idDepartamento')->whereNull('fecha_deshabilitacion');
     }
 
     /**
@@ -146,7 +189,7 @@ class Persona extends Model
      */
     public function scopeRemitentes($query)
     {
-        return $query->whereNull('idDepartamento')->activas();
+        return $query->whereNull('idDepartamento')->whereNull('fecha_deshabilitacion');
     }
 
     /**
@@ -241,5 +284,21 @@ class Persona extends Model
                     ->where('activo', true)
                     ->whereNull('fecha_declinacion')
                     ->get();
+    }
+
+    /**
+     * ¿Puede esta persona tener una cuenta de usuario?
+     */
+    public function puedeSerUsuario(): bool
+    {
+        return $this->tipo_persona === 'trabajador';
+    }
+
+    /**
+     * ¿Tiene usuario asignado?
+     */
+    public function tieneUsuario(): bool
+    {
+        return $this->usuario()->exists();
     }
 }

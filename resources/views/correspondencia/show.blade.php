@@ -598,6 +598,42 @@
 
             </div>
 
+            {{-- ARCHIVO PDF ADJUNTO --}}
+            @if($documento->tiene_archivo)
+            <div class="card border-0 shadow-sm rounded-4 mt-3">
+                <div class="card-header text-white rounded-top-4"
+                     style="background-color:#c0392b;">
+                    <i class="bi bi-file-pdf-fill me-1"></i>
+                    Documento PDF Adjunto
+                </div>
+                <div class="card-body">
+                    <p class="mb-1">
+                        <i class="bi bi-paperclip me-1 text-danger"></i>
+                        <strong>{{ $documento->archivo_pdf }}</strong>
+                    </p>
+                    <p class="small text-muted mb-3">
+                        Tamaño: {{ $documento->tamano_formateado }}
+                        @if($documento->fecha_subida)
+                            — Subido el {{ $documento->fecha_subida->format('d/m/Y H:i') }}
+                        @endif
+                    </p>
+                    <div class="d-flex gap-2 flex-wrap">
+                        <a href="{{ route('documentos.pdf.descargar', $documento->idDocumento) }}"
+                           class="btn btn-danger btn-sm rounded-3">
+                            <i class="bi bi-download me-1"></i>
+                            Descargar PDF
+                        </a>
+                        <a href="{{ route('documentos.pdf.previsualizar', $documento->idDocumento) }}"
+                           target="_blank"
+                           class="btn btn-outline-danger btn-sm rounded-3">
+                            <i class="bi bi-eye me-1"></i>
+                            Ver PDF
+                        </a>
+                    </div>
+                </div>
+            </div>
+            @endif
+
         </div>
 
     </div>

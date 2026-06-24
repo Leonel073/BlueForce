@@ -77,6 +77,55 @@
                         <strong>Email:</strong>
                         {{ $usuario->email }}
                     </p>
+
+                    <p>
+                        <strong>Rol:</strong>
+                        {{ $usuario->rol?->nombre ?? 'N/A' }}
+                    </p>
+
+                    <p>
+                        <strong>Estado:</strong>
+                        @if($usuario->activo)
+                            <span class="badge bg-success">Activo</span>
+                        @else
+                            <span class="badge bg-danger">Inactivo</span>
+                        @endif
+                    </p>
+
+                    {{-- PERSONA VINCULADA --}}
+                    @if($usuario->persona)
+                        <hr>
+                        <h6 class="fw-bold" style="color:#0B2D59;">
+                            <i class="bi bi-person-badge-fill me-1"></i>
+                            Persona vinculada
+                        </h6>
+                        <p class="mb-1">
+                            <strong>Nombre:</strong> {{ $usuario->persona->nombre }}
+                        </p>
+                        <p class="mb-1">
+                            <strong>CI:</strong> {{ $usuario->persona->ci ?? 'N/A' }}
+                        </p>
+                        <p class="mb-1">
+                            <strong>Cargo:</strong> {{ $usuario->persona->cargo?->nombre ?? 'Sin cargo' }}
+                        </p>
+                        <p class="mb-1">
+                            <strong>Departamento:</strong> {{ $usuario->persona->departamento?->nombre ?? 'Sin departamento' }}
+                        </p>
+                        <p class="mb-0">
+                            <strong>Tipo:</strong>
+                            <span class="badge {{ $usuario->persona->tipo_persona === 'trabajador' ? 'bg-success' : 'bg-warning text-dark' }}">
+                                {{ ucfirst($usuario->persona->tipo_persona ?? 'N/A') }}
+                            </span>
+                        </p>
+                    @else
+                        <hr>
+                        <div class="alert alert-warning mb-0 p-2 small">
+                            <i class="bi bi-exclamation-triangle-fill me-1"></i>
+                            Usuario sin persona vinculada.
+                        </div>
+                    @endif
+
+                    <hr>
                     <a href="{{ route('admin.usuarios.edit', $usuario->id) }}"
                         class="btn text-white"
                         style="background-color:#D9A23D;">

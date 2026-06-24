@@ -66,6 +66,8 @@ use Illuminate\Support\Str;
 
                             <th>Estado</th>
 
+                            <th class="text-center">PDF</th>
+
                             <th class="text-center">
 
                                 Acciones
@@ -172,6 +174,21 @@ use Illuminate\Support\Str;
 
                                 </td>
 
+                                {{-- PDF --}}
+                                <td class="text-center">
+                                    @if($doc->tiene_archivo)
+                                        <a href="{{ route('documentos.pdf.descargar', $doc->idDocumento) }}"
+                                           class="text-danger"
+                                           title="{{ $doc->archivo_pdf }} ({{ $doc->tamano_formateado }})">
+                                            <i class="bi bi-file-pdf-fill fs-5"></i>
+                                        </a>
+                                    @else
+                                        <span class="text-muted">
+                                            <i class="bi bi-dash"></i>
+                                        </span>
+                                    @endif
+                                </td>
+
                                 <td class="text-center">
 
                                     <div class="d-flex justify-content-center align-items-center gap-2 flex-wrap">
@@ -195,7 +212,7 @@ use Illuminate\Support\Str;
 
                             <tr>
 
-                                <td colspan="7"
+                                <td colspan="8"
                                     class="text-center text-muted py-5">
 
                                     No existen documentos.

@@ -99,6 +99,16 @@ class CorrespondenciaController extends BaseController
                 'activo' => 1,
             ]);
 
+            // Registrar la transición inicial a estado PENDIENTE
+            \App\Models\EstadoTransicion::create([
+                'idDocumento' => $documento->idDocumento,
+                'idUsuario' => $user->id,
+                'idEstadoAnterior' => null,
+                'idEstadoNuevo' => $documento->idEstado,
+                'accion' => 'CREAR',
+                'observacion' => 'Documento creado en el sistema',
+            ]);
+
             // Cargar relaciones
             $documento->load('tipoDocumento', 'estado', 'urgencia', 'remitente', 'usuario');
 

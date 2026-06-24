@@ -2,8 +2,6 @@
 
 namespace App\Models;
 
-
-// use Illuminate\Contracts\Auth\MustVerifyEmail;
 use Database\Factories\UserFactory;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Foundation\Auth\User as Authenticatable;
@@ -15,44 +13,64 @@ class User extends Authenticatable
     /** @use HasFactory<UserFactory> */
     use HasFactory, Notifiable;
 
-    /**
-     * The attributes that are mass assignable.
-     *
-     * @var list<string>
-     */
- protected $fillable = [
+    protected $fillable = [
         'name',
         'email',
         'password',
         'idPersona',
-        'idRol',    
+        'idRol',
         'activo',
     ];
 
-    /**
-     * The attributes that should be hidden for serialization.
-     *
-     * @var list<string>
-     */
     protected $hidden = [
         'password',
         'remember_token',
     ];
 
-    /**
-     * Get the attributes that should be cast.
-     *
-     * @return array<string, string>
-     */
     protected function casts(): array
     {
         return [
             'email_verified_at' => 'datetime',
-            'password' => 'hashed',
+            'password'          => 'hashed',
         ];
     }
 
-    /* Creacion para poder usar correspondencia*/
+    /*
+    |--------------------------------------------------------------------------
+    | BOOT — protección de integridad en capa de modelo
+    |--------------------------------------------------------------------------
+    */
+    protected static function boot(): void
+    {
+        parent::boot();
+
+        static::creating(function (User $user) {
+            // Bloquear creación de usuario sin persona asignada
+            // (excepto en entorno de testing donde factories pueden omitir esto)
+            if (!app()->runningUnitTests() && empty($user->idPersona)) {
+                throw new \InvalidArgumentException(
+                    'No se puede crear un usuario sin persona asignada. Todo usuario debe pertenecer a una persona trabajadora.'
+                );
+            }
+
+            // Bloquear si la persona es externa
+            if (!empty($user->idPersona)) {
+                $persona = Persona::find($user->idPersona);
+                if ($persona && $persona->tipo_persona === 'externo') {
+                    throw new \InvalidArgumentException(
+                        'Las personas externas no pueden tener cuenta de usuario.'
+                    );
+                }
+            }
+        });
+    }
+
+    /*
+    |--------------------------------------------------------------------------
+    | RELACIONES
+    |--------------------------------------------------------------------------
+    */
+
     public function correspondencias()
     {
         return $this->hasMany(
@@ -61,7 +79,7 @@ class User extends Authenticatable
             'id'
         );
     }
-    /* Creacion para poder usar persona */
+
     public function persona()
     {
         return $this->belongsTo(
@@ -70,7 +88,7 @@ class User extends Authenticatable
             'idPersona'
         );
     }
-    // Relación con la tabla ROL
+
     public function rol()
     {
         return $this->belongsTo(Rol::class, 'idRol', 'idRol');
@@ -78,65 +96,35 @@ class User extends Authenticatable
 
     /*
     |--------------------------------------------------------------------------
-    | MÉTODOS HELPERS PARA AUTORIZACIÓN
+    | HELPERS DE AUTORIZACIÓN
     |--------------------------------------------------------------------------
     */
 
-    /**
-     * ¿Es el usuario administrador?
-     * 
-     * @return bool
-     */
     public function isAdmin(): bool
     {
         return (int) $this->idRol === 1;
     }
 
-    /**
-     * ¿Es el usuario activo?
-     * 
-     * @return bool
-     */
     public function isActive(): bool
     {
         return (bool) $this->activo;
     }
 
-    /**
-     * ¿El usuario está verificado?
-     * 
-     * @return bool
-     */
     public function isVerified(): bool
     {
         return $this->email_verified_at !== null;
     }
 
-    /**
-     * Obtener el rol del usuario
-     * 
-     * @return string|null
-     */
     public function getNombreRol(): ?string
     {
         return $this->rol?->nombre;
     }
 
-    /**
-     * ¿El usuario tiene un departamento asignado?
-     * 
-     * @return bool
-     */
     public function hasDepartamento(): bool
     {
         return $this->persona?->idDepartamento !== null;
     }
 
-    /**
-     * Obtener el ID del departamento del usuario
-     * 
-     * @return int|null
-     */
     public function getDepartamentoId(): ?int
     {
         return $this->persona?->idDepartamento;

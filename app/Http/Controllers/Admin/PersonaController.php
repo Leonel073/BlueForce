@@ -8,7 +8,7 @@ use App\Models\Persona;
 use App\Models\Departamento;
 use App\Models\Cargo;
 use App\Models\DepartamentoResponsable;
-use App\Http\Requests\StorePersonaRequest;
+use App\Http\Requests\Admin\StorePersonaRequest;
 use App\Http\Requests\UpdatePersonaRequest;
 
 class PersonaController extends Controller
@@ -109,6 +109,11 @@ public function update(Request $request, $id)
         'tipo' =>
             $validated['tipo'],
 
+        'tipo_persona' =>
+            ($validated['tipo'] === 'EXTERNO')
+                ? 'externo'
+                : ($validated['tipo_persona'] ?? $persona->tipo_persona ?? 'externo'),
+
         'idDepartamento' =>
             $validated['idDepartamento'] ?? null,
 
@@ -183,18 +188,25 @@ public function create()
 public function store(StorePersonaRequest $request)
 {
     $validated = $request->validated();
+
+    // Si tipo=EXTERNO, forzar tipo_persona=externo independientemente del input
+    if ($validated['tipo'] === 'EXTERNO') {
+        $validated['tipo_persona'] = 'externo';
+    }
+
     $persona = Persona::create([
-        'nombre' => strtoupper(trim($validated['nombre'])),
-        'ci' => trim($validated['ci']),
-        'tipo' => $validated['tipo'] ?? 'INTERNO',
+        'nombre'           => strtoupper(trim($validated['nombre'])),
+        'ci'               => trim($validated['ci']),
+        'tipo'             => $validated['tipo'] ?? 'INTERNO',
+        'tipo_persona'     => $validated['tipo_persona'] ?? 'externo',
         'telefono_celular' => $validated['telefono_celular'],
-        'telefono_fijo' => $validated['telefono_fijo'] ?? null,
-        'correo' => $validated['correo'] ?? null,
-        'institucion' => $validated['institucion'] ?? null,
-        'idCargo' => $validated['idCargo'],
-        'idDepartamento' => null,
-        'activo' => true,
-        'fecha_creacion' => now(),
+        'telefono_fijo'    => $validated['telefono_fijo'] ?? null,
+        'correo'           => $validated['correo'] ?? null,
+        'institucion'      => $validated['institucion'] ?? null,
+        'idCargo'          => $validated['idCargo'] ?? null,
+        'idDepartamento'   => $validated['idDepartamento'] ?? null,
+        'activo'           => true,
+        'fecha_creacion'   => now(),
     ]);
 
     return redirect()->route('admin.personas.index')

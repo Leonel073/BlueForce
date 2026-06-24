@@ -16,6 +16,8 @@ use App\Http\Requests\StoreDocumentoRequest;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Facades\Storage;
 
 class DocumentoController extends Controller
 {
@@ -212,11 +214,12 @@ public function index()
 
             /*
             |--------------------------------------------------------------------------
-            | ESTADO INICIAL
+            | ESTADO INICIAL — Pendiente
             |--------------------------------------------------------------------------
             */
 
-            $estado = EstadoDocumento::first();
+            $estado = EstadoDocumento::where('nombre', 'Pendiente')->first()
+                   ?? EstadoDocumento::first();
 
             /*
             |--------------------------------------------------------------------------
@@ -360,6 +363,38 @@ public function index()
                 'activo' => true,
 
             ]);
+
+            /*
+            |--------------------------------------------------------------------------
+            | ARCHIVO PDF (OPCIONAL)
+            |--------------------------------------------------------------------------
+            */
+
+            if (request()->hasFile('archivo_pdf')) {
+
+                $file = request()->file('archivo_pdf');
+
+                // Verificar MIME real con finfo (no solo extensión)
+                $finfo = new \finfo(FILEINFO_MIME_TYPE);
+                $mimeReal = $finfo->file($file->getRealPath());
+
+                if ($mimeReal !== 'application/pdf') {
+                    throw new \Exception('El archivo adjunto no es un PDF válido.');
+                }
+
+                // Nombre único para evitar sobreescrituras y enumeración
+                $nombreUnico = 'doc_' . $documento->idDocumento . '_' . uniqid() . '.pdf';
+                $ruta = $file->storeAs('documentos', $nombreUnico, 'local');
+
+                $documento->update([
+                    'archivo_pdf'    => $file->getClientOriginalName(),
+                    'ruta_pdf'       => $ruta,
+                    'mime_type'      => $mimeReal,
+                    'tamano_archivo' => $file->getSize(),
+                    'fecha_subida'   => now(),
+                    'idUsuarioPdf'   => Auth::id(),
+                ]);
+            }
 
         });
 
@@ -559,7 +594,128 @@ public function index()
     return response()->json($personas);
 }
 
-public function update(Request $request, $id)
+    /*
+    |--------------------------------------------------------------------------
+    | SUBIR / REEMPLAZAR PDF EN EDICIÓN (ADMIN)
+    |--------------------------------------------------------------------------
+    */
+
+    public function subirPdf(Request $request, $id)
+    {
+        $documento = Correspondencia::findOrFail($id);
+
+        $request->validate([
+            'archivo_pdf' => [
+                'required',
+                'file',
+                'mimes:pdf',
+                'max:' . config('app.max_pdf_size_kb', 10240),
+            ],
+        ], [
+            'archivo_pdf.required' => 'Debe seleccionar un archivo PDF.',
+            'archivo_pdf.mimes'    => 'Solo se permiten archivos PDF.',
+            'archivo_pdf.max'      => 'El archivo no puede superar los 10 MB.',
+        ]);
+
+        $file = $request->file('archivo_pdf');
+
+        // Verificar MIME real
+        $finfo    = new \finfo(FILEINFO_MIME_TYPE);
+        $mimeReal = $finfo->file($file->getRealPath());
+
+        if ($mimeReal !== 'application/pdf') {
+            return back()->with('error', 'El archivo no es un PDF válido (verificación de contenido fallida).');
+        }
+
+        // Eliminar PDF anterior si existe
+        if ($documento->ruta_pdf && Storage::disk('local')->exists($documento->ruta_pdf)) {
+            Storage::disk('local')->delete($documento->ruta_pdf);
+        }
+
+        $nombreUnico = 'doc_' . $documento->idDocumento . '_' . uniqid() . '.pdf';
+        $ruta = $file->storeAs('documentos', $nombreUnico, 'local');
+
+        $documento->update([
+            'archivo_pdf'    => $file->getClientOriginalName(),
+            'ruta_pdf'       => $ruta,
+            'mime_type'      => $mimeReal,
+            'tamano_archivo' => $file->getSize(),
+            'fecha_subida'   => now(),
+            'idUsuarioPdf'   => Auth::id(),
+        ]);
+
+        // Auditoría subida PDF
+        try {
+            \App\Models\Auditoria::create([
+                'idUsuario'       => Auth::id(),
+                'modelo'          => 'Correspondencia',
+                'idRegistro'      => $documento->idDocumento,
+                'accion'          => 'UPDATE',
+                'datosAnteriores' => null,
+                'datosNuevos'     => [
+                    'accion_pdf' => 'SUBIDA_PDF',
+                    'archivo'    => $file->getClientOriginalName(),
+                    'tamano'     => $file->getSize(),
+                    'fecha'      => now()->toDateTimeString(),
+                ],
+                'ip'        => request()->ip(),
+                'navegador' => request()->userAgent(),
+                'ruta'      => request()->getRequestUri(),
+            ]);
+        } catch (\Exception $e) {
+            Log::warning('Auditoría subida PDF fallida: ' . $e->getMessage());
+        }
+
+        return back()->with('success', 'Archivo PDF actualizado correctamente.');
+    }
+
+    /*
+    |--------------------------------------------------------------------------
+    | ELIMINAR PDF (ADMIN)
+    |--------------------------------------------------------------------------
+    */
+
+    public function eliminarPdf($id)
+    {
+        $documento = Correspondencia::findOrFail($id);
+
+        $archivoAnterior = $documento->archivo_pdf;
+
+        if ($documento->ruta_pdf && Storage::disk('local')->exists($documento->ruta_pdf)) {
+            Storage::disk('local')->delete($documento->ruta_pdf);
+        }
+
+        $documento->update([
+            'archivo_pdf'    => null,
+            'ruta_pdf'       => null,
+            'mime_type'      => null,
+            'tamano_archivo' => null,
+            'fecha_subida'   => null,
+            'idUsuarioPdf'   => null,
+        ]);
+
+        // Auditoría eliminación PDF
+        try {
+            \App\Models\Auditoria::create([
+                'idUsuario'       => Auth::id(),
+                'modelo'          => 'Correspondencia',
+                'idRegistro'      => $documento->idDocumento,
+                'accion'          => 'UPDATE',
+                'datosAnteriores' => ['archivo_pdf' => $archivoAnterior],
+                'datosNuevos'     => [
+                    'accion_pdf' => 'ELIMINACION_PDF',
+                    'fecha'      => now()->toDateTimeString(),
+                ],
+                'ip'        => request()->ip(),
+                'navegador' => request()->userAgent(),
+                'ruta'      => request()->getRequestUri(),
+            ]);
+        } catch (\Exception $e) {
+            Log::warning('Auditoría eliminación PDF fallida: ' . $e->getMessage());
+        }
+
+        return back()->with('success', 'Archivo PDF eliminado correctamente.');
+    }public function update(Request $request, $id)
 {
     $documento = Correspondencia::findOrFail($id);
 

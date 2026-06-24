@@ -400,22 +400,15 @@ public function index(Request $request)
 
         /*
         |--------------------------------------------------------------------------
-        | ACTUALIZAR ESTADO
+        | ACTUALIZAR ESTADO — Al derivar, el documento queda Pendiente
         |--------------------------------------------------------------------------
         */
 
-        $estadoDerivado = EstadoDocumento::where(
-            'nombre',
-            'DERIVADO'
-        )->first();
+        $estadoPendiente = EstadoDocumento::where('nombre', 'Pendiente')->first();
 
-        if ($estadoDerivado)
-        {
+        if ($estadoPendiente) {
             $documento->update([
-
-                'idEstado' =>
-                    $estadoDerivado->idEstado
-
+                'idEstado' => $estadoPendiente->idEstado
             ]);
         }
 
@@ -437,7 +430,7 @@ public function index(Request $request)
                 'Documento derivado a otro departamento',
 
             'idEstado' =>
-                $documento->idEstado,
+                $documento->fresh()->idEstado,
 
             'activo' => true,
 

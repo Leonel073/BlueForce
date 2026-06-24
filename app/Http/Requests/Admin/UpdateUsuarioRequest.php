@@ -67,11 +67,8 @@ class UpdateUsuarioRequest extends FormRequest
                 Rule::exists('ROL', 'idRol'),
             ],
 
-            'idPersona' => [
-                'nullable',
-                'integer',
-                Rule::exists('PERSONA', 'idPersona'),
-            ],
+            // idPersona NO se permite cambiar en la edición
+            // para mantener integridad referencial
 
             'activo' => [
                 'nullable',

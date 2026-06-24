@@ -119,6 +119,7 @@
     {{-- FORMULARIO --}}
     <form action="{{ route('documentos.store') }}"
           method="POST"
+          enctype="multipart/form-data"
           class="needs-validation"
           novalidate>
 
@@ -826,6 +827,44 @@
 
                 </div>
 
+                {{-- ARCHIVO PDF (OPCIONAL) --}}
+                <div class="card border-0 shadow-sm rounded-4 mt-4">
+                    <div class="card-header text-white rounded-top-4"
+                         style="background: linear-gradient(135deg,#0B2D59,#2E608C);">
+                        <i class="bi bi-file-pdf-fill me-1"></i>
+                        ADJUNTAR PDF (OPCIONAL)
+                    </div>
+                    <div class="card-body">
+                        <div class="mb-2">
+                            <label class="form-label fw-semibold">
+                                Archivo PDF
+                            </label>
+                            <input type="file"
+                                   name="archivo_pdf"
+                                   id="archivo_pdf"
+                                   class="form-control @error('archivo_pdf') is-invalid @enderror"
+                                   accept=".pdf,application/pdf">
+                            @error('archivo_pdf')
+                                <div class="invalid-feedback d-block">
+                                    <i class="bi bi-exclamation-circle me-1"></i>
+                                    {{ $message }}
+                                </div>
+                            @enderror
+                            <small class="text-muted">
+                                <i class="bi bi-info-circle me-1"></i>
+                                Solo archivos PDF. Tamaño máximo: 10 MB.
+                            </small>
+                        </div>
+                        {{-- Vista previa del nombre seleccionado --}}
+                        <div id="pdf-preview-name" class="d-none mt-2">
+                            <span class="badge bg-danger px-3 py-2">
+                                <i class="bi bi-file-pdf me-1"></i>
+                                <span id="pdf-filename"></span>
+                            </span>
+                        </div>
+                    </div>
+                </div>
+
                 {{-- BOTONES --}}
                 <div class="mt-4">
 
@@ -1064,6 +1103,26 @@
                 personaDestinaria.innerHTML = '<option value="">Error al cargar personas</option>';
             });
     });
+
+    /*
+    |--------------------------------------------------------------------------
+    | PREVIEW NOMBRE ARCHIVO PDF
+    |--------------------------------------------------------------------------
+    */
+
+    const inputPdf = document.getElementById('archivo_pdf');
+    if (inputPdf) {
+        inputPdf.addEventListener('change', function () {
+            const previewDiv  = document.getElementById('pdf-preview-name');
+            const nameSpan    = document.getElementById('pdf-filename');
+            if (this.files && this.files[0]) {
+                nameSpan.textContent = this.files[0].name;
+                previewDiv.classList.remove('d-none');
+            } else {
+                previewDiv.classList.add('d-none');
+            }
+        });
+    }
 
 </script>
 
