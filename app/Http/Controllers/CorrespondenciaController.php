@@ -380,14 +380,9 @@ class CorrespondenciaController extends Controller
 
         /*
         |--------------------------------------------------------------------------
-        | VALIDACIONES DE DERIVACIÓN
+        | VALIDACIÓN: Auto-derivación bloqueada (no puede derivarse a sí mismo)
         |--------------------------------------------------------------------------
         */
-
-        // Validar que departamento destino es diferente del origen
-        if ($departamentoOrigen == $request->idDepartamentoDestino) {
-            return back()->with('error', 'No puede derivar un documento al mismo departamento.');
-        }
 
         // Validar que idUsuarioAsignado (si se proporciona) existe y es válido
         if ($request->filled('idUsuarioAsignado')) {
@@ -401,9 +396,9 @@ class CorrespondenciaController extends Controller
                 return back()->with('error', 'El usuario destino está inactivo.');
             }
 
-            // Validar que el usuario no se derive a sí mismo
+            // ÚNICA RESTRICCIÓN: No puede derivarse a sí mismo
             if ($usuarioDestino->id == $user->id) {
-                return back()->with('error', 'No puede derivar un documento a sí mismo.');
+                return back()->with('error', 'No puede derivar un documento a usted mismo.');
             }
         }
 

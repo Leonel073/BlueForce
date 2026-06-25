@@ -12,7 +12,7 @@ use App\Models\Departamento;
 use App\Models\Derivacion;
 use App\Models\Seguimiento;
 use App\Http\Requests\StoreDocumentoRequest;
-
+use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Auth;
@@ -304,7 +304,23 @@ public function index()
 
             /*
             |--------------------------------------------------------------------------
-            | OBTENER USUARIO RESPONSABLE DEL DEPARTAMENTO DESTINO
+            | RESPONSABLE DESTINO - NUEVO
+            |--------------------------------------------------------------------------
+            */
+
+            $responsableDestino = Persona::where('idPersona', $validated['responsable_destino'])
+                ->where('idDepartamento', $departamentoDestino->idDepartamento)
+                ->where('tipo', 'INTERNO')
+                ->where('activo', true)
+                ->firstOrFail();
+
+            $usuarioResponsable = User::where('idPersona', $responsableDestino->idPersona)
+                ->where('activo', true)
+                ->first();
+
+            /*
+            |--------------------------------------------------------------------------
+            | OBTENER USUARIO RESPONSABLE DEL DEPARTAMENTO DESTINO (LEGACY - MANTENER)
             |--------------------------------------------------------------------------
             */
 
@@ -320,28 +336,25 @@ public function index()
 
             /*
             |--------------------------------------------------------------------------
-            | PERSONA ENCARGADA
+            | PERSONA ENCARGADA - AHORA ES EL RESPONSABLE DESTINO SELECCIONADO
             |--------------------------------------------------------------------------
             */
 
-            if ($departamentoDestino->idPersonaEncargada)
-            {
-                CorrespondenciaDestinatario::create([
+            CorrespondenciaDestinatario::create([
 
-                    'idDocumento' =>
-                        $documento->idDocumento,
+                'idDocumento' =>
+                    $documento->idDocumento,
 
-                    'idPersona' =>
-                        $departamentoDestino->idPersonaEncargada,
+                'idPersona' =>
+                    $responsableDestino->idPersona,
 
-                    'activo' => true,
+                'activo' => true,
 
-                ]);
-            }
+            ]);
 
             /*
             |--------------------------------------------------------------------------
-            | DERIVACIÓN AUTOMÁTICA - ASIGNAR AL RESPONSABLE DEL DEPARTAMENTO
+            | DERIVACIÓN AUTOMÁTICA - ASIGNAR AL RESPONSABLE SELECCIONADO
             |--------------------------------------------------------------------------
             */
 
@@ -358,13 +371,13 @@ public function index()
                     $departamentoDestino->idDepartamento,
 
                 'idUsuarioAsignado' =>
-                    $usuarioDestino?->id,
+                    $usuarioResponsable?->id,
 
                 'idUsuarioEnvio' =>
                     Auth::id(),
 
                 'instruccion' =>
-                    e('Derivación automática inicial'),
+                    e('Derivación automática inicial hacia: ' . $responsableDestino->nombre),
 
                 'fechaEnvio' => now(),
 
@@ -539,6 +552,39 @@ public function index()
             });
 
         return response()->json($personas);
+    }
+
+    /*
+    |--------------------------------------------------------------------------
+    | CARGAR RESPONSABLES DEL DEPARTAMENTO PARA DERIVACIÓN
+    |--------------------------------------------------------------------------
+    */
+    
+    public function cargarResponsablesPorDepartamento($idDepartamento)
+    {
+        $departamento = Departamento::findOrFail($idDepartamento);
+
+        $responsables = Persona::where('idDepartamento', $idDepartamento)
+            ->where('tipo', 'INTERNO')
+            ->where('activo', true)
+            ->with('cargo')
+            ->orderBy('nombre')
+            ->get([
+                'idPersona',
+                'nombre',
+                'ci',
+                'idCargo'
+            ])
+            ->map(function ($persona) {
+                return [
+                    'idPersona' => $persona->idPersona,
+                    'nombre' => $persona->nombre,
+                    'ci' => $persona->ci,
+                    'cargo' => $persona->cargo ? $persona->cargo->nombre : 'Sin cargo asignado'
+                ];
+            });
+
+        return response()->json($responsables);
     }
 
     public function adminIndex()

@@ -107,6 +107,9 @@ class StoreDocumentoRequest extends FormRequest
             'persona_destinataria' => 
                 'nullable|exists:PERSONA,idPersona',
 
+            'responsable_destino' =>
+                'required|exists:PERSONA,idPersona',
+
             /*
             |--------------------------------------------------------------------------
             | ARCHIVO PDF (OPCIONAL)
@@ -295,6 +298,12 @@ class StoreDocumentoRequest extends FormRequest
             'departamento.exists' => 
                 'El departamento seleccionado no existe en el sistema.',
 
+            'responsable_destino.required' =>
+                'Debe seleccionar un responsable destino. Este campo es obligatorio.',
+
+            'responsable_destino.exists' =>
+                'El responsable seleccionado no existe en el sistema.',
+
             /*
             |--------------------------------------------------------------------------
             | PDF
@@ -326,6 +335,7 @@ class StoreDocumentoRequest extends FormRequest
             'institucion_remitente' => 'Institución del Remitente',
             'tipo_remitente' => 'Tipo de Remitente',
             'departamento' => 'Departamento Destino',
+            'responsable_destino' => 'Responsable Destino',
         ];
     }
 }

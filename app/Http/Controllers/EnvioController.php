@@ -162,7 +162,7 @@ public function index(Request $request)
             'urgencia',
             'tipoDocumento',
             'remitente',
-            'ultimaDerivacion.departamentoDestino',
+            'derivaciones.departamentoDestino',
         ])->orderByDesc('idDocumento');
 
         /*
@@ -230,7 +230,8 @@ public function index(Request $request)
                 'documentos',
                 'estados',
                 'urgencias',
-                'departamentos'
+                'departamentos',
+                'user'
             )
         );
     }
@@ -334,25 +335,9 @@ public function index(Request $request)
 
         /*
         |--------------------------------------------------------------------------
-        | VALIDAR MISMO DEPARTAMENTO
+        | VALIDACIÓN: Auto-derivación bloqueada (no puede derivarse a sí mismo)
         |--------------------------------------------------------------------------
         */
-
-        if(
-            $ultimaDerivacion &&
-            $ultimaDerivacion->idDepartamentoDestino ==
-            $request->idDepartamentoDestino
-        )
-        {
-            return back()
-                ->withInput()
-                ->with(
-                    'error',
-                    'El documento ya se encuentra en ese departamento.'
-                );
-        }
-
-        $idUsuarioAsignado = null;
 
         if ($request->filled('idPersonaResponsable'))
         {
@@ -380,7 +365,19 @@ public function index(Request $request)
                 $personaResponsable->idPersona
             )
                 ->where('activo', true)
-                ->value('id');
+                ->first();
+
+            // ÚNICA RESTRICCIÓN: No puede derivarse a sí mismo
+            if ($idUsuarioAsignado && $idUsuarioAsignado->id == Auth::id()) {
+                return back()
+                    ->withInput()
+                    ->with(
+                        'error',
+                        'No puede derivar un documento a usted mismo.'
+                    );
+            }
+
+            $idUsuarioAsignado = $idUsuarioAsignado?->id;
         }
 
         /*

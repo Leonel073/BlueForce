@@ -146,6 +146,7 @@ Route::middleware(['auth', 'verified', 'nocache', 'user'])->group(function () {
 
     Route::get('/persona/buscar/{ci}', [DocumentoController::class, 'buscarPersona'])->name('persona.buscar');
     Route::get('/documentos/departamento/{idDepartamento}/personas', [DocumentoController::class, 'obtenerPersonasPorDepartamento'])->name('documentos.departamento.personas');
+    Route::get('/documentos/responsables-departamento/{idDepartamento}', [DocumentoController::class, 'cargarResponsablesPorDepartamento'])->name('documentos.responsables-departamento');
 
     /*
     |--------------------------------------------------------------------------

@@ -287,24 +287,26 @@
             $doc->estado->nombre ?? ''
         );
 
-    $bloqueado =
+    // Documento bloqueado si está finalizado, archivado o cerrado
+    $bloqueadoPorEstado =
         in_array(
             $estadoDocumento,
             [
-                'pendiente',
-                'recibido',
-                'archivado'
+                'FINALIZADO',
+                'ARCHIVADO',
+                'CERRADO'
             ]
         );
 
-    // VALIDACIÓN: ¿Es el usuario responsable actual?
-    $ultimaDerivacion = $doc->ultimaDerivacion;
-    $esResponsable = $ultimaDerivacion && $ultimaDerivacion->idUsuarioAsignado == Auth::id();
-    
-    // Si no es responsable actual, bloquear operaciones
-    if (!$esResponsable && !Auth::user()->isAdmin()) {
-        $bloqueado = true;
-    }
+    // Usuario es responsable actual solo si:
+    // 1. Es admin, O
+    // 2. Es el idUsuarioAsignado de la última derivación
+    $esResponsableActual = 
+        Auth::user()->idRol == 1 || 
+        ($ultimaDerivacion && $ultimaDerivacion->idUsuarioAsignado == Auth::id());
+
+    // Bloquear si documento está finalizado/archivado O si no es responsable actual
+    $bloqueado = $bloqueadoPorEstado || !$esResponsableActual;
 
 @endphp
 

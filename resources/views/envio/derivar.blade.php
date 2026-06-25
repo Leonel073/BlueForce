@@ -176,14 +176,9 @@
                     @foreach($departamentos as $dep)
 
                         <option value="{{ $dep->idDepartamento }}"
-                            {{ $departamentoActual == $dep->idDepartamento ? 'disabled' : '' }}
                             @selected(old('idDepartamentoDestino') == $dep->idDepartamento)>
 
                             {{ $dep->nombre }}
-
-                            @if($departamentoActual == $dep->idDepartamento)
-                                (Departamento Actual)
-                            @endif
 
                         </option>
 
@@ -436,10 +431,7 @@
     departamentoSelect.addEventListener('change', function () {
         const idDepartamento = this.value;
 
-        if (
-            !idDepartamento ||
-            (departamentoActualId != null && Number(idDepartamento) === Number(departamentoActualId))
-        ) {
+        if (!idDepartamento) {
             destinatarioSection.style.display = 'none';
             resetPersonas();
             return;

@@ -287,7 +287,8 @@
             $doc->estado->nombre ?? ''
         );
 
-    $bloqueado =
+    // Documento bloqueado si está finalizado, archivado o cerrado
+    $bloqueadoPorEstado =
         in_array(
             $estadoDocumento,
             [
@@ -296,6 +297,16 @@
                 'CERRADO'
             ]
         );
+
+    // Usuario es responsable actual solo si:
+    // 1. Es admin, O
+    // 2. Es el idUsuarioAsignado de la última derivación
+    $esResponsableActual = 
+        Auth::user()->idRol == 1 || 
+        ($ultimaDerivacion && $ultimaDerivacion->idUsuarioAsignado == Auth::id());
+
+    // Bloquear si documento está finalizado/archivado O si no es responsable actual
+    $bloqueado = $bloqueadoPorEstado || !$esResponsableActual;
 
 @endphp
 
