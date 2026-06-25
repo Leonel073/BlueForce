@@ -98,37 +98,19 @@ class StorePersonaRequest extends FormRequest
 
             /*
             |--------------------------------------------------------------------------
-            | ASIGNACIÓN - VALIDACIÓN CONDICIONAL
+            | ASIGNACIÓN - VALIDACIÓN CONDICIONAL (OPCIONAL PARA INTERNOS)
             |--------------------------------------------------------------------------
             */
             'idCargo' => [
-                'required_if:tipo,INTERNO',
                 'nullable',
                 'integer',
                 Rule::exists('CARGO', 'idCargo')->where('activo', 1),
             ],
 
             'idDepartamento' => [
-                'required_if:tipo,INTERNO',
                 'nullable',
                 'integer',
                 Rule::exists('DEPARTAMENTO', 'idDepartamento')->where('activo', 1),
-            ],
-
-            /*
-            |--------------------------------------------------------------------------
-            | CLASIFICACIÓN DE ACCESO (NUEVO)
-            |--------------------------------------------------------------------------
-            */
-            'tipo_persona' => [
-                'required',
-                \Illuminate\Validation\Rule::in(['trabajador', 'externo']),
-                function ($attribute, $value, $fail) {
-                    // Una persona EXTERNA nunca puede ser trabajador
-                    if (request('tipo') === 'EXTERNO' && $value === 'trabajador') {
-                        $fail('Una persona externa no puede clasificarse como trabajador.');
-                    }
-                },
             ],
 
             /*
@@ -176,17 +158,11 @@ class StorePersonaRequest extends FormRequest
             'institucion.string' => 'La institución debe ser un texto válido.',
             'institucion.max' => 'La institución no puede exceder 200 caracteres.',
 
-            // Cargo (condicional)
-            'idCargo.required_if' => 'El cargo es obligatorio para personas INTERNAS.',
+            // Cargo (opcional)
             'idCargo.exists' => 'El cargo especificado no existe o está inactivo.',
 
-            // Departamento (condicional)
-            'idDepartamento.required_if' => 'El departamento es obligatorio para personas INTERNAS.',
+            // Departamento (opcional)
             'idDepartamento.exists' => 'El departamento especificado no existe o está inactivo.',
-
-            // tipo_persona
-            'tipo_persona.required' => 'Debe seleccionar la clasificación de la persona (trabajador o externo).',
-            'tipo_persona.in'       => 'La clasificación debe ser "trabajador" o "externo".',
 
             // Estado
             'activo.boolean' => 'El estado debe ser verdadero o falso.',

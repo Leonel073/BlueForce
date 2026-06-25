@@ -29,10 +29,13 @@
     </a>
 
     {{-- DOCUMENTOS --}}
-    <a href="{{ route('correspondencia.index') }}"
+    <a href="{{ Auth::user()->idRol == 1
+        ? route('admin.correspondencia')
+        : route('correspondencia.index') }}"
 
        class="nav-link
        {{ request()->routeIs('correspondencia.*')
+            || request()->routeIs('admin.correspondencia*')
             || request()->routeIs('documentos.*')
             ? 'active'
             : '' }}">
@@ -42,7 +45,7 @@
         </span>
 
         <span class="nav-label-text">
-            Documentos
+            Correspondencia
         </span>
 
     </a>
@@ -58,30 +61,34 @@
         Correspondencia
     </div>
 
-    {{-- BANDEJA --}}
-    <a href="{{ route('envios.bandeja') }}"
-       class="nav-link {{ request()->routeIs('envios.bandeja') ? 'active' : '' }}">
+    {{-- MI BANDEJA --}}
+    <a href="{{ Auth::user()->idRol == 1
+        ? route('admin.bandeja')
+        : route('envios.bandeja') }}"
+       class="nav-link {{ request()->routeIs('admin.bandeja', 'envios.bandeja') ? 'active' : '' }}">
 
         <span class="nav-icon">
             <i class="bi bi-inbox-fill"></i>
         </span>
 
         <span class="nav-label-text">
-            Mi Bandeja
+            @if(Auth::user()->idRol == 1) Bandeja @else Mi Bandeja @endif
         </span>
 
     </a>
 
-    {{-- ENVIADOS --}}
-    <a href="{{ route('envios.index') }}"
-       class="nav-link {{ request()->routeIs('envios.*') ? 'active' : '' }}">
+    {{-- ENVIADAS --}}
+    <a href="{{ Auth::user()->idRol == 1
+        ? route('admin.envios')
+        : route('envios.index') }}"
+       class="nav-link {{ request()->routeIs('admin.envios*', 'envios.*') ? 'active' : '' }}">
 
         <span class="nav-icon">
             <i class="bi bi-send-fill"></i>
         </span>
 
         <span class="nav-label-text">
-            Enviadas
+            @if(Auth::user()->idRol == 1) Envíos @else Mis Envíos @endif
         </span>
 
     </a>
@@ -171,8 +178,8 @@
 
     {{--Auditoria--}}
 {{-- AUDITORÍA --}}
-<a href="{{ route('auditoria.index') }}"
-   class="nav-link {{ request()->routeIs('auditoria.*') ? 'active' : '' }}">
+<a href="{{ route('admin.auditoria.index') }}"
+   class="nav-link {{ request()->routeIs('admin.auditoria.*') ? 'active' : '' }}">
 
     <span class="nav-icon">
         <i class="bi bi-shield-check"></i>

@@ -7,7 +7,7 @@
     <!-- HEADER -->
     <div class="row mb-4">
         <div class="col">
-            <a href="{{ route('auditoria.index') }}" class="text-decoration-none text-muted mb-3 d-inline-block">
+            <a href="{{ route('admin.auditoria.index') }}" class="text-decoration-none text-muted mb-3 d-inline-block">
                 <i class="bi bi-chevron-left"></i> Volver a auditoría
             </a>
             <h1 class="h3 fw-bold" style="color: #0B2D59;">
@@ -15,7 +15,7 @@
             </h1>
         </div>
         <div class="col-auto">
-            <form method="GET" action="{{ route('auditoria.estadisticas') }}" class="d-flex gap-2">
+            <form method="GET" action="{{ route('admin.auditoria.estadisticas') }}" class="d-flex gap-2">
                 <select name="dias" class="form-select form-select-sm" style="width: auto;" onchange="this.form.submit()">
                     <option value="7" {{ $dias == 7 ? 'selected' : '' }}>Últimos 7 días</option>
                     <option value="30" {{ $dias == 30 ? 'selected' : '' }}>Últimos 30 días</option>

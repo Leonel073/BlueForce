@@ -291,11 +291,20 @@
         in_array(
             $estadoDocumento,
             [
-                'FINALIZADO',
-                'ARCHIVADO',
-                'CERRADO'
+                'pendiente',
+                'recibido',
+                'archivado'
             ]
         );
+
+    // VALIDACIÓN: ¿Es el usuario responsable actual?
+    $ultimaDerivacion = $doc->ultimaDerivacion;
+    $esResponsable = $ultimaDerivacion && $ultimaDerivacion->idUsuarioAsignado == Auth::id();
+    
+    // Si no es responsable actual, bloquear operaciones
+    if (!$esResponsable && !Auth::user()->isAdmin()) {
+        $bloqueado = true;
+    }
 
 @endphp
 
@@ -439,7 +448,7 @@
                                     <div class="d-flex justify-content-center flex-wrap gap-2">
 
                                         {{-- VER --}}
-                                        <a href="{{ route('admin.correspondencia.show', $doc->idDocumento) }}?volver=bandeja"
+                                                <a href="{{ route('correspondencia.show', $doc->idDocumento) }}?volver=bandeja"
                                            class="btn btn-sm btn-doc btn-doc-view"
                                            title="Ver detalle">
 

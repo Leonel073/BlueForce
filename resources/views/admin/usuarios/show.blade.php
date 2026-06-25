@@ -113,8 +113,8 @@
                         </p>
                         <p class="mb-0">
                             <strong>Tipo:</strong>
-                            <span class="badge {{ $usuario->persona->tipo_persona === 'trabajador' ? 'bg-success' : 'bg-warning text-dark' }}">
-                                {{ ucfirst($usuario->persona->tipo_persona ?? 'N/A') }}
+                            <span class="badge {{ $usuario->persona->tipo === 'INTERNO' ? 'bg-success' : 'bg-warning text-dark' }}">
+                                {{ $usuario->persona->tipo }}
                             </span>
                         </p>
                     @else

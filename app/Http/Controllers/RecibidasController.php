@@ -65,6 +65,13 @@ class RecibidasController extends Controller
             'ultimaDerivacion.departamentoDestino',
         ]);
 
+        // FILTRO DE SEGURIDAD: Usuario normal solo ve documentos donde es responsable actual
+        if ($user->idRol != 1) {
+            $query->whereHas('ultimaDerivacion', 
+                fn($q) => $q->where('idUsuarioAsignado', $user->id)
+            );
+        }
+
         // Filtro por estado
         if ($request->filled('estado')) {
             $query->where('idEstado', $request->estado);
@@ -93,6 +100,28 @@ class RecibidasController extends Controller
             DB::transaction(function () use ($id) {
 
                 $documento = Correspondencia::findOrFail($id);
+                $user = Auth::user();
+
+                /*
+                |----------------------------------------------------------------------
+                | VALIDACIÓN DE RESPONSABILIDAD - Solo responsable actual puede recibir
+                |----------------------------------------------------------------------
+                */
+
+                if ($user->idRol != 1) {
+                    $ultimaDerivacion = Derivacion::where('idDocumento', $id)
+                        ->orderByDesc('orden')
+                        ->first();
+
+                    if (!$ultimaDerivacion || !$ultimaDerivacion->idUsuarioAsignado) {
+                        throw new Exception('Este documento no tiene responsable asignado.');
+                    }
+
+                    if ($ultimaDerivacion->idUsuarioAsignado != $user->id) {
+                        throw new Exception('Este documento ya fue asignado a otro usuario y ya no se encuentra bajo su responsabilidad.');
+                    }
+                }
+
                 $idRecibido = $this->idEstado('Recibido');
 
                 // Marcar derivación como recibida
@@ -139,6 +168,28 @@ class RecibidasController extends Controller
             DB::transaction(function () use ($id) {
 
                 $documento = Correspondencia::findOrFail($id);
+                $user = Auth::user();
+
+                /*
+                |----------------------------------------------------------------------
+                | VALIDACIÓN DE RESPONSABILIDAD - Solo responsable actual puede atender
+                |----------------------------------------------------------------------
+                */
+
+                if ($user->idRol != 1) {
+                    $ultimaDerivacion = Derivacion::where('idDocumento', $id)
+                        ->orderByDesc('orden')
+                        ->first();
+
+                    if (!$ultimaDerivacion || !$ultimaDerivacion->idUsuarioAsignado) {
+                        throw new Exception('Este documento no tiene responsable asignado.');
+                    }
+
+                    if ($ultimaDerivacion->idUsuarioAsignado != $user->id) {
+                        throw new Exception('Este documento ya fue asignado a otro usuario y ya no se encuentra bajo su responsabilidad.');
+                    }
+                }
+
                 $idRecibido = $this->idEstado('Recibido');
                 $idAtendido = $this->idEstado('Atendido');
 
@@ -180,6 +231,28 @@ class RecibidasController extends Controller
             DB::transaction(function () use ($id) {
 
                 $documento = Correspondencia::findOrFail($id);
+                $user = Auth::user();
+
+                /*
+                |----------------------------------------------------------------------
+                | VALIDACIÓN DE RESPONSABILIDAD - Solo responsable actual puede archivar
+                |----------------------------------------------------------------------
+                */
+
+                if ($user->idRol != 1) {
+                    $ultimaDerivacion = Derivacion::where('idDocumento', $id)
+                        ->orderByDesc('orden')
+                        ->first();
+
+                    if (!$ultimaDerivacion || !$ultimaDerivacion->idUsuarioAsignado) {
+                        throw new Exception('Este documento no tiene responsable asignado.');
+                    }
+
+                    if ($ultimaDerivacion->idUsuarioAsignado != $user->id) {
+                        throw new Exception('Este documento ya fue asignado a otro usuario y ya no se encuentra bajo su responsabilidad.');
+                    }
+                }
+
                 $idAtendido  = $this->idEstado('Atendido');
                 $idArchivado = $this->idEstado('Archivado');
 

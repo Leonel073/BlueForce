@@ -28,76 +28,32 @@
 
     </a>
 
-    {{-- DOCUMENTOS --}}
-    <a href="{{ route('correspondencia.index') }}"
-
-       class="nav-link
-       {{ request()->routeIs('correspondencia.*')
-            || request()->routeIs('documentos.*')
-            ? 'active'
-            : '' }}">
-
-        <span class="nav-icon">
-            <i class="bi bi-file-earmark-text-fill"></i>
-        </span>
-
-        <span class="nav-label-text">
-            Documentos
-        </span>
-
-    </a>
-
 </div>
 
-{{-- =========================
-| CORRESPONDENCIA
-========================= --}}
-<div class="nav-section">
-
-    <div class="nav-section-label">
-        Correspondencia
-    </div>
-
-    {{-- BANDEJA --}}
-    <a href="{{ route('envios.bandeja') }}"
-       class="nav-link {{ request()->routeIs('envios.bandeja') ? 'active' : '' }}">
-
-        <span class="nav-icon">
-            <i class="bi bi-inbox-fill"></i>
-        </span>
-
-        <span class="nav-label-text">
-            Mi Bandeja
-        </span>
-
-    </a>
-
-    {{-- ENVIADOS --}}
-    <a href="{{ route('envios.index') }}"
-       class="nav-link {{ request()->routeIs('envios.*') ? 'active' : '' }}">
-
-        <span class="nav-icon">
-            <i class="bi bi-send-fill"></i>
-        </span>
-
-        <span class="nav-label-text">
-            Enviadas
-        </span>
-
-    </a>
-
-</div>
-
-{{-- =========================
-| ADMINISTRACIÓN
-========================= --}}
 @if(Auth::user()->idRol == 1)
 
+{{-- =========================
+| CORRESPONDENCIA (ADMIN) - CENTRO DE CONTROL
+========================= --}}
 <div class="nav-section">
 
     <div class="nav-section-label">
         Administración
     </div>
+
+    {{-- GESTIÓN DOCUMENTAL - MÓDULO PRINCIPAL --}}
+    <a href="{{ route('admin.documentos.index') }}"
+       class="nav-link {{ request()->routeIs('admin.documentos.*') ? 'active' : '' }}">
+
+        <span class="nav-icon">
+            <i class="bi bi-folder2-open"></i>
+        </span>
+
+        <span class="nav-label-text">
+            Gestión Documental
+        </span>
+
+    </a>
 
     {{-- USUARIOS --}}
     <a href="{{ route('admin.usuarios') }}"
@@ -141,20 +97,6 @@
 
     </a>
 
-    {{-- GESTIÓN DOCUMENTAL --}}
-    <a href="{{ route('admin.documentos.index') }}"
-       class="nav-link {{ request()->routeIs('admin.documentos.*') ? 'active' : '' }}">
-
-        <span class="nav-icon">
-            <i class="bi bi-folder2-open"></i>
-        </span>
-
-        <span class="nav-label-text">
-            Gestión Documental
-        </span>
-
-    </a>
-
     {{-- REPORTES --}}
     <a href="{{ route('admin.reportes.index') }}"
        class="nav-link {{ request()->routeIs('admin.reportes.*') ? 'active' : '' }}">
@@ -168,51 +110,87 @@
         </span>
 
     </a>
-    <a href="{{ route('auditoria.index') }}"
-   class="nav-link {{ request()->routeIs('auditoria.*') ? 'active' : '' }}">
 
-    <span class="nav-icon">
-        <i class="bi bi-shield-check"></i>
-    </span>
+    {{-- AUDITORÍA --}}
+    <a href="{{ route('admin.auditoria.index') }}"
+       class="nav-link {{ request()->routeIs('admin.auditoria.*') ? 'active' : '' }}">
 
-    <span class="nav-label-text">
-        Auditoría
-    </span>
+        <span class="nav-icon">
+            <i class="bi bi-shield-check"></i>
+        </span>
 
-</a>
+        <span class="nav-label-text">
+            Auditoría
+        </span>
 
-    </div>
+    </a>
+
+</div>
 
 @else
 
+{{-- =========================
+| CORRESPONDENCIA (USER)
+========================= --}}
 <div class="nav-section">
+
     <div class="nav-section-label">
-        Reportes
+        Correspondencia
     </div>
 
-    <a href="{{ route('admin.reportes.documentos') }}"
-       class="nav-link {{ request()->routeIs('admin.reportes.documentos*') ? 'active' : '' }}">
+    {{-- CORRESPONDENCIA USER --}}
+    <a href="{{ route('correspondencia.index') }}"
+       class="nav-link {{ request()->routeIs('correspondencia.*') ? 'active' : '' }}">
 
         <span class="nav-icon">
-            <i class="bi bi-file-earmark-text-fill"></i>
+            <i class="bi bi-file-text-fill"></i>
         </span>
 
         <span class="nav-label-text">
-            Reportes Documentos
+            Mi Correspondencia
         </span>
+
     </a>
 
-    <a href="{{ route('admin.reportes.departamentos') }}"
-       class="nav-link {{ request()->routeIs('admin.reportes.departamentos*') ? 'active' : '' }}">
+</div>
+
+{{-- =========================
+| MIS DOCUMENTOS
+========================= --}}
+<div class="nav-section">
+
+    <div class="nav-section-label">
+        Mis Documentos
+    </div>
+
+    {{-- MI BANDEJA --}}
+    <a href="{{ route('envios.bandeja') }}"
+       class="nav-link {{ request()->routeIs('envios.bandeja') ? 'active' : '' }}">
 
         <span class="nav-icon">
-            <i class="bi bi-building"></i>
+            <i class="bi bi-inbox-fill"></i>
         </span>
 
         <span class="nav-label-text">
-            Reportes Departamentos
+            Mi Bandeja
         </span>
+
     </a>
+
+    {{-- MIS ENVÍOS --}}
+    <a href="{{ route('envios.index') }}"
+       class="nav-link {{ request()->routeIs('envios.*') ? 'active' : '' }}">
+
+        <span class="nav-icon">
+            <i class="bi bi-send-fill"></i>
+        </span>
+
+        <span class="nav-label-text">
+            Mis Envíos
+        </span>
+
+    </a>
+
 </div>
 
 @endif

@@ -20,10 +20,10 @@
             </div>
         </div>
         <div class="col-auto">
-            <a href="{{ route('auditoria.estadisticas') }}" class="btn btn-outline-primary btn-sm me-2">
+            <a href="{{ route('admin.auditoria.estadisticas') }}" class="btn btn-outline-primary btn-sm me-2">
                 <i class="bi bi-graph-up"></i> Estadísticas
             </a>
-            <a href="{{ route('auditoria.exportar') }}" class="btn btn-outline-success btn-sm">
+            <a href="{{ route('admin.auditoria.exportar') }}" class="btn btn-outline-success btn-sm">
                 <i class="bi bi-download"></i> Exportar CSV
             </a>
         </div>
@@ -99,7 +99,7 @@
     <!-- FILTROS -->
     <div class="card border-0 shadow-sm rounded-3 mb-4">
         <div class="card-body">
-            <form method="GET" action="{{ route('auditoria.index') }}" class="row g-3">
+            <form method="GET" action="{{ route('admin.auditoria.index') }}" class="row g-3">
                 <div class="col-md-3">
                     <label class="form-label small fw-semibold" style="color: #0B2D59;">Usuario</label>
                     <select name="idUsuario" class="form-select form-select-sm">
@@ -222,7 +222,7 @@
                                         </code>
                                     </td>
                                     <td class="small">
-                                        <a href="{{ route('auditoria.show', $auditoria->idAuditoria) }}" 
+                                        <a href="{{ route('admin.auditoria.show', $auditoria->idAuditoria) }}" 
                                            class="btn btn-xs btn-outline-primary btn-sm"
                                            title="Ver detalles">
                                             <i class="bi bi-eye"></i>

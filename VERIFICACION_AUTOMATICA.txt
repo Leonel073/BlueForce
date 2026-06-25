@@ -1,0 +1,422 @@
+═══════════════════════════════════════════════════════════════════════════════
+VERIFICACIÓN EXHAUSTIVA - FLUJO COMPLETO CORRESPONDENCIA, MI BANDEJA, ENVIOS
+═══════════════════════════════════════════════════════════════════════════════
+
+FASE 1 - VERIFICACIÓN DE SIDEBARS
+═══════════════════════════════════════════════════════════════════════════════
+
+SIDEBAR 1: sidebar.blade.php
+─────────────────────────────────────────────────────────────────────────────
+
+MENÚ                          | RUTA                           | ROL  | LÍNEA
+─────────────────────────────────────────────────────────────────────────────
+Dashboard                     | route('admin.dashboard')       | ADMIN| 14-15
+                              | route('user.dashboard')        | USER | 14-15
+Documentos                    | route('correspondencia.index') | AMBOS| 40
+Mi Bandeja                    | route('envios.bandeja')        | AMBOS| 106
+Enviadas                      | route('envios.index')          | AMBOS| 130
+Usuarios                      | route('admin.usuarios')        | ADMIN| 67
+Reportes                      | route('admin.reportes.index')  | ADMIN| 156
+Configuración                 | route('user.configuracion')    | AMBOS| 193
+
+
+SIDEBAR 2: sidebar2.blade.php
+─────────────────────────────────────────────────────────────────────────────
+
+MENÚ                          | RUTA                           | ROL  | LÍNEA
+─────────────────────────────────────────────────────────────────────────────
+Dashboard                     | route('admin.dashboard')       | ADMIN| 12
+                              | route('user.dashboard')        | USER | 13
+Documentos                    | route('correspondencia.index') | AMBOS| 32
+Mi Bandeja                    | route('envios.bandeja')        | AMBOS| 62
+Enviadas                      | route('envios.index')          | AMBOS| 76
+Usuarios                      | route('admin.usuarios')        | ADMIN| 103
+Departamentos                 | route('admin.departamentos.index')| ADMIN| 117
+Personas                      | route('admin.personas.index')  | ADMIN| 131
+Gestión Documental            | route('admin.documentos.index')| ADMIN| 145
+Reportes                      | route('admin.reportes.index')  | ADMIN| 159
+Auditoría                     | route('admin.auditoria.index') | ADMIN| 174
+Configuración                 | route('user.configuracion')    | AMBOS| 201
+
+
+SIDEBAR 3: sidebar_updated.blade.php
+─────────────────────────────────────────────────────────────────────────────
+
+MENÚ                          | RUTA                           | ROL  | LÍNEA
+─────────────────────────────────────────────────────────────────────────────
+Dashboard                     | route('admin.dashboard')       | ADMIN| 9
+                              | route('user.dashboard')        | USER | 10
+Correspondencia (Admin)       | route('admin.correspondencia') | ADMIN| 48
+Mi Correspondencia            | route('correspondencia.index') | USER | 74
+Bandeja                       | route('envios.bandeja')        | AMBOS| 104
+Envíos                        | route('envios.index')          | AMBOS| 120
+Usuarios                      | route('admin.usuarios')        | ADMIN| 155
+Departamentos                 | route('admin.departamentos.index')| ADMIN| 169
+Personas                      | route('admin.personas.index')  | ADMIN| 183
+Gestión Documental            | route('admin.documentos.index')| ADMIN| 197
+Reportes                      | route('admin.reportes.index')  | ADMIN| 211
+Auditoría                     | route('admin.auditoria.index') | ADMIN| 225
+Configuración                 | route('user.configuracion')    | AMBOS| 245
+
+
+═══════════════════════════════════════════════════════════════════════════════
+FASE 2 - VALIDACIÓN DE RUTAS
+═══════════════════════════════════════════════════════════════════════════════
+
+CORRESPONDENCIA
+─────────────────────────────────────────────────────────────────────────────
+RUTA EN VISTA              | RUTA REGISTRADA           | RESULTADO | CONTROLADOR
+─────────────────────────────────────────────────────────────────────────────
+correspondencia.index      | correspondencia.index ✅  | OK        | CorrespondenciaController
+admin.correspondencia      | admin.correspondencia ✅  | OK        | CorrespondenciaController
+correspondencia.show       | correspondencia.show ✅   | OK        | CorrespondenciaController
+admin.correspondencia.show | admin.correspondencia.show ✅ | OK    | CorrespondenciaController
+
+
+BANDEJA / MI BANDEJA
+─────────────────────────────────────────────────────────────────────────────
+RUTA EN VISTA              | RUTA REGISTRADA           | RESULTADO | CONTROLADOR
+─────────────────────────────────────────────────────────────────────────────
+envios.bandeja            | envios.bandeja ✅         | OK        | EnvioController
+bandeja.pendientes        | bandeja.pendientes ✅     | OK        | BandejaController
+bandeja.recibidos         | bandeja.recibidos ✅      | OK        | BandejaController
+bandeja.atendidos         | bandeja.atendidos ✅      | OK        | BandejaController
+bandeja.archivados        | bandeja.archivados ✅     | OK        | BandejaController
+
+
+ENVIOS / ENVIADAS
+─────────────────────────────────────────────────────────────────────────────
+RUTA EN VISTA              | RUTA REGISTRADA           | RESULTADO | CONTROLADOR
+─────────────────────────────────────────────────────────────────────────────
+envios.index              | envios.index ✅           | OK        | EnvioController
+envios.derivar.form       | envios.derivar.form ✅    | OK        | EnvioController
+envios.derivar            | envios.derivar ✅         | OK        | EnvioController
+envios.finalizar          | envios.finalizar ✅       | OK        | EnvioController
+
+
+GESTIÓN DOCUMENTAL
+─────────────────────────────────────────────────────────────────────────────
+RUTA EN VISTA              | RUTA REGISTRADA           | RESULTADO | CONTROLADOR
+─────────────────────────────────────────────────────────────────────────────
+admin.documentos.index    | admin.documentos.index ✅ | OK        | DocumentoController
+admin.documentos.edit     | admin.documentos.edit ✅  | OK        | DocumentoController
+admin.documentos.detalle  | admin.documentos.detalle ✅ | OK      | DocumentoController
+admin.documentos.pdf.subir| admin.documentos.pdf.subir ✅ | OK    | DocumentoController
+admin.documentos.pdf.eliminar| admin.documentos.pdf.eliminar ✅ | OK | DocumentoController
+
+
+═══════════════════════════════════════════════════════════════════════════════
+FASE 3 - VALIDACIÓN CONTROLADORES Y MÉTODOS
+═══════════════════════════════════════════════════════════════════════════════
+
+CORRESPONDENCIA
+─────────────────────────────────────────────────────────────────────────────
+RUTA                          | CONTROLADOR            | MÉTODO      | EXISTE
+─────────────────────────────────────────────────────────────────────────────
+correspondencia.index         | CorrespondenciaController | index()    | ✅
+admin.correspondencia         | CorrespondenciaController | index()    | ✅
+correspondencia.show          | CorrespondenciaController | show()     | ✅
+admin.correspondencia.show    | CorrespondenciaController | show()     | ✅
+admin.correspondencia.derivar | CorrespondenciaController | derivar()  | ✅
+correspondencia.derivar       | CorrespondenciaController | derivar()  | ✅
+
+
+BANDEJA
+─────────────────────────────────────────────────────────────────────────────
+RUTA                          | CONTROLADOR         | MÉTODO          | EXISTE
+─────────────────────────────────────────────────────────────────────────────
+envios.bandeja                | EnvioController     | bandeja()       | ✅
+bandeja.pendientes            | BandejaController   | pendientes()    | ✅
+bandeja.recibidos             | BandejaController   | recibidos()     | ✅
+bandeja.atendidos             | BandejaController   | atendidos()     | ✅
+bandeja.archivados            | BandejaController   | archivados()    | ✅
+
+
+ENVIOS
+─────────────────────────────────────────────────────────────────────────────
+RUTA                          | CONTROLADOR         | MÉTODO          | EXISTE
+─────────────────────────────────────────────────────────────────────────────
+envios.index                  | EnvioController     | index()         | ✅
+envios.derivar.form           | EnvioController     | derivarForm()   | ✅
+envios.derivar                | EnvioController     | derivar()       | ✅
+envios.finalizar              | EnvioController     | finalizar()     | ✅
+
+
+GESTIÓN DOCUMENTAL
+─────────────────────────────────────────────────────────────────────────────
+RUTA                          | CONTROLADOR         | MÉTODO          | EXISTE
+─────────────────────────────────────────────────────────────────────────────
+admin.documentos.index        | DocumentoController | adminIndex()    | ✅
+admin.documentos.edit         | DocumentoController | edit()          | ✅
+admin.documentos.detalle      | DocumentoController | detalle()       | ✅
+admin.documentos.update       | DocumentoController | update()        | ✅
+admin.documentos.pdf.subir    | DocumentoController | subirPdf()      | ✅
+admin.documentos.pdf.eliminar | DocumentoController | eliminarPdf()   | ✅
+
+
+═══════════════════════════════════════════════════════════════════════════════
+FASE 4 - VALIDACIÓN DE VISTAS (RETURN VIEW)
+═══════════════════════════════════════════════════════════════════════════════
+
+CORRESPONDENCIACONTROLLER
+─────────────────────────────────────────────────────────────────────────────
+MÉTODO      | RETURN VIEW                              | VISTA EXISTE | ESTADO
+─────────────────────────────────────────────────────────────────────────────
+index()     | Dinámico: admin.correspondencia.index si  | ✅          | ✅
+            | idRol==1, correspondencia.index si no     | ✅          |
+show()      | Dinámico: admin.correspondencia.show si   | ✅          | ✅
+            | idRol==1, correspondencia.show si no      | ✅          |
+derivar()   | back() + flash message                    | N/A         | ✅
+finalizar() | back() + flash message                    | N/A         | ✅
+
+
+ENVIOCONTROLLER
+─────────────────────────────────────────────────────────────────────────────
+MÉTODO      | RETURN VIEW                              | VISTA EXISTE | ESTADO
+─────────────────────────────────────────────────────────────────────────────
+index()     | Dinámico: admin.envios.index si idRol==1 | ✅          | ✅
+            | envio.index si no                        | ✅          |
+bandeja()   | envio.bandeja (para ambos)               | ✅          | ✅
+derivarForm()| Dinámico: admin.envios.derivar si       | ✅          | ✅
+            | idRol==1, envio.derivar si no            | ✅          |
+derivar()   | redirect() + flash message               | N/A         | ✅
+finalizar() | redirect() + flash message               | N/A         | ✅
+
+
+BANDEJACONTROLLER
+─────────────────────────────────────────────────────────────────────────────
+MÉTODO      | RETURN VIEW                              | VISTA EXISTE | ESTADO
+─────────────────────────────────────────────────────────────────────────────
+pendientes()| bandeja.pendientes (solo para user)      | ✅          | ✅
+recibidos() | bandeja.recibidos (solo para user)       | ✅          | ✅
+atendidos() | bandeja.atendidos (solo para user)       | ✅          | ✅
+archivados()| bandeja.archivados (solo para user)      | ✅          | ✅
+
+
+DOCUMENTOCONTROLLER
+─────────────────────────────────────────────────────────────────────────────
+MÉTODO      | RETURN VIEW                              | VISTA EXISTE | ESTADO
+─────────────────────────────────────────────────────────────────────────────
+adminIndex()| admin.documentos.index                   | ✅          | ✅
+edit()      | admin.documentos.edit                    | ✅          | ✅
+detalle()   | admin.documentos.detalle (dinámico)      | ⚠           | ❌?
+
+
+═══════════════════════════════════════════════════════════════════════════════
+FASE 5 - CADENA COMPLETA (SIDEBAR → ROUTE → CONTROLLER → METHOD → VIEW)
+═══════════════════════════════════════════════════════════════════════════════
+
+1. CORRESPONDENCIA USER
+─────────────────────────────────────────────────────────────────────────────
+Sidebar (sidebar_updated)
+  ↓ "Mi Correspondencia"
+  ↓ route('correspondencia.index')
+Route (web.php:118)
+  ↓ GET /correspondencia → correspondencia.index
+Controller
+  ↓ CorrespondenciaController@index()
+Método
+  ↓ index($request) - Línea 25
+  ↓ Detecta: $usuario->idRol != 1 (USER)
+  ↓ Retorna: view('correspondencia.index', $data)
+Vista
+  ↓ resources/views/correspondencia/index.blade.php ✅ EXISTE
+
+ESTADO: ✅ COMPLETO
+
+
+2. CORRESPONDENCIA ADMIN
+─────────────────────────────────────────────────────────────────────────────
+Sidebar (sidebar_updated)
+  ↓ "Correspondencia (Admin)" [if idRol==1]
+  ↓ route('admin.correspondencia')
+Route (web.php:239)
+  ↓ GET /admin/correspondencia → admin.correspondencia
+Controller
+  ↓ CorrespondenciaController@index()
+Método
+  ↓ index($request) - Línea 25
+  ↓ Detecta: $usuario->idRol == 1 (ADMIN)
+  ↓ Retorna: view('admin.correspondencia.index', $data)
+Vista
+  ↓ resources/views/admin/correspondencia/index.blade.php ✅ EXISTE
+
+ESTADO: ✅ COMPLETO
+
+
+3. MI BANDEJA (AMBOS)
+─────────────────────────────────────────────────────────────────────────────
+Sidebar (sidebar_updated)
+  ↓ "Bandeja" (visible para admin y user)
+  ↓ route('envios.bandeja')
+Route (web.php:75)
+  ↓ GET /mi-bandeja → envios.bandeja
+Controller
+  ↓ EnvioController@bandeja()
+Método
+  ↓ bandeja($request) - Línea 152
+  ↓ No detecta rol - Retorna mismo para ambos
+  ↓ Retorna: view('envio.bandeja', $data)
+Vista
+  ↓ resources/views/envio/bandeja.blade.php ✅ EXISTE
+
+ESTADO: ⚠ INCONSISTENCIA - ADMIN Y USER VEN MISMA VISTA
+  ¿Debería admin ver admin/envios/bandeja.blade.php?
+  ¿Debería user ver envio/bandeja.blade.php?
+
+
+4. ENVIADAS (AMBOS)
+─────────────────────────────────────────────────────────────────────────────
+Sidebar (sidebar_updated)
+  ↓ "Envíos" (visible para admin y user)
+  ↓ route('envios.index')
+Route (web.php:107)
+  ↓ GET /envios → envios.index
+Controller
+  ↓ EnvioController@index()
+Método
+  ↓ index($request) - Línea 26
+  ↓ Detecta: $user->idRol == 1 (ADMIN) ? admin.envios.index : envio.index
+  ↓ Para ADMIN: view('admin.envios.index', $data)
+  ↓ Para USER: view('envio.index', $data)
+Vista (ADMIN)
+  ↓ resources/views/admin/envios/index.blade.php ✅ EXISTE
+Vista (USER)
+  ↓ resources/views/envio/index.blade.php ✅ EXISTE
+
+ESTADO: ✅ COMPLETO
+
+
+5. GESTIÓN DOCUMENTAL (ADMIN SOLO)
+─────────────────────────────────────────────────────────────────────────────
+Sidebar (sidebar_updated)
+  ↓ "Gestión Documental" [if idRol==1]
+  ↓ route('admin.documentos.index')
+Route (web.php:183)
+  ↓ GET /admin/documentos → admin.documentos.index
+Controller
+  ↓ DocumentoController@adminIndex()
+Método
+  ↓ adminIndex() - Verificar que existe
+Vista
+  ↓ resources/views/admin/documentos/index.blade.php ✅ EXISTE
+
+ESTADO: ✅ COMPLETO (si método existe)
+
+
+═══════════════════════════════════════════════════════════════════════════════
+FASE 6 - DETECCIÓN DE INCONSISTENCIAS ADMIN VS USER
+═══════════════════════════════════════════════════════════════════════════════
+
+CORRESPONDENCIA:
+  Admin: route('admin.correspondencia') → admin.correspondencia.index ✅
+  User: route('correspondencia.index') → correspondencia.index ✅
+  Vistas separadas: ✅ admin.correspondencia vs correspondencia
+  
+ENVIADAS (ENVIOS):
+  Admin: route('envios.index') → admin.envios.index ✅
+  User: route('envios.index') → envio.index ✅
+  Vistas separadas: ✅ admin.envios vs envio
+  
+MI BANDEJA:
+  Admin: route('envios.bandeja') → envio.bandeja ⚠ MISMA QUE USER
+  User: route('envios.bandeja') → envio.bandeja ⚠ MISMA
+  Vistas separadas: ❌ AMBOS VEN envio.bandeja
+  Debería ser: admin ver admin/envios/bandeja.blade.php
+  
+GESTIÓN DOCUMENTAL:
+  Admin: route('admin.documentos.index') → admin.documentos.index ✅
+  User: NO TIENE ACCESO (middleware admin) ✅
+  
+DASHBOARD:
+  Admin: route('admin.dashboard') → admin.dashboard ✅
+  User: route('user.dashboard') → user.dashboard ✅
+
+
+═══════════════════════════════════════════════════════════════════════════════
+PROBLEMAS IDENTIFICADOS
+═══════════════════════════════════════════════════════════════════════════════
+
+❌ PROBLEMA 1: MI BANDEJA (envios.bandeja)
+   - Admin y User ven MISMA vista: envio.bandeja
+   - Admin debería ver: admin.envios.bandeja.blade.php (existe ✅)
+   - EnvioController::bandeja() retorna: view('envio.bandeja') para AMBOS
+   - NO DETECTA ROL
+
+❌ PROBLEMA 2: REDIRECCIÓN POST-REGISTRO (DocumentoController::store())
+   - Línea ~430 en DocumentoController.php
+   - Retorna: redirect()->route('admin.correspondencia')
+   - PROBLEMA: User intenta redirigir a ruta ADMIN
+   - Usuario recibe error 403 (no tiene permiso)
+   - Debería ser: dinamico según rol
+
+⚠ PROBLEMA 3: DocumentoController::index()
+   - Retorna: view('correspondencia.index')
+   - Este también es llamado por user (sin admin prefix)
+   - Pero retorna MISMA VISTA para admin y user
+   - Debería retornar vista diferente según rol (como CorrespondenciaController hace)
+
+⚠ PROBLEMA 4: Posible ruta duplicada en ADMIN documentos
+   - Usuario normal accede a: /documentos (user middleware)
+   - Admin accede a: /admin/documentos (admin middleware)
+   - Pero index() en DocumentoController retorna misma vista para ambos
+
+
+═══════════════════════════════════════════════════════════════════════════════
+MATRIZ DE RUTAS DUPLICADAS / CONFLICTIVAS
+═══════════════════════════════════════════════════════════════════════════════
+
+RUTA PATH            | MIDDLEWARE | NOMBRE            | CONTROLADOR.MÉTODO
+─────────────────────┼────────────┼──────────────────┼────────────────────
+/documentos          | user       | documentos.index | DocumentoController@index
+/admin/documentos    | admin      | admin.documentos.index | DocumentoController@adminIndex
+
+Ambas llaman a DocumentoController pero:
+- User: /documentos → index() → correspondencia.index
+- Admin: /admin/documentos → adminIndex() → admin.documentos.index
+
+PROBLEMA: ¿Qué pasa si user accede a /documentos?
+La ruta existe y está en middleware USER, así que SÍ puede acceder.
+Pero retorna 'correspondencia.index' (correcta).
+
+Sin embargo:
+- ¿Sidebar dirige a user a /documentos?
+- ¿O sidebar dirige a user a otra ruta?
+
+Revisar: Sidebar NO tiene enlace a /documentos para USER
+- User ve: "Documentos" → correspondencia.index (CORRECTO, no /documentos)
+- Admin ve: "Gestión Documental" → admin.documentos.index (CORRECTO)
+
+
+═══════════════════════════════════════════════════════════════════════════════
+ESTADO GENERAL
+═══════════════════════════════════════════════════════════════════════════════
+
+✅ CORRESPONDENCIA: OK
+✅ ENVIADAS (ENVIOS): OK  
+⚠ MI BANDEJA: INCONSISTENCIA (admin y user ven lo mismo)
+✅ GESTIÓN DOCUMENTAL: OK (si método existe)
+
+❌ CRÍTICO: REDIRECCIÓN POST-REGISTRO FALLA
+   - User registra documento
+   - DocumentoController::store() en línea ~430 redirige a admin.correspondencia
+   - Pero admin.correspondencia es ruta ADMIN (middleware admin)
+   - User recibe 403 Forbidden
+   - SOLUCIÓN: Detectar rol en store() y redirigir a correspondencia.index para user
+
+
+═══════════════════════════════════════════════════════════════════════════════
+PRÓXIMO PASO:
+═══════════════════════════════════════════════════════════════════════════════
+
+1. ✅ Verificar EnvioController::bandeja() detecte rol
+   ESTADO: ❌ NO DETECTA - Retorna mismo para ambos
+
+2. ✅ Verificar DocumentoController::detalle() existe
+   ESTADO: ✅ EXISTE - Retorna admin.documentos.detalle
+
+3. ✅ Verificar DocumentoController::store() redirección
+   ESTADO: ❌ FALLA - Redirige a ruta admin solo
+
+4. ✅ Revisar redirecciones post-registro
+   ESTADO: ❌ FALLA - Ruta admin para user sin permisos

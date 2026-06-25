@@ -47,6 +47,17 @@ public function index()
 
     /*
     |--------------------------------------------------------------------------
+    | FILTRO DE SEGURIDAD: Usuario normal solo ve sus documentos
+    |--------------------------------------------------------------------------
+    */
+
+    $user = Auth::user();
+    if ($user->idRol != 1) {
+        $query->where('idUsuario', $user->id);
+    }
+
+    /*
+    |--------------------------------------------------------------------------
     | CONTADORES
     |--------------------------------------------------------------------------
     */
@@ -83,8 +94,12 @@ public function index()
     |--------------------------------------------------------------------------
     */
 
+    $viewName = $user->idRol == 1
+        ? 'admin.documentos.index'
+        : 'correspondencia.index';
+
     return view(
-        'correspondencia.index',
+        $viewName,
         compact(
             'documentos',
             'totalDocumentos',
@@ -289,6 +304,22 @@ public function index()
 
             /*
             |--------------------------------------------------------------------------
+            | OBTENER USUARIO RESPONSABLE DEL DEPARTAMENTO DESTINO
+            |--------------------------------------------------------------------------
+            */
+
+            $usuarioDestino = null;
+            if ($departamentoDestino->idPersonaEncargada) {
+                $personaEncargada = Persona::find($departamentoDestino->idPersonaEncargada);
+                if ($personaEncargada) {
+                    $usuarioDestino = User::where('idPersona', $personaEncargada->idPersona)
+                        ->where('activo', true)
+                        ->first();
+                }
+            }
+
+            /*
+            |--------------------------------------------------------------------------
             | PERSONA ENCARGADA
             |--------------------------------------------------------------------------
             */
@@ -310,7 +341,7 @@ public function index()
 
             /*
             |--------------------------------------------------------------------------
-            | DERIVACIÓN AUTOMÁTICA
+            | DERIVACIÓN AUTOMÁTICA - ASIGNAR AL RESPONSABLE DEL DEPARTAMENTO
             |--------------------------------------------------------------------------
             */
 
@@ -327,7 +358,7 @@ public function index()
                     $departamentoDestino->idDepartamento,
 
                 'idUsuarioAsignado' =>
-                    Auth::id(),
+                    $usuarioDestino?->id,
 
                 'idUsuarioEnvio' =>
                     Auth::id(),
@@ -398,8 +429,12 @@ public function index()
 
         });
 
+        $redirectRoute = Auth::user()->idRol == 1
+            ? 'admin.correspondencia'
+            : 'correspondencia.index';
+
         return redirect()
-            ->route('admin.correspondencia')
+            ->route($redirectRoute)
             ->with(
                 'success',
                 'Documento registrado correctamente.'
@@ -438,8 +473,12 @@ public function index()
             ])
             ->findOrFail($id);
 
+        $viewName = Auth::user()->idRol == 1
+            ? 'admin.documentos.detalle'
+            : 'correspondencia.show';
+
         return view(
-            'admin.documentos.detalle',
+            $viewName,
             compact('documento')
         );
     }

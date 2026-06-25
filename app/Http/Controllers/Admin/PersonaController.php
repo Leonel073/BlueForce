@@ -7,230 +7,235 @@ use Illuminate\Http\Request;
 use App\Models\Persona;
 use App\Models\Departamento;
 use App\Models\Cargo;
-use App\Models\DepartamentoResponsable;
 use App\Http\Requests\Admin\StorePersonaRequest;
-use App\Http\Requests\UpdatePersonaRequest;
 
 class PersonaController extends Controller
 {
-    public function index()
-{
-    $personas = Persona::with('departamento', 'cargo')
-        ->orderBy('nombre')
-        ->paginate(10);
+    /**
+     * Listar personas con separación por tipo (INTERNO/EXTERNO)
+     * Cada tipo tiene paginación independiente
+     */
+    public function index(Request $request)
+    {
+        // Obtener pestaña activa (por defecto: internas)
+        $tab = $request->get('tab', 'internas');
+        
+        // Búsqueda (independiente por tab)
+        $search = trim($request->get('q', ''));
 
-    return view(
-        'admin.personas.index',
-        compact('personas')
-    );
-}
-public function edit($id)
-{
-    $persona = Persona::findOrFail($id);
+        // PERSONAS INTERNAS
+        $queryInternas = Persona::where('tipo', 'INTERNO')
+            ->activas();
 
-    $departamentos = Departamento::orderBy('nombre')->get();
-    
-    $cargos = Cargo::where('activo', true)->orderBy('nombre')->get();
-
-    return view(
-        'admin.personas.edit',
-        compact(
-            'persona',
-            'departamentos',
-            'cargos'
-        )
-    );
-}
-public function update(Request $request, $id)
-{
-    $persona = Persona::findOrFail($id);
-
-    $validated = $request->validate([
-
-        'nombre' =>
-            'required|string|max:200|regex:/^[\pL\s]+$/u',
-
-        'ci' =>
-            'required|string|max:20|unique:PERSONA,ci,' .
-            $persona->idPersona .
-            ',idPersona',
-
-        'correo' =>
-            'nullable|email|max:150',
-
-        'telefono_celular' =>
-            'nullable|string|max:20',
-
-        'telefono_fijo' =>
-            'nullable|string|max:20',
-
-        'idCargo' =>
-            'nullable|exists:CARGO,idCargo',
-
-        'institucion' =>
-            'nullable|string|max:200',
-
-        'tipo' =>
-            'required|in:INTERNO,EXTERNO',
-
-        'idDepartamento' =>
-            'nullable|exists:DEPARTAMENTO,idDepartamento',
-
-    ]);
-
-    // Si es EXTERNO, no puede tener cargo
-    if ($validated['tipo'] === 'EXTERNO') {
-        $validated['idCargo'] = null;
-    }
-
-    $persona->update([
-
-        'nombre' =>
-            strtoupper(trim($validated['nombre'])),
-
-        'ci' =>
-            trim($validated['ci']),
-
-        'correo' =>
-            $validated['correo'] ?? null,
-
-        'telefono_celular' =>
-            $validated['telefono_celular'] ?? null,
-
-        'telefono_fijo' =>
-            $validated['telefono_fijo'] ?? null,
-
-        'idCargo' =>
-            $validated['idCargo'] ?? null,
-
-        'institucion' =>
-            $validated['institucion'] ?? null,
-
-        'tipo' =>
-            $validated['tipo'],
-
-        'tipo_persona' =>
-            ($validated['tipo'] === 'EXTERNO')
-                ? 'externo'
-                : ($validated['tipo_persona'] ?? $persona->tipo_persona ?? 'externo'),
-
-        'idDepartamento' =>
-            $validated['idDepartamento'] ?? null,
-
-    ]);
-
-    return redirect()
-        ->route('admin.personas.index')
-        ->with(
-            'success',
-            'Persona actualizada correctamente.'
-        );
-}
-public function toggle($id)
-{
-    $persona = Persona::findOrFail($id);
-
-    $persona->activo = !$persona->activo;
-
-    $persona->save();
-
-    return redirect()
-        ->back()
-        ->with(
-            'success',
-            'Estado actualizado correctamente.'
-        );
-}
-public function buscar(Request $request)
-{
-    $q = trim($request->q);
-
-    if (strlen($q) < 2) {
-        return response()->json([]);
-    }
-
-    $personas = Persona::query()
-        ->where('activo', true)
-        ->where(function ($query) use ($q) {
-            $query->where('nombre', 'LIKE', "%{$q}%")
-                  ->orWhere('ci', 'LIKE', "%{$q}%");
-        })
-        ->with('cargo', 'departamento')
-        ->limit(10)
-        ->get([
-            'idPersona',
-            'nombre',
-            'ci',
-            'tipo',
-            'idCargo',
-            'idDepartamento'
-        ])
-        ->map(function ($persona) {
-            return [
-                'idPersona' => $persona->idPersona,
-                'nombre' => $persona->nombre,
-                'ci' => $persona->ci,
-                'tipo' => $persona->tipo,
-                'cargo' => $persona->cargo ? $persona->cargo->nombre : null,
-                'departamento' => $persona->departamento ? $persona->departamento->nombre : null
-            ];
-        });
-
-    return response()->json($personas);
-}
-
-public function create()
-{
-    $cargos = Cargo::where('activo', true)->orderBy('nombre')->get();
-    return view('admin.personas.create', compact('cargos'));
-}
-
-public function store(StorePersonaRequest $request)
-{
-    $validated = $request->validated();
-
-    // Si tipo=EXTERNO, forzar tipo_persona=externo independientemente del input
-    if ($validated['tipo'] === 'EXTERNO') {
-        $validated['tipo_persona'] = 'externo';
-    }
-
-    $persona = Persona::create([
-        'nombre'           => strtoupper(trim($validated['nombre'])),
-        'ci'               => trim($validated['ci']),
-        'tipo'             => $validated['tipo'] ?? 'INTERNO',
-        'tipo_persona'     => $validated['tipo_persona'] ?? 'externo',
-        'telefono_celular' => $validated['telefono_celular'],
-        'telefono_fijo'    => $validated['telefono_fijo'] ?? null,
-        'correo'           => $validated['correo'] ?? null,
-        'institucion'      => $validated['institucion'] ?? null,
-        'idCargo'          => $validated['idCargo'] ?? null,
-        'idDepartamento'   => $validated['idDepartamento'] ?? null,
-        'activo'           => true,
-        'fecha_creacion'   => now(),
-    ]);
-
-    return redirect()->route('admin.personas.index')
-        ->with('success', 'Persona creada correctamente.');
-}
-
-public function disable($id)
-{
-    $persona = Persona::findOrFail($id);
-    if ($persona->esResponsableActual()) {
-        foreach ($persona->departamentosResponsables() as $depto) {
-            $depto->declinarResponsable();
+        if ($search) {
+            $queryInternas->where(function ($q) use ($search) {
+                $q->where('nombre', 'LIKE', "%{$search}%")
+                  ->orWhere('ci', 'LIKE', "%{$search}%")
+                  ->orWhere('correo', 'LIKE', "%{$search}%");
+            });
         }
-    }
-    $persona->deshabilitar();
-    return redirect()->back()
-        ->with('success', 'Persona deshabilitada correctamente.');
-}
 
-public function enable($id)
-{
-    $persona = Persona::findOrFail($id);
-    $persona->reactivar();
-    return redirect()->back()
-        ->with('success', 'Persona reactivada correctamente.');
-}
+        $personasInternas = $queryInternas
+            ->orderBy('nombre')
+            ->paginate(15, ['*'], 'page_internas')
+            ->appends(['tab' => 'internas', 'q' => $search]);
+
+        // PERSONAS EXTERNAS
+        $queryExternas = Persona::where('tipo', 'EXTERNO')
+            ->activas();
+
+        if ($search) {
+            $queryExternas->where(function ($q) use ($search) {
+                $q->where('nombre', 'LIKE', "%{$search}%")
+                  ->orWhere('ci', 'LIKE', "%{$search}%")
+                  ->orWhere('correo', 'LIKE', "%{$search}%");
+            });
+        }
+
+        $personasExternas = $queryExternas
+            ->orderBy('nombre')
+            ->paginate(15, ['*'], 'page_externas')
+            ->appends(['tab' => 'externas', 'q' => $search]);
+
+        // Contadores totales (sin búsqueda)
+        $totalInternas = Persona::where('tipo', 'INTERNO')->activas()->count();
+        $totalExternas = Persona::where('tipo', 'EXTERNO')->activas()->count();
+
+        return view('admin.personas.index', compact(
+            'personasInternas',
+            'personasExternas',
+            'totalInternas',
+            'totalExternas',
+            'tab',
+            'search'
+        ));
+    }
+
+    /**
+     * Formulario para crear nueva persona
+     */
+    public function create()
+    {
+        $cargos = Cargo::where('activo', true)->orderBy('nombre')->get();
+        $departamentos = Departamento::orderBy('nombre')->get();
+        
+        return view('admin.personas.create', compact('cargos', 'departamentos'));
+    }
+
+    /**
+     * Guardar nueva persona
+     */
+    public function store(StorePersonaRequest $request)
+    {
+        $validated = $request->validated();
+
+        // Si tipo=INTERNO, la institución debe ser EPAB
+        if ($validated['tipo'] === 'INTERNO') {
+            $validated['institucion'] = 'EPAB';
+        } else {
+            // Los externos usan el campo institucion para guardar su institución
+            // Mantener el valor ingresado
+        }
+
+        $persona = Persona::create([
+            'nombre'               => strtoupper(trim($validated['nombre'])),
+            'ci'                   => trim($validated['ci']),
+            'tipo'                 => $validated['tipo'],
+            'telefono_celular'     => $validated['telefono_celular'] ?? null,
+            'telefono_fijo'        => $validated['telefono_fijo'] ?? null,
+            'correo'               => $validated['correo'] ?? null,
+            'institucion'          => $validated['institucion'] ?? null,
+            'idCargo'              => $validated['tipo'] === 'INTERNO' ? ($validated['idCargo'] ?? null) : null,
+            'idDepartamento'       => $validated['tipo'] === 'INTERNO' ? ($validated['idDepartamento'] ?? null) : null,
+            'activo'               => true,
+            'fecha_creacion'       => now(),
+        ]);
+
+        return redirect()->route('admin.personas.index')
+            ->with('success', 'Persona creada correctamente.');
+    }
+
+    /**
+     * Formulario para editar persona
+     */
+    public function edit($id)
+    {
+        $persona = Persona::findOrFail($id);
+        $departamentos = Departamento::orderBy('nombre')->get();
+        $cargos = Cargo::where('activo', true)->orderBy('nombre')->get();
+
+        return view('admin.personas.edit', compact('persona', 'departamentos', 'cargos'));
+    }
+
+    /**
+     * Actualizar datos de persona
+     */
+    public function update(Request $request, $id)
+    {
+        $persona = Persona::findOrFail($id);
+
+        $validated = $request->validate([
+            'nombre'               => 'required|string|max:200|regex:/^[\pL\s]+$/u',
+            'ci'                   => 'required|string|max:20|unique:PERSONA,ci,' . $persona->idPersona . ',idPersona',
+            'correo'               => 'nullable|email|max:150',
+            'telefono_celular'     => 'nullable|string|max:20',
+            'telefono_fijo'        => 'nullable|string|max:20',
+            'idCargo'              => 'nullable|exists:CARGO,idCargo',
+            'institucion'          => 'nullable|string|max:200',
+            'tipo'                 => 'required|in:INTERNO,EXTERNO',
+            'idDepartamento'       => 'nullable|exists:DEPARTAMENTO,idDepartamento',
+        ]);
+
+        // Si es EXTERNO, no puede tener cargo ni departamento
+        if ($validated['tipo'] === 'EXTERNO') {
+            $validated['idCargo'] = null;
+            $validated['idDepartamento'] = null;
+        } else {
+            // Si es INTERNO, debe tener institución=EPAB
+            $validated['institucion'] = 'EPAB';
+        }
+
+        $persona->update([
+            'nombre'               => strtoupper(trim($validated['nombre'])),
+            'ci'                   => trim($validated['ci']),
+            'correo'               => $validated['correo'] ?? null,
+            'telefono_celular'     => $validated['telefono_celular'] ?? null,
+            'telefono_fijo'        => $validated['telefono_fijo'] ?? null,
+            'idCargo'              => $validated['idCargo'] ?? null,
+            'institucion'          => $validated['institucion'] ?? null,
+            'tipo'                 => $validated['tipo'],
+            'idDepartamento'       => $validated['idDepartamento'] ?? null,
+        ]);
+
+        return redirect()
+            ->route('admin.personas.index')
+            ->with('success', 'Persona actualizada correctamente.');
+    }
+
+    /**
+     * Alternar estado activo/inactivo
+     */
+    public function toggle($id)
+    {
+        $persona = Persona::findOrFail($id);
+        
+        if ($persona->fecha_deshabilitacion) {
+            $persona->reactivar();
+            $mensaje = 'Persona reactivada correctamente.';
+        } else {
+            // Declinar responsabilidades antes de desactivar
+            if ($persona->esResponsableActual()) {
+                foreach ($persona->departamentosResponsables() as $depto) {
+                    $depto->declinarResponsable();
+                }
+            }
+            $persona->deshabilitar();
+            $mensaje = 'Persona deshabilitada correctamente.';
+        }
+
+        return redirect()->back()->with('success', $mensaje);
+    }
+
+    /**
+     * Buscar personas (AJAX)
+     * Retorna personas activas que coincidan con nombre o CI
+     */
+    public function buscar(Request $request)
+    {
+        $q = trim($request->q ?? '');
+
+        if (strlen($q) < 2) {
+            return response()->json([]);
+        }
+
+        $personas = Persona::activas()
+            ->where(function ($query) use ($q) {
+                $query->where('nombre', 'LIKE', "%{$q}%")
+                      ->orWhere('ci', 'LIKE', "%{$q}%");
+            })
+            ->with('cargo', 'departamento')
+            ->limit(10)
+            ->get([
+                'idPersona',
+                'nombre',
+                'ci',
+                'tipo',
+                'idCargo',
+                'idDepartamento',
+                'institucion',
+            ])
+            ->map(function ($persona) {
+                return [
+                    'idPersona'          => $persona->idPersona,
+                    'nombre'             => $persona->nombre,
+                    'ci'                 => $persona->ci,
+                    'tipo'               => $persona->tipo,
+                    'cargo'              => $persona->cargo?->nombre ?? null,
+                    'departamento'       => $persona->departamento?->nombre ?? null,
+                    'institucion'        => $persona->institucion ?? null,
+                ];
+            });
+
+        return response()->json($personas);
+    }
 }

@@ -108,6 +108,10 @@
                                 'archivado' => 'bg-secondary',
                                 default     => 'bg-dark',
                             };
+
+                            // VALIDACIÓN: ¿Es el usuario responsable actual?
+                            $ultimaDerivacion = $doc->ultimaDerivacion;
+                            $esResponsable = $ultimaDerivacion && $ultimaDerivacion->idUsuarioAsignado == Auth::id();
                         @endphp
                         <tr>
                             {{-- CITE --}}
@@ -158,8 +162,8 @@
                                         <i class="bi bi-eye-fill"></i>
                                     </a>
 
-                                    {{-- RECIBIR — solo si está Pendiente --}}
-                                    @if($esPendiente)
+                                    {{-- RECIBIR — solo si está Pendiente Y es responsable actual --}}
+                                    @if($esPendiente && $esResponsable)
                                         <form action="{{ route('recibidas.recibir', $doc->idDocumento) }}"
                                               method="POST">
                                             @csrf
@@ -171,10 +175,16 @@
                                                 Recibir
                                             </button>
                                         </form>
+                                    @elseif($esPendiente && !$esResponsable)
+                                        <span class="badge bg-secondary rounded-pill px-2 py-1 small" 
+                                              title="No eres el responsable actual">
+                                            <i class="bi bi-info-circle me-1"></i>
+                                            No disponible
+                                        </span>
                                     @endif
 
-                                    {{-- ATENDER — solo si está Recibido --}}
-                                    @if($esRecibido)
+                                    {{-- ATENDER — solo si está Recibido Y es responsable actual --}}
+                                    @if($esRecibido && $esResponsable)
                                         <form action="{{ route('recibidas.atender', $doc->idDocumento) }}"
                                               method="POST">
                                             @csrf
@@ -186,10 +196,16 @@
                                                 Atender
                                             </button>
                                         </form>
+                                    @elseif($esRecibido && !$esResponsable)
+                                        <span class="badge bg-secondary rounded-pill px-2 py-1 small" 
+                                              title="No eres el responsable actual">
+                                            <i class="bi bi-info-circle me-1"></i>
+                                            No disponible
+                                        </span>
                                     @endif
 
-                                    {{-- ARCHIVAR — solo si está Atendido --}}
-                                    @if($esAtendido)
+                                    {{-- ARCHIVAR — solo si está Atendido Y es responsable actual --}}
+                                    @if($esAtendido && $esResponsable)
                                         <form action="{{ route('recibidas.archivar', $doc->idDocumento) }}"
                                               method="POST">
                                             @csrf
@@ -201,6 +217,12 @@
                                                 Archivar
                                             </button>
                                         </form>
+                                    @elseif($esAtendido && !$esResponsable)
+                                        <span class="badge bg-secondary rounded-pill px-2 py-1 small" 
+                                              title="No eres el responsable actual">
+                                            <i class="bi bi-info-circle me-1"></i>
+                                            No disponible
+                                        </span>
                                     @endif
 
                                     {{-- ARCHIVADO — indicador visual --}}

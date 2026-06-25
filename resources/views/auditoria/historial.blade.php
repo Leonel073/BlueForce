@@ -7,7 +7,7 @@
     <!-- HEADER -->
     <div class="row mb-4">
         <div class="col">
-            <a href="{{ route('auditoria.index') }}" class="text-decoration-none text-muted mb-3 d-inline-block">
+            <a href="{{ route('admin.auditoria.index') }}" class="text-decoration-none text-muted mb-3 d-inline-block">
                 <i class="bi bi-chevron-left"></i> Volver
             </a>
             <h1 class="h3 fw-bold" style="color: #0B2D59;">
@@ -58,7 +58,7 @@
                                         </p>
                                     </div>
                                     <div class="col-md-4 text-end">
-                                        <a href="{{ route('auditoria.show', $auditoria->idAuditoria) }}" 
+                                        <a href="{{ route('admin.auditoria.show', $auditoria->idAuditoria) }}" 
                                            class="btn btn-sm btn-outline-primary">
                                             <i class="bi bi-eye"></i> Ver Detalles
                                         </a>

@@ -4,6 +4,82 @@
 
 @section('content')
 
+{{-- MODAL DE NOTIFICACIÓN: DOCUMENTOS PENDIENTES --}}
+@if($documentosPendientes && count($documentosPendientes) > 0)
+<div class="modal fade" id="notificacionPendientesModal" tabindex="-1" role="dialog" aria-labelledby="notificacionTitle" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered modal-lg" role="document">
+        <div class="modal-content border-0 shadow-lg">
+            <div class="modal-header dashboard-gradient text-white border-0 p-4">
+                <h5 class="modal-title fw-bold" id="notificacionTitle">
+                    <i class="bi bi-bell me-2"></i>Documentos Pendientes
+                </h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body p-4">
+                <div class="alert alert-info mb-4" role="alert">
+                    <i class="bi bi-info-circle me-2"></i>
+                    <strong>Tienes {{ count($documentosPendientes) }} documento(s) pendiente(s) de recepción.</strong>
+                </div>
+                <p class="text-muted mb-3">Estos son documentos que han sido derivados a tu responsabilidad. Haz clic en "Aceptar" para marcarlos como recibidos:</p>
+                <div class="list-group list-group-flush mb-4">
+                    @foreach($documentosPendientes as $doc)
+                    <div class="list-group-item px-0 py-3">
+                        <div class="row align-items-center g-2">
+                            <div class="col-md-8">
+                                <div>
+                                    <h6 class="mb-1 fw-semibold">{{ $doc->cite }}</h6>
+                                    <p class="mb-1 text-dark">{{ Str::limit($doc->asunto, 60) }}</p>
+                                    <small class="text-muted">
+                                        Remitente: <strong>{{ $doc->remitente->nombre ?? 'Desconocido' }}</strong>
+                                        @if($doc->urgencia)
+                                        &nbsp;|&nbsp;
+                                        <span class="badge bg-{{ $doc->urgencia->nombre == 'Alta' ? 'danger' : ($doc->urgencia->nombre == 'Media' ? 'warning' : 'success') }}">
+                                            {{ $doc->urgencia->nombre }}
+                                        </span>
+                                        @endif
+                                    </small>
+                                </div>
+                            </div>
+                            <div class="col-md-4 text-end">
+                                <form action="{{ route('recibidas.recibir', $doc->idDocumento) }}" method="POST" class="d-inline">
+                                    @csrf
+                                    <button type="submit" class="btn btn-sm btn-success">
+                                        <i class="bi bi-check-circle me-1"></i>Aceptar
+                                    </button>
+                                </form>
+                            </div>
+                        </div>
+                    </div>
+                    @endforeach
+                </div>
+                <div class="alert alert-light border" role="alert">
+                    <small class="text-muted">
+                        <i class="bi bi-info-circle me-1"></i>
+                        Al aceptar un documento, su estado cambiarà de <strong>Pendiente</strong> a <strong>Recibido</strong>.
+                    </small>
+                </div>
+            </div>
+            <div class="modal-footer border-top p-4">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
+                    <i class="bi bi-x-lg me-2"></i>Cerrar
+                </button>
+                <a href="{{ route('envios.bandeja') }}" class="btn btn-primary">
+                    <i class="bi bi-inbox-fill me-2"></i>Ver Mi Bandeja
+                </a>
+            </div>
+        </div>
+    </div>
+</div>
+
+{{-- Script para mostrar modal automáticamente --}}
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        const modal = new bootstrap.Modal(document.getElementById('notificacionPendientesModal'));
+        modal.show();
+    });
+</script>
+@endif
+
 <div class="container-fluid py-4">
 
     {{-- ESTILOS --}}
@@ -78,8 +154,8 @@
     </div>
 
     @php
-        $documentosPendientes =
-            collect($estadosPorTipo)
+        $documentosPendientes = 
+            (collect($estadosPorTipo ?? []))
                 ->where('nombre', '!=', 'Finalizado')
                 ->sum('cantidad');
     @endphp
@@ -175,6 +251,7 @@
                 </div>
             </a>
         </div>
+        @if(Auth::user()->idRol == 1)
         <div class="col-md-3 mb-3">
             <a href="{{ route('admin.reportes.documentos') }}" class="text-decoration-none quick-link">
                 <div class="card glass-card shadow-sm text-center p-4">
@@ -185,6 +262,7 @@
                 </div>
             </a>
         </div>
+        @endif
     </div>
 
     {{-- ESTADOS Y TIPOS --}}
@@ -280,20 +358,24 @@ const secondaryColor = '#2E608C';
 
 // CHART 1: Estados
 const estadosCtx = document.getElementById('estadosChart')?.getContext('2d');
-if (estadosCtx) {
+if (estadosCtx && @json($estadosPorTipo ?? []).length > 0) {
     new Chart(estadosCtx, {
         type: 'doughnut',
         data: {
             labels: [
-                @foreach($estadosPorTipo as $estado)
-                '{{ $estado["nombre"] }}',
-                @endforeach
+                @forelse($estadosPorTipo ?? [] as $estado)
+                '{{ $estado["nombre"] ?? "Sin estado" }}',
+                @empty
+                'Sin datos'
+                @endforelse
             ],
             datasets: [{
                 data: [
-                    @foreach($estadosPorTipo as $estado)
-                    {{ $estado["cantidad"] }},
-                    @endforeach
+                    @forelse($estadosPorTipo ?? [] as $estado)
+                    {{ $estado["cantidad"] ?? 0 }},
+                    @empty
+                    0
+                    @endforelse
                 ],
                 backgroundColor: ['#28a745', '#ffc107', '#dc3545', '#17a2b8', '#6c757d', '#fd7e14'],
                 borderColor: '#fff',
@@ -310,21 +392,25 @@ if (estadosCtx) {
 
 // CHART 2: Tipos
 const tiposCtx = document.getElementById('tiposChart')?.getContext('2d');
-if (tiposCtx) {
+if (tiposCtx && @json($documentosPorTipo ?? []).length > 0) {
     new Chart(tiposCtx, {
         type: 'bar',
         data: {
             labels: [
-                @foreach($documentosPorTipo as $tipo)
-                '{{ $tipo["nombre"] }}',
-                @endforeach
+                @forelse($documentosPorTipo ?? [] as $tipo)
+                '{{ $tipo["nombre"] ?? "Sin tipo" }}',
+                @empty
+                'Sin datos'
+                @endforelse
             ],
             datasets: [{
                 label: 'Cantidad',
                 data: [
-                    @foreach($documentosPorTipo as $tipo)
-                    {{ $tipo["cantidad"] }},
-                    @endforeach
+                    @forelse($documentosPorTipo ?? [] as $tipo)
+                    {{ $tipo["cantidad"] ?? 0 }},
+                    @empty
+                    0
+                    @endforelse
                 ],
                 backgroundColor: secondaryColor,
                 borderColor: primaryColor,
@@ -343,21 +429,25 @@ if (tiposCtx) {
 
 // CHART 3: Tendencia
 const tendenciaCtx = document.getElementById('tendenciaChart')?.getContext('2d');
-if (tendenciaCtx) {
+if (tendenciaCtx && @json($documentosPorMes ?? []).length > 0) {
     new Chart(tendenciaCtx, {
         type: 'line',
         data: {
             labels: [
-                @foreach($documentosPorMes as $mes)
-                '{{ $mes["mes"] }}',
-                @endforeach
+                @forelse($documentosPorMes ?? [] as $mes)
+                '{{ $mes["mes"] ?? "Sin fecha" }}',
+                @empty
+                'Sin datos'
+                @endforelse
             ],
             datasets: [{
                 label: 'Documentos',
                 data: [
-                    @foreach($documentosPorMes as $mes)
-                    {{ $mes["cantidad"] }},
-                    @endforeach
+                    @forelse($documentosPorMes ?? [] as $mes)
+                    {{ $mes["cantidad"] ?? 0 }},
+                    @empty
+                    0
+                    @endforelse
                 ],
                 borderColor: primaryColor,
                 backgroundColor: primaryColor + '20',

@@ -24,6 +24,8 @@ class EnvioController extends Controller
 
 public function index(Request $request)
 {
+    $user = Auth::user();
+
     $query = Derivacion::with([
 
         'documento.estado',
@@ -35,6 +37,16 @@ public function index(Request $request)
 
     ])
         ->orderByDesc('fechaEnvio');
+
+    /*
+    |--------------------------------------------------------------------------
+    | FILTRO DE SEGURIDAD: Usuario normal solo ve derivaciones que envió
+    |--------------------------------------------------------------------------
+    */
+
+    if ($user->idRol != 1) {
+        $query->where('idUsuarioEnvio', $user->id);
+    }
 
     if ($request->filled('buscar')) {
 
@@ -117,8 +129,12 @@ public function index(Request $request)
 
     $urgencias = NivelUrgencia::orderBy('nombre')->get();
 
+    $vista = $user->idRol == 1 
+        ? 'admin.envios.index' 
+        : 'user.envios.index';
+
     return view(
-        'envio.index',
+        $vista,
         compact(
             'derivaciones',
             'totalDocumentos',
@@ -139,6 +155,8 @@ public function index(Request $request)
 
     public function bandeja(Request $request)
     {
+        $user = Auth::user();
+
         $query = Correspondencia::with([
             'estado',
             'urgencia',
@@ -146,6 +164,16 @@ public function index(Request $request)
             'remitente',
             'ultimaDerivacion.departamentoDestino',
         ])->orderByDesc('idDocumento');
+
+        /*
+        |--------------------------------------------------------------------------
+        | FILTRO DE SEGURIDAD: Usuario normal solo ve sus documentos en bandeja
+        |--------------------------------------------------------------------------
+        */
+
+        if ($user->idRol != 1) {
+            $query->where('idUsuario', $user->id);
+        }
 
         if ($request->filled('buscar')) {
 
@@ -192,8 +220,12 @@ public function index(Request $request)
             ->orderBy('nombre')
             ->get();
 
+        $viewName = $user->idRol == 1
+            ? 'admin.envios.bandeja'
+            : 'user.envios.bandeja';
+
         return view(
-            'envio.bandeja',
+            $viewName,
             compact(
                 'documentos',
                 'estados',
@@ -221,8 +253,12 @@ public function index(Request $request)
 
         $departamentos = Departamento::all();
 
+        $vista = Auth::user()->idRol == 1 
+            ? 'admin.envios.derivar' 
+            : 'user.envios.derivar';
+
         return view(
-            'envio.derivar',
+            $vista,
             compact(
                 'documento',
                 'departamentos'
@@ -265,6 +301,26 @@ public function index(Request $request)
 
         $documento = Correspondencia::with('derivaciones')
             ->findOrFail($id);
+
+        /*
+        |--------------------------------------------------------------------------
+        | VALIDACIÓN: Usuario debe ser responsable actual (excepto admin)
+        |--------------------------------------------------------------------------
+        */
+
+        if (Auth::user()->idRol != 1) {
+            $ultimaDerivacion = Derivacion::where('idDocumento', $id)
+                ->orderByDesc('orden')
+                ->first();
+
+            if (!$ultimaDerivacion || !$ultimaDerivacion->idUsuarioAsignado) {
+                return back()->with('error', 'No tiene permisos para derivar este documento.');
+            }
+
+            if ($ultimaDerivacion->idUsuarioAsignado != Auth::id()) {
+                return back()->with('error', 'Este documento ya fue asignado a otro usuario y ya no se encuentra bajo su responsabilidad.');
+            }
+        }
 
         /*
         |--------------------------------------------------------------------------
@@ -450,101 +506,122 @@ public function index(Request $request)
             );
     }
     public function finalizar($id)
-{
-    /*
-    |--------------------------------------------------------------------------
-    | OBTENER DOCUMENTO
-    |--------------------------------------------------------------------------
-    */
+    {
+        /*
+        |--------------------------------------------------------------------------
+        | OBTENER DOCUMENTO
+        |--------------------------------------------------------------------------
+        */
 
-    $documento = Correspondencia::findOrFail($id);
+        $documento = Correspondencia::findOrFail($id);
+        $user = Auth::user();
 
-    /*
-    |--------------------------------------------------------------------------
-    | BUSCAR ESTADO FINALIZADO
-    |--------------------------------------------------------------------------
-    */
+        /*
+        |----------------------------------------------------------------------
+        | VALIDACIÓN DE PROPIEDAD - Solo responsable actual puede finalizar
+        |----------------------------------------------------------------------
+        */
 
-    $estadoFinalizado = EstadoDocumento::where(
-        'nombre',
-        'Archivado'
-    )->first();
+        if ($user->idRol != 1) {
+            $ultimaDerivacion = Derivacion::where('idDocumento', $id)
+                ->orderByDesc('orden')
+                ->first();
 
-    /*
-    |--------------------------------------------------------------------------
-    | SI NO EXISTE EL ESTADO
-    |--------------------------------------------------------------------------
-    */
+            if (!$ultimaDerivacion || !$ultimaDerivacion->idUsuarioAsignado) {
+                return back()->with('error', 'No tiene permisos para finalizar este documento.');
+            }
 
-    if (!$estadoFinalizado) {
+            if ($ultimaDerivacion->idUsuarioAsignado != $user->id) {
+                return back()->with('error', 'No es el responsable actual de este documento.');
+            }
+        }
 
-        return back()->with(
-            'error',
-            'No existe el estado FINALIZADO.'
-        );
+        /*
+        |--------------------------------------------------------------------------
+        | BUSCAR ESTADO FINALIZADO
+        |--------------------------------------------------------------------------
+        */
 
-    }
+        $estadoFinalizado = EstadoDocumento::where(
+            'nombre',
+            'Archivado'
+        )->first();
 
-    /*
-    |--------------------------------------------------------------------------
-    | ACTUALIZAR DOCUMENTO
-    |--------------------------------------------------------------------------
-    */
+        /*
+        |--------------------------------------------------------------------------
+        | SI NO EXISTE EL ESTADO
+        |--------------------------------------------------------------------------
+        */
 
-    $documento->update([
+        if (!$estadoFinalizado) {
 
-        'idEstado' => $estadoFinalizado->idEstado
+            return back()->with(
+                'error',
+                'No existe el estado FINALIZADO.'
+            );
 
-    ]);
+        }
 
-    /*
-    |--------------------------------------------------------------------------
-    | REGISTRAR SEGUIMIENTO
-    |--------------------------------------------------------------------------
-    */
+        /*
+        |--------------------------------------------------------------------------
+        | ACTUALIZAR DOCUMENTO
+        |--------------------------------------------------------------------------
+        */
 
-    Seguimiento::create([
+        $documento->update([
 
-        'idDocumento' => $documento->idDocumento,
-
-        'fecha' => now(),
-
-        'ubicacion' => 'Documento finalizado',
-
-        'idEstado' => $estadoFinalizado->idEstado,
-
-        'activo' => true,
-
-    ]);
-
-    /*
-    |--------------------------------------------------------------------------
-    | ACTUALIZAR ÚLTIMA DERIVACIÓN
-    |--------------------------------------------------------------------------
-    */
-
-    $ultimaDerivacion = Derivacion::where(
-        'idDocumento',
-        $documento->idDocumento
-    )
-    ->orderByDesc('orden')
-    ->first();
-
-    if ($ultimaDerivacion) {
-
-        $ultimaDerivacion->update([
-
-            'fechaRecepcion' => now()
+            'idEstado' => $estadoFinalizado->idEstado
 
         ]);
 
-    }
+        /*
+        |--------------------------------------------------------------------------
+        | REGISTRAR SEGUIMIENTO
+        |--------------------------------------------------------------------------
+        */
 
-    return redirect()
-        ->route('envios.bandeja')
-        ->with(
-            'success',
-            'Documento finalizado correctamente.'
-        );
-}
+        Seguimiento::create([
+
+            'idDocumento' => $documento->idDocumento,
+
+            'fecha' => now(),
+
+            'ubicacion' => 'Documento finalizado',
+
+            'idEstado' => $estadoFinalizado->idEstado,
+
+            'activo' => true,
+
+        ]);
+
+        /*
+        |--------------------------------------------------------------------------
+        | ACTUALIZAR ÚLTIMA DERIVACIÓN
+        |--------------------------------------------------------------------------
+        */
+
+        $ultimaDerivacion = Derivacion::where(
+            'idDocumento',
+            $documento->idDocumento
+        )
+        ->orderByDesc('orden')
+        ->first();
+
+        if ($ultimaDerivacion) {
+
+            $ultimaDerivacion->update([
+
+                'fechaRecepcion' => now()
+
+            ]);
+
+        }
+
+        return redirect()
+            ->route('envios.bandeja')
+            ->with(
+                'success',
+                'Documento finalizado correctamente.'
+            );
+    }
 }

@@ -90,9 +90,9 @@
                                             <span>{{ $usuario->persona->departamento?->nombre ?? 'Sin departamento' }}</span>
                                         </div>
                                         <div class="col-md-6">
-                                            <small class="text-muted d-block">Tipo persona</small>
-                                            <span class="badge {{ $usuario->persona->tipo_persona === 'trabajador' ? 'bg-success' : 'bg-warning text-dark' }}">
-                                                {{ ucfirst($usuario->persona->tipo_persona ?? 'N/A') }}
+                                            <small class="text-muted d-block">Tipo</small>
+                                            <span class="badge {{ $usuario->persona->tipo === 'INTERNO' ? 'bg-success' : 'bg-warning text-dark' }}">
+                                                {{ $usuario->persona->tipo }}
                                             </span>
                                         </div>
                                     </div>

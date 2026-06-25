@@ -16,7 +16,7 @@
                     Nuevo Usuario
                 </h1>
                 <p class="text-light mb-0">
-                    Solo se pueden crear cuentas para personas trabajadoras sin usuario asignado.
+                    Solo se pueden crear cuentas para personas internas sin usuario asignado.
                 </p>
             </div>
             <a href="{{ route('admin.usuarios') }}"
@@ -64,7 +64,7 @@
                           method="POST">
                         @csrf
 
-                        {{-- PERSONA TRABAJADORA --}}
+                        {{-- PERSONA INTERNA --}}
                         <div class="mb-4">
                             <label class="form-label fw-semibold">
                                 Persona <span class="text-danger">*</span>
@@ -73,25 +73,43 @@
                             @if($personas->isEmpty())
                                 <div class="alert alert-warning rounded-3 mb-0">
                                     <i class="bi bi-info-circle-fill me-2"></i>
-                                    No hay trabajadores disponibles para asignar usuario.
-                                    Todos los trabajadores registrados ya tienen cuenta,
-                                    o no existen personas con tipo_persona = <strong>trabajador</strong>.
+                                    No existen personas internas disponibles para crear usuarios.
+                                    Todas las personas internas ya tienen una cuenta asignada,
+                                    o no existen personas con tipo = <strong>INTERNO</strong>.
                                 </div>
                             @else
+                                {{-- CAMPO DE BÚSQUEDA --}}
+                                <div class="input-group mb-3 rounded-3">
+                                    <input type="text"
+                                           id="searchInput"
+                                           class="form-control rounded-start-3"
+                                           placeholder="Buscar por CI o nombre..."
+                                           autocomplete="off">
+                                    <button class="btn btn-outline-secondary" type="button" id="clearSearch">
+                                        <i class="bi bi-x"></i>
+                                    </button>
+                                </div>
+
+                                {{-- RESULTADOS DE BÚSQUEDA --}}
+                                <div id="searchResults"
+                                     class="border rounded-3 bg-white position-relative mb-3"
+                                     style="display: none; max-height: 300px; overflow-y: auto; z-index: 1000;">
+                                </div>
+
+                                {{-- SELECT OCULTO PERO REQUERIDO --}}
                                 <select name="idPersona"
                                         id="idPersona"
                                         class="form-select rounded-3 @error('idPersona') is-invalid @enderror"
                                         required
-                                        onchange="mostrarDatosPersona(this)">
-                                    <option value="">— Seleccione una persona trabajadora —</option>
+                                        style="display: none;">
+                                    <option value="">— Seleccione una persona interna —</option>
                                     @foreach($personas as $persona)
                                         <option value="{{ $persona->idPersona }}"
                                                 data-nombre="{{ $persona->nombre }}"
                                                 data-ci="{{ $persona->ci ?? 'N/A' }}"
                                                 data-correo="{{ $persona->correo ?? '' }}"
                                                 data-cargo="{{ $persona->cargo?->nombre ?? 'Sin cargo' }}"
-                                                data-departamento="{{ $persona->departamento?->nombre ?? 'Sin departamento' }}"
-                                                @selected(old('idPersona') == $persona->idPersona)>
+                                                data-departamento="{{ $persona->departamento?->nombre ?? 'Sin departamento' }}">
                                             {{ $persona->nombre }}
                                             — CI: {{ $persona->ci ?? 'N/A' }}
                                             @if($persona->departamento)
@@ -100,36 +118,28 @@
                                         </option>
                                     @endforeach
                                 </select>
+
+                                {{-- PERSONA SELECCIONADA --}}
+                                <div id="personaSeleccionada" class="alert alert-success rounded-3 d-none">
+                                    <div class="d-flex justify-content-between align-items-start">
+                                        <div>
+                                            <strong id="sel-nombre">—</strong><br>
+                                            <small class="text-muted">CI: <span id="sel-ci">—</span></small><br>
+                                            <small class="text-muted">Departamento: <span id="sel-departamento">—</span></small>
+                                        </div>
+                                        <button type="button" class="btn btn-sm btn-outline-danger" onclick="limpiarSeleccion()">
+                                            <i class="bi bi-x"></i> Cambiar
+                                        </button>
+                                    </div>
+                                </div>
+
                                 @error('idPersona')
-                                    <div class="invalid-feedback">{{ $message }}</div>
+                                    <div class="invalid-feedback d-block">{{ $message }}</div>
                                 @enderror
                                 <small class="text-muted">
-                                    Solo se muestran trabajadores activos sin cuenta asignada.
+                                    Solo se muestran personas internas activas sin cuenta asignada.
                                 </small>
                             @endif
-                        </div>
-
-                        {{-- INFO PERSONA SELECCIONADA --}}
-                        <div id="info-persona"
-                             class="alert alert-info rounded-3 mb-4 d-none">
-                            <div class="row g-2">
-                                <div class="col-md-6">
-                                    <small class="text-muted d-block">Nombre completo</small>
-                                    <strong id="info-nombre">—</strong>
-                                </div>
-                                <div class="col-md-6">
-                                    <small class="text-muted d-block">CI</small>
-                                    <strong id="info-ci">—</strong>
-                                </div>
-                                <div class="col-md-6">
-                                    <small class="text-muted d-block">Cargo</small>
-                                    <span id="info-cargo">—</span>
-                                </div>
-                                <div class="col-md-6">
-                                    <small class="text-muted d-block">Departamento</small>
-                                    <span id="info-departamento">—</span>
-                                </div>
-                            </div>
                         </div>
 
                         <hr class="my-4">
@@ -282,7 +292,7 @@
                     <ul class="list-unstyled mb-0">
                         <li class="mb-3 d-flex gap-2">
                             <i class="bi bi-check-circle-fill text-success mt-1 flex-shrink-0"></i>
-                            <span>Solo las personas clasificadas como <strong>trabajador</strong> pueden tener cuenta.</span>
+                            <span>Solo las personas clasificadas como <strong>Interno</strong> pueden tener cuenta.</span>
                         </li>
                         <li class="mb-3 d-flex gap-2">
                             <i class="bi bi-x-circle-fill text-danger mt-1 flex-shrink-0"></i>
@@ -308,35 +318,157 @@
     </div>
 
 </div>
-
+@php
+$personasJson = $personas->map(function ($p) {
+    return [
+        'idPersona' => $p->idPersona,
+        'nombre' => $p->nombre,
+        'ci' => $p->ci ?? '',
+        'correo' => $p->correo ?? '',
+        'cargo' => optional($p->cargo)->nombre ?? 'Sin cargo',
+        'departamento' => optional($p->departamento)->nombre ?? 'Sin departamento',
+    ];
+})->values()->toArray();
+@endphp
 <script>
-function mostrarDatosPersona(select) {
-    const opt = select.options[select.selectedIndex];
-    const panel = document.getElementById('info-persona');
+let currentPersonas = [];
 
-    if (!opt.value) {
-        panel.classList.add('d-none');
-        return;
+document.addEventListener('DOMContentLoaded', function () {
+
+    currentPersonas = @json($personasJson);
+
+    const searchInput = document.getElementById('searchInput');
+    const clearSearch = document.getElementById('clearSearch');
+
+    if (searchInput) {
+        searchInput.addEventListener('input', function (e) {
+            const query = e.target.value.trim();
+            const resultsDiv = document.getElementById('searchResults');
+
+            if (!resultsDiv) return;
+
+            if (query.length < 2) {
+                resultsDiv.style.display = 'none';
+                return;
+            }
+
+            const filtered = currentPersonas.filter(p =>
+                (p.nombre || '').toLowerCase().includes(query.toLowerCase()) ||
+                (p.ci || '').includes(query)
+            );
+
+            if (filtered.length === 0) {
+                resultsDiv.innerHTML =
+                    '<div class="p-3 text-muted">No se encontraron resultados</div>';
+                resultsDiv.style.display = 'block';
+                return;
+            }
+
+            resultsDiv.innerHTML = filtered.map(p => `
+                <div class="p-3 border-bottom search-result"
+                     onclick="seleccionarPersona(
+                        ${p.idPersona},
+                        '${String(p.nombre).replace(/'/g, "\\'")}',
+                        '${String(p.ci).replace(/'/g, "\\'")}',
+                        '${String(p.correo).replace(/'/g, "\\'")}',
+                        '${String(p.cargo).replace(/'/g, "\\'")}',
+                        '${String(p.departamento).replace(/'/g, "\\'")}'
+                     )"
+                     style="cursor:pointer; transition:background-color 0.2s;">
+
+                    <div class="d-flex justify-content-between">
+                        <strong>${p.nombre}</strong>
+                        <span class="badge bg-primary">${p.ci}</span>
+                    </div>
+
+                    <small class="text-muted">
+                        ${p.cargo} • ${p.departamento}
+                    </small>
+                </div>
+            `).join('');
+
+            document.querySelectorAll('.search-result').forEach(el => {
+                el.addEventListener('mouseenter', function () {
+                    this.style.backgroundColor = '#f0f0f0';
+                });
+
+                el.addEventListener('mouseleave', function () {
+                    this.style.backgroundColor = 'transparent';
+                });
+            });
+
+            resultsDiv.style.display = 'block';
+        });
     }
 
-    document.getElementById('info-nombre').textContent      = opt.dataset.nombre      || '—';
-    document.getElementById('info-ci').textContent          = opt.dataset.ci           || '—';
-    document.getElementById('info-cargo').textContent       = opt.dataset.cargo        || '—';
-    document.getElementById('info-departamento').textContent = opt.dataset.departamento || '—';
+    if (clearSearch) {
+        clearSearch.addEventListener('click', function () {
+            document.getElementById('searchInput').value = '';
+            document.getElementById('searchResults').style.display = 'none';
+            limpiarSeleccion();
+        });
+    }
+});
 
-    // Autocompletar nombre y email si están vacíos
-    const nameInput  = document.querySelector('input[name="name"]');
+function seleccionarPersona(idPersona, nombre, ci, correo, cargo, departamento) {
+
+    document.getElementById('idPersona').value = idPersona;
+    document.getElementById('searchInput').value = nombre;
+    document.getElementById('searchResults').style.display = 'none';
+
+    document.getElementById('sel-nombre').textContent = nombre;
+    document.getElementById('sel-ci').textContent = ci;
+    document.getElementById('sel-departamento').textContent = departamento;
+
+    document.getElementById('personaSeleccionada')
+        .classList.remove('d-none');
+
+    const nameInput = document.querySelector('input[name="name"]');
     const emailInput = document.querySelector('input[name="email"]');
 
-    if (!nameInput.value)  nameInput.value  = opt.dataset.nombre || '';
-    if (!emailInput.value) emailInput.value = opt.dataset.correo || '';
+    if (nameInput && !nameInput.value) {
+        nameInput.value = nombre;
+    }
 
-    panel.classList.remove('d-none');
+    if (emailInput && !emailInput.value) {
+        emailInput.value = correo || '';
+    }
 }
 
+function limpiarSeleccion() {
+
+    document.getElementById('idPersona').value = '';
+    document.getElementById('searchInput').value = '';
+
+    const results = document.getElementById('searchResults');
+    if (results) {
+        results.style.display = 'none';
+    }
+
+    document.getElementById('personaSeleccionada')
+        .classList.add('d-none');
+}
+
+document.addEventListener('click', function (e) {
+
+    const searchDiv = document.getElementById('searchResults');
+
+    if (
+        !e.target.closest('#searchInput') &&
+        !e.target.closest('#searchResults')
+    ) {
+        if (searchDiv) {
+            searchDiv.style.display = 'none';
+        }
+    }
+});
+
 function togglePass(fieldId) {
+
     const input = document.getElementById(fieldId);
-    const icon  = document.getElementById('icon-' + fieldId);
+    const icon = document.getElementById('icon-' + fieldId);
+
+    if (!input || !icon) return;
 
     if (input.type === 'password') {
         input.type = 'text';

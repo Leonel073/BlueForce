@@ -44,6 +44,16 @@ class CorrespondenciaController extends Controller
 
         /*
         |--------------------------------------------------------------------------
+        | FILTRO DE SEGURIDAD: Usuario normal solo ve sus documentos
+        |--------------------------------------------------------------------------
+        */
+
+        if ($usuario->idRol != 1) {
+            $query->where('idUsuario', $usuario->id);
+        }
+
+        /*
+        |--------------------------------------------------------------------------
         | FILTROS
         |--------------------------------------------------------------------------
         */
@@ -162,12 +172,16 @@ class CorrespondenciaController extends Controller
 
         /*
         |--------------------------------------------------------------------------
-        | RETORNO
+        | RETORNO - VISTA SEGÚN ROL
         |--------------------------------------------------------------------------
         */
 
+        $vista = $usuario->idRol == 1 
+            ? 'admin.correspondencia.index' 
+            : 'correspondencia.index';
+
         return view(
-            'correspondencia.index',
+            $vista,
             compact(
                 'documentos',
                 'totalDocumentos',
@@ -238,12 +252,16 @@ class CorrespondenciaController extends Controller
 
         /*
         |--------------------------------------------------------------------------
-        | RETORNO
+        | RETORNO - VISTA SEGÚN ROL
         |--------------------------------------------------------------------------
         */
 
+        $vista = Auth::user()->idRol == 1 
+            ? 'admin.correspondencia.show' 
+            : 'correspondencia.show';
+
         return view(
-            'correspondencia.show',
+            $vista,
             compact(
                 'documento',
                 'ultimaDerivacion',
@@ -265,6 +283,8 @@ class CorrespondenciaController extends Controller
 
             'idDepartamentoDestino'
                 => 'required|exists:DEPARTAMENTO,idDepartamento',
+            'idUsuarioAsignado'
+                => 'nullable|exists:users,id',
 
         ]);
 
@@ -277,6 +297,28 @@ class CorrespondenciaController extends Controller
         $documento = Correspondencia::with([
             'derivaciones'
         ])->findOrFail($id);
+
+        /*
+        |--------------------------------------------------------------------------
+        | VALIDACIÓN DE RESPONSABILIDAD - Solo responsable actual puede derivar
+        |--------------------------------------------------------------------------
+        */
+
+        $user = Auth::user();
+        if ($user->idRol != 1) {
+            // Usuario normal: verificar que sea el responsable actual
+            $ultimaDerivacion = Derivacion::where('idDocumento', $id)
+                ->orderByDesc('orden')
+                ->first();
+
+            if (!$ultimaDerivacion || !$ultimaDerivacion->idUsuarioAsignado) {
+                return back()->with('error', 'No tiene permisos para derivar este documento.');
+            }
+
+            if ($ultimaDerivacion->idUsuarioAsignado != $user->id) {
+                return back()->with('error', 'Este documento ya fue asignado a otro usuario y ya no se encuentra bajo su responsabilidad.');
+            }
+        }
 
         /*
         |--------------------------------------------------------------------------
@@ -335,6 +377,35 @@ class CorrespondenciaController extends Controller
             $ultimaDerivacion
             ? $ultimaDerivacion->idDepartamentoDestino
             : 1;
+
+        /*
+        |--------------------------------------------------------------------------
+        | VALIDACIONES DE DERIVACIÓN
+        |--------------------------------------------------------------------------
+        */
+
+        // Validar que departamento destino es diferente del origen
+        if ($departamentoOrigen == $request->idDepartamentoDestino) {
+            return back()->with('error', 'No puede derivar un documento al mismo departamento.');
+        }
+
+        // Validar que idUsuarioAsignado (si se proporciona) existe y es válido
+        if ($request->filled('idUsuarioAsignado')) {
+            $usuarioDestino = \App\Models\User::find($request->idUsuarioAsignado);
+            
+            if (!$usuarioDestino) {
+                return back()->with('error', 'El usuario destino no existe.');
+            }
+
+            if (!$usuarioDestino->activo) {
+                return back()->with('error', 'El usuario destino está inactivo.');
+            }
+
+            // Validar que el usuario no se derive a sí mismo
+            if ($usuarioDestino->id == $user->id) {
+                return back()->with('error', 'No puede derivar un documento a sí mismo.');
+            }
+        }
 
         /*
         |--------------------------------------------------------------------------
@@ -418,6 +489,17 @@ class CorrespondenciaController extends Controller
         */
 
         $documento = Correspondencia::findOrFail($id);
+
+        /*
+        |--------------------------------------------------------------------------
+        | VALIDACIÓN DE PROPIEDAD - Solo admin puede finalizar en correspondencia admin
+        |--------------------------------------------------------------------------
+        */
+
+        $user = Auth::user();
+        if ($user->idRol != 1) {
+            return back()->with('error', 'No tiene permisos para finalizar este documento.');
+        }
 
         /*
         |--------------------------------------------------------------------------

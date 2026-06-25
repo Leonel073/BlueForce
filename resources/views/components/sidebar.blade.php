@@ -37,10 +37,13 @@
     </a>
 
     {{-- DOCUMENTOS --}}
-    <a href="{{ route('correspondencia.index') }}"
+    <a href="{{ Auth::user()->idRol == 1
+        ? route('admin.correspondencia')
+        : route('correspondencia.index') }}"
 
        class="nav-link
        {{ request()->routeIs('correspondencia.*')
+            || request()->routeIs('admin.correspondencia*')
             || request()->routeIs('documentos.*')
             ? 'active'
             : '' }}"
@@ -55,7 +58,7 @@
 
         <span class="nav-label-text">
 
-            Documentos
+            Correspondencia
 
         </span>
 
@@ -102,11 +105,13 @@
 
     </div>
 
-    {{-- BANDEJA --}}
-    <a href="{{ route('envios.bandeja') }}"
+    {{-- MI BANDEJA --}}
+    <a href="{{ Auth::user()->idRol == 1
+        ? route('admin.bandeja')
+        : route('envios.bandeja') }}"
 
        class="nav-link
-       {{ request()->routeIs('envios.bandeja')
+       {{ request()->routeIs('admin.bandeja', 'envios.bandeja')
             ? 'active'
             : '' }}"
 
@@ -120,18 +125,19 @@
 
         <span class="nav-label-text">
 
-            Mi Bandeja
+            @if(Auth::user()->idRol == 1) Bandeja @else Mi Bandeja @endif
 
         </span>
 
     </a>
 
-    {{-- ENVIADOS --}}
-    <a href="{{ route('envios.index') }}"
+    {{-- ENVIADAS --}}
+    <a href="{{ Auth::user()->idRol == 1
+        ? route('admin.envios')
+        : route('envios.index') }}"
 
        class="nav-link
-       {{ request()->routeIs('envios.index')
-            || request()->routeIs('envios.derivar*')
+       {{ request()->routeIs('admin.envios*', 'envios.*')
             ? 'active'
             : '' }}"
 
@@ -145,7 +151,7 @@
 
         <span class="nav-label-text">
 
-            Enviadas
+            @if(Auth::user()->idRol == 1) Envíos @else Mis Envíos @endif
 
         </span>
 
@@ -175,64 +181,6 @@
             </span>
 
         </a>
-    @else
-        <a href="{{ route('admin.reportes.documentos') }}"
-
-           class="nav-link
-           {{ request()->routeIs('admin.reportes.documentos*')
-                ? 'active'
-                : '' }}"
-
-           data-label="Reportes Documentos">
-
-            <span class="nav-icon">
-
-                <i class="bi bi-file-earmark-text-fill"></i>
-
-            </span>
-
-            <span class="nav-label-text">
-
-                Reportes Documentos
-
-            </span>
-
-        </a>
-
-        <a href="{{ route('admin.reportes.departamentos') }}"
-
-           class="nav-link
-           {{ request()->routeIs('admin.reportes.departamentos*')
-                ? 'active'
-                : '' }}"
-
-           data-label="Reportes Departamentos">
-
-            <span class="nav-icon">
-
-                <i class="bi bi-building"></i>
-
-            </span>
-
-            <span class="nav-label-text">
-
-                Reportes Departamentos
-
-            </span>
-
-        </a>
-        <a href="{{ route('auditoria.index') }}"
-   class="nav-link {{ request()->routeIs('auditoria.*') ? 'active' : '' }}">
-
-    <span class="nav-icon">
-        <i class="bi bi-shield-check"></i>
-    </span>
-
-    <span class="nav-label-text">
-        Auditoría
-    </span>
-
-</a>
     @endif
 
 </div>

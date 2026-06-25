@@ -1,0 +1,70 @@
+✅ CHECKLIST: LIMPIEZA DE tipo_persona COMPLETADA
+
+ARCHIVOS ELIMINADOS (4):
+✅ database/migrations/2026_06_24_000002_add_tipo_persona_to_persona_table.php
+✅ database/migrations/2026_06_25_000004_fill_tipo_persona_null_values.php
+✅ AUDITORIA_REGISTRO_USUARIOS.md
+✅ 3 archivos test temporales
+
+ARCHIVOS MODIFICADOS (10):
+
+Modelos (2):
+✅ app/Models/Persona.php
+   - Eliminado tipo_persona del fillable
+   - Scopes corregidos a usar tipo
+   - puedeSerUsuario() = tipo === 'INTERNO'
+
+✅ app/Models/User.php
+   - Validación: tipo === 'EXTERNO'
+
+Controladores (1):
+✅ app/Http/Controllers/Admin/PersonaController.php
+   - Eliminada lógica de tipo_persona
+   - store(), update(), buscar() limpios
+
+Validaciones (2):
+✅ app/Http/Requests/Admin/StorePersonaRequest.php
+   - Eliminadas reglas tipo_persona
+
+✅ app/Rules/PersonaInternoSinUsuario.php
+   - Validación: tipo !== 'INTERNO'
+
+Vistas (5):
+✅ resources/views/admin/personas/create.blade.php
+✅ resources/views/admin/personas/edit.blade.php
+✅ resources/views/admin/personas/index.blade.php
+✅ resources/views/admin/usuarios/show.blade.php
+✅ resources/views/admin/usuarios/edit.blade.php
+
+VERIFICACIONES (3):
+✅ Tipo = INTERNO: Personas internas pueden tener usuario
+✅ Tipo = EXTERNO: Personas externas NO pueden tener usuario
+✅ Contraseña: Admin@2026 (válida) vs Admin.2026 (rechazada)
+
+ESTADO:
+✅ 0 referencias activas a tipo_persona en PHP
+✅ 0 referencias activas a 'trabajador' en lógica
+✅ 20 personas internas disponibles para usuario
+✅ 2 personas externas correctamente rechazadas
+✅ Sistema 100% funcional
+
+BD:
+- Campo tipo_persona existe pero NO se usa en código
+- Campo institucion_externa NUNCA se usó
+- Seguro ignorarlos o eliminar después si se desea
+
+MODELOS FINALES:
+
+Persona Interna:
+├─ tipo = INTERNO
+├─ institucion = EPAB
+├─ Puede tener usuario
+└─ puedeSerUsuario() = true
+
+Persona Externa:
+├─ tipo = EXTERNO
+├─ institucion = (valor usuario)
+├─ NO puede tener usuario
+└─ puedeSerUsuario() = false
+
+RESULTADO FINAL: ✅ LIMPIO, COHERENTE Y FUNCIONAL

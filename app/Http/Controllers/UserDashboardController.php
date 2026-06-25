@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Models\Correspondencia;
+use App\Models\Derivacion;
 use App\Models\EstadoDocumento;
 use Illuminate\Support\Facades\Auth;
 
@@ -14,6 +15,13 @@ class UserDashboardController extends Controller
     public function index()
     {
         $userId = Auth::id();
+
+        // DOCUMENTOS PENDIENTES DE RECEPCIÓN (responsable actual)
+        $documentosPendientes = Correspondencia::whereHas('ultimaDerivacion', 
+            fn($q) => $q->where('idUsuarioAsignado', $userId)
+        )->whereHas('estado', fn($q) => $q->where('nombre', 'Pendiente'))
+        ->with(['ultimaDerivacion.departamentoDestino', 'remitente', 'urgencia'])
+        ->get();
 
         // ESTADÍSTICAS PERSONALES DEL USUARIO
         $totalMis = Correspondencia::where('idUsuario', $userId)->count();
@@ -33,6 +41,14 @@ class UserDashboardController extends Controller
         
         $archivados = Correspondencia::where('idUsuario', $userId)
             ->whereHas('estado', fn($q) => $q->where('nombre', 'Archivado'))
+            ->count();
+
+        // DERIVACIONES REALIZADAS (personal)
+        $derivacionesRealizadas = Derivacion::where('idUsuarioEnvio', $userId)->count();
+
+        // DOCUMENTOS URGENTES (personal)
+        $urgentes = Correspondencia::where('idUsuario', $userId)
+            ->whereHas('urgencia', fn($q) => $q->whereRaw('LOWER(nombre) LIKE ?', ['%alta%']))
             ->count();
 
         // ÚLTIMOS DOCUMENTOS DEL USUARIO
@@ -64,7 +80,7 @@ class UserDashboardController extends Controller
             ->values();
 
         // DOCUMENTOS POR ESTADO (para gráficos)
-        $estadosPorEstado = EstadoDocumento::all()
+        $estadosPorTipo = EstadoDocumento::all()
             ->map(fn($estado) => [
                 'nombre' => $estado->nombre,
                 'cantidad' => Correspondencia::where('idUsuario', $userId)
@@ -78,11 +94,14 @@ class UserDashboardController extends Controller
             'recibidos',
             'atendidos',
             'archivados',
+            'derivacionesRealizadas',
+            'urgentes',
             'ultimosDocumentos',
             'documentosPorMes',
             'documentosPorTipo',
-            'estadosPorEstado'
-        ));
+            'estadosPorTipo',
+            'documentosPendientes'
+        ) + ['totalDocumentos' => $totalMis]);
     }
 }
 

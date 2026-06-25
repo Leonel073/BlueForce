@@ -9,8 +9,7 @@ class EstadoDocumentoSeeder extends Seeder
 {
     public function run()
     {
-        // Limpiar estados anteriores para evitar duplicados
-        DB::table('ESTADO_DOCUMENTO')->truncate();
+    
 
         DB::table('ESTADO_DOCUMENTO')->insert([
             ['nombre' => 'Pendiente'],

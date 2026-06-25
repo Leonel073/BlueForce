@@ -35,6 +35,7 @@ class Correspondencia extends Model
     ];
 
     protected $casts = [
+        'fecha'          => 'datetime',
         'tamano_archivo' => 'integer',
         'fecha_subida'   => 'datetime',
         'activo'         => 'boolean',

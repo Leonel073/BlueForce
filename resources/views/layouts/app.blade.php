@@ -348,6 +348,12 @@ body.sidebar-collapsed .main-content { margin-left: var(--sidebar-collapsed); }
 
 <div class="sidebar-overlay" id="overlay" onclick="closeMobileSidebar()"></div>
 
+{{-- ALERTAS CENTRALIZADAS --}}
+@include('components.alerts')
+
+{{-- MODALES DEL SISTEMA --}}
+@include('components.modals')
+
 <div class="app-layout">
 
     <aside class="sidebar" id="sidebar">
@@ -391,13 +397,10 @@ body.sidebar-collapsed .main-content { margin-left: var(--sidebar-collapsed); }
                     <div class="user-role">{{ auth()->user()->idRol == 1 ? 'Administrador' : 'Usuario' }}</div>
                 </div>
             </div>
-            <!-- Integración del Botón de Cerrar Sesión -->
-            <form method="POST" action="{{ route('logout') }}" class="mt-2 text-center" style="padding: 0 5px;">
-                @csrf
-                <button type="submit" class="btn btn-outline-danger btn-sm w-100" style="border-radius: 8px;">
-                    <i class="bi bi-box-arrow-left"></i> <span class="nav-label-text">Salir</span>
-                </button>
-            </form>
+            {{-- BOTÓN LOGOUT CON MODAL --}}
+            <button type="button" class="btn btn-outline-danger btn-sm w-100 mt-2" style="border-radius: 8px;" onclick="showLogoutConfirm()">
+                <i class="bi bi-box-arrow-left"></i> <span class="nav-label-text">Salir</span>
+            </button>
         </div>
     </aside>
 

@@ -11,6 +11,7 @@ use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\DocumentoController;
 use App\Http\Controllers\DocumentoPdfController;
+use App\Http\Controllers\BandejaController;
 use App\Http\Controllers\EnvioController;
 use App\Http\Controllers\RecibidasController;
 use App\Http\Controllers\UserDashboardController;
@@ -74,24 +75,16 @@ Route::middleware(['auth', 'verified', 'nocache', 'user'])->group(function () {
     Route::get('/mi-bandeja', [EnvioController::class, 'bandeja'])->name('envios.bandeja');
 
     // Documentos en estado Pendiente
-    Route::get('/bandeja/pendientes', function () {
-        return view('user.bandeja.pendientes');
-    })->name('bandeja.pendientes');
+    Route::get('/bandeja/pendientes', [BandejaController::class, 'pendientes'])->name('bandeja.pendientes');
 
     // Documentos en estado Recibido
-    Route::get('/bandeja/recibidos', function () {
-        return view('user.bandeja.recibidos');
-    })->name('bandeja.recibidos');
+    Route::get('/bandeja/recibidos', [BandejaController::class, 'recibidos'])->name('bandeja.recibidos');
 
     // Documentos en estado Atendido
-    Route::get('/bandeja/atendidos', function () {
-        return view('user.bandeja.atendidos');
-    })->name('bandeja.atendidos');
+    Route::get('/bandeja/atendidos', [BandejaController::class, 'atendidos'])->name('bandeja.atendidos');
 
     // Documentos en estado Archivado
-    Route::get('/bandeja/archivados', function () {
-        return view('user.bandeja.archivados');
-    })->name('bandeja.archivados');
+    Route::get('/bandeja/archivados', [BandejaController::class, 'archivados'])->name('bandeja.archivados');
 
     /*
     |--------------------------------------------------------------------------
@@ -183,7 +176,20 @@ Route::middleware(['auth', 'verified', 'nocache', 'admin'])->prefix('admin')->na
     Route::get('/dashboard', [DashboardController::class, 'index'])->name('dashboard');
     Route::get('/api/dashboard-estadisticas', [DashboardController::class, 'estadisticasDashboard'])->name('api.estadisticas.dashboard');
     Route::get('/api/dashboard-departamentos', [DashboardController::class, 'estadisticasDepartamentos'])->name('api.estadisticas.departamentos');
-
+    Route::get(
+    '/documentos',
+    [DocumentoController::class, 'adminIndex']
+)->name('documentos.index');
+    
+    /*
+    |--------------------------------------------------------------------------
+    | DOCUMENTOS ADMIN - EDICIÓN
+    |--------------------------------------------------------------------------
+    */
+    
+    Route::get('/documentos/{id}/edit', [DocumentoController::class, 'edit'])->name('documentos.edit');
+    Route::put('/documentos/{id}', [DocumentoController::class, 'update'])->name('documentos.update');
+    Route::get('/documentos/{id}', [DocumentoController::class, 'detalle'])->name('documentos.detalle');
     /*
     |--------------------------------------------------------------------------
     | GESTIÓN DE USUARIOS
@@ -193,6 +199,7 @@ Route::middleware(['auth', 'verified', 'nocache', 'admin'])->prefix('admin')->na
     Route::get('/usuarios', [UsuarioController::class, 'index'])->name('usuarios');
     Route::get('/usuarios/create', [UsuarioController::class, 'create'])->name('usuarios.create');
     Route::post('/usuarios', [UsuarioController::class, 'store'])->name('usuarios.store');
+    Route::get('/usuarios/buscar-personas', [UsuarioController::class, 'buscarPersonas'])->name('usuarios.buscar-personas');
     Route::get('/usuarios/{id}', [UsuarioController::class, 'show'])->name('usuarios.show');
     Route::get('/usuarios/{id}/edit', [UsuarioController::class, 'edit'])->name('usuarios.edit');
     Route::put('/usuarios/{id}', [UsuarioController::class, 'update'])->name('usuarios.update');
@@ -223,6 +230,7 @@ Route::middleware(['auth', 'verified', 'nocache', 'admin'])->prefix('admin')->na
     Route::post('/personas', [PersonaController::class, 'store'])->name('personas.store');
     Route::get('/personas/{id}/edit', [PersonaController::class, 'edit'])->name('personas.edit');
     Route::put('/personas/{id}', [PersonaController::class, 'update'])->name('personas.update');
+    Route::put('/personas/{id}/toggle', [PersonaController::class, 'toggle'])->name('personas.toggle');
 
     /*
     |--------------------------------------------------------------------------
@@ -236,11 +244,32 @@ Route::middleware(['auth', 'verified', 'nocache', 'admin'])->prefix('admin')->na
 
     /*
     |--------------------------------------------------------------------------
-    | DOCUMENTOS ADMIN
+    | BANDEJA ADMIN
+    |--------------------------------------------------------------------------
+    */
+
+    Route::get('/bandeja', [EnvioController::class, 'bandeja'])->name('bandeja');
+    Route::get('/bandeja/{id}', [EnvioController::class, 'derivarForm'])->name('bandeja.derivar.form');
+    Route::post('/bandeja/{id}/derivar', [EnvioController::class, 'derivar'])->name('bandeja.derivar');
+
+    /*
+    |--------------------------------------------------------------------------
+    | ENVÍOS ADMIN
+    |--------------------------------------------------------------------------
+    */
+
+    Route::get('/envios', [EnvioController::class, 'index'])->name('envios');
+    Route::put('/envios/{id}/finalizar', [EnvioController::class, 'finalizar'])->name('envios.finalizar');
+
+    /*
+    |--------------------------------------------------------------------------
+    | DOCUMENTOS ADMIN - DETALLES Y PDF
     |--------------------------------------------------------------------------
     */
 
     Route::get('/documentos/{id}', [DocumentoController::class, 'detalle'])->name('documentos.detalle');
+    Route::post('/documentos/{id}/pdf', [DocumentoController::class, 'subirPdf'])->name('documentos.pdf.subir');
+    Route::delete('/documentos/{id}/pdf', [DocumentoController::class, 'eliminarPdf'])->name('documentos.pdf.eliminar');
 
     /*
     |--------------------------------------------------------------------------
@@ -281,7 +310,7 @@ Route::middleware(['auth', 'verified', 'nocache', 'admin'])->prefix('admin')->na
     });
 
 });
-
+/*
 |--------------------------------------------------------------------------
 | AUTH
 |--------------------------------------------------------------------------

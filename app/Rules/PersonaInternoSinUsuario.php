@@ -9,12 +9,12 @@ use Illuminate\Contracts\Validation\ValidationRule;
 /**
  * Valida que la persona seleccionada para crear un usuario:
  * 1. Exista en el sistema
- * 2. Sea de tipo_persona = 'trabajador'
+ * 2. Sea de tipo = 'INTERNO'
  * 3. No tenga ya un usuario asignado
  *
  * @author Sistema de Correspondencia
  */
-class PersonaTrabajadorSinUsuario implements ValidationRule
+class PersonaInternoSinUsuario implements ValidationRule
 {
     public function validate(string $attribute, mixed $value, Closure $fail): void
     {
@@ -25,8 +25,8 @@ class PersonaTrabajadorSinUsuario implements ValidationRule
             return;
         }
 
-        if ($persona->tipo_persona !== 'trabajador') {
-            $fail('Solo las personas de tipo "trabajador" pueden tener una cuenta de usuario. Las personas externas no pueden acceder al sistema.');
+        if ($persona->tipo !== 'INTERNO') {
+            $fail('Solo las personas internas pueden tener una cuenta de usuario. Las personas externas no pueden acceder al sistema.');
             return;
         }
 

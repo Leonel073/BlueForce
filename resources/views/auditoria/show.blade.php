@@ -7,7 +7,7 @@
     <!-- HEADER -->
     <div class="row mb-4">
         <div class="col">
-            <a href="{{ route('auditoria.index') }}" class="text-decoration-none text-muted mb-3 d-inline-block">
+            <a href="{{ route('admin.auditoria.index') }}" class="text-decoration-none text-muted mb-3 d-inline-block">
                 <i class="bi bi-chevron-left"></i> Volver a auditoría
             </a>
             <h1 class="h3 fw-bold" style="color: #0B2D59;">
@@ -275,7 +275,7 @@
                                     </td>
                                     <td class="small">
                                         @if($aud->idAuditoria !== $auditoria->idAuditoria)
-                                            <a href="{{ route('auditoria.show', $aud->idAuditoria) }}" 
+                                            <a href="{{ route('admin.auditoria.show', $aud->idAuditoria) }}" 
                                                class="btn btn-xs btn-outline-primary btn-sm"
                                                title="Ver detalles">
                                                 <i class="bi bi-eye"></i>

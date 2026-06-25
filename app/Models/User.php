@@ -49,14 +49,14 @@ class User extends Authenticatable
             // (excepto en entorno de testing donde factories pueden omitir esto)
             if (!app()->runningUnitTests() && empty($user->idPersona)) {
                 throw new \InvalidArgumentException(
-                    'No se puede crear un usuario sin persona asignada. Todo usuario debe pertenecer a una persona trabajadora.'
+                    'No se puede crear un usuario sin persona asignada. Todo usuario debe pertenecer a una persona interna.'
                 );
             }
 
             // Bloquear si la persona es externa
             if (!empty($user->idPersona)) {
                 $persona = Persona::find($user->idPersona);
-                if ($persona && $persona->tipo_persona === 'externo') {
+                if ($persona && $persona->tipo === 'EXTERNO') {
                     throw new \InvalidArgumentException(
                         'Las personas externas no pueden tener cuenta de usuario.'
                     );

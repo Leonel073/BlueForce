@@ -14,10 +14,55 @@ use App\Models\Rol;
  * UsuarioController (Admin)
  *
  * Gestión completa de usuarios del sistema.
- * Regla principal: solo los TRABAJADORES pueden tener cuenta de usuario.
+ * Regla principal: solo las PERSONAS INTERNAS pueden tener cuenta de usuario.
  */
 class UsuarioController extends Controller
 {
+    /*
+    |--------------------------------------------------------------------------
+    | BÚSQUEDA PARA AUTOCOMPLETE
+    |--------------------------------------------------------------------------
+    */
+
+    public function buscarPersonas(Request $request)
+    {
+        $q = trim($request->q ?? '');
+
+        // Mínimo 2 caracteres
+        if (strlen($q) < 2) {
+            return response()->json([]);
+        }
+
+        // Buscar personas internas activas sin usuario asignado
+        $personas = Persona::internosSinUsuario()
+            ->where(function ($query) use ($q) {
+                $query->where('nombre', 'LIKE', "%{$q}%")
+                      ->orWhere('ci', 'LIKE', "%{$q}%");
+            })
+            ->with('cargo', 'departamento')
+            ->limit(10)
+            ->get([
+                'idPersona',
+                'nombre',
+                'ci',
+                'correo',
+                'idCargo',
+                'idDepartamento'
+            ])
+            ->map(function ($persona) {
+                return [
+                    'idPersona'   => $persona->idPersona,
+                    'nombre'      => $persona->nombre,
+                    'ci'          => $persona->ci,
+                    'correo'      => $persona->correo,
+                    'cargo'       => $persona->cargo ? $persona->cargo->nombre : 'Sin cargo',
+                    'departamento' => $persona->departamento ? $persona->departamento->nombre : 'Sin departamento'
+                ];
+            });
+
+        return response()->json($personas);
+    }
+
     /*
     |--------------------------------------------------------------------------
     | LISTADO
@@ -56,8 +101,8 @@ class UsuarioController extends Controller
 
     public function create()
     {
-        // Solo personas trabajadoras activas sin usuario asignado
-        $personas = Persona::trabajadoresSinUsuario()
+        // Solo personas internas activas sin usuario asignado
+        $personas = Persona::internosSinUsuario()
             ->with('cargo', 'departamento')
             ->orderBy('nombre')
             ->get();
@@ -80,10 +125,10 @@ class UsuarioController extends Controller
         // Verificación adicional de seguridad (doble check)
         $persona = Persona::findOrFail($validated['idPersona']);
 
-        if ($persona->tipo_persona !== 'trabajador') {
+        if ($persona->tipo !== 'INTERNO') {
             return back()
                 ->withInput()
-                ->with('error', 'Solo los trabajadores pueden tener cuenta de usuario.');
+                ->with('error', 'Solo las personas internas pueden tener cuenta de usuario.');
         }
 
         if ($persona->usuario()->exists()) {

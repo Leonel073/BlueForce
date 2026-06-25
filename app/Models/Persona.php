@@ -28,7 +28,6 @@ class Persona extends Model
         'ci',
         'institucion',
         'tipo',
-        'tipo_persona',
         'idDepartamento',
         'idCargo',
         'activo',
@@ -113,7 +112,7 @@ class Persona extends Model
     }
 
     /**
-     * Relación: Una persona trabajador puede tener un único usuario
+     * Relación: Una persona interna puede tener un único usuario
      * Una persona externa NUNCA tendrá usuario.
      *
      * @return \Illuminate\Database\Eloquent\Relations\HasOne
@@ -150,28 +149,28 @@ class Persona extends Model
     }
 
     /**
-     * Scope: Solo trabajadores (pueden tener cuenta de usuario)
-     */
-    public function scopeTrabajadores($query)
-    {
-        return $query->where('tipo_persona', 'trabajador');
-    }
-
-    /**
      * Scope: Solo externos (no pueden tener cuenta de usuario)
      */
     public function scopeExternos($query)
     {
-        return $query->where('tipo_persona', 'externo');
+        return $query->where('tipo', 'EXTERNO');
     }
 
     /**
-     * Scope: Trabajadores activos sin usuario asignado
+     * Scope: Solo personas internas (pueden tener cuenta de usuario)
      */
-    public function scopeTrabajadoresSinUsuario($query)
+    public function scopeInternos($query)
+    {
+        return $query->where('tipo', 'INTERNO');
+    }
+
+    /**
+     * Scope: Personas internas activas sin usuario asignado
+     */
+    public function scopeInternosSinUsuario($query)
     {
         return $query
-            ->where('tipo_persona', 'trabajador')
+            ->where('tipo', 'INTERNO')
             ->whereNull('fecha_deshabilitacion')
             ->whereDoesntHave('usuario');
     }
@@ -288,10 +287,11 @@ class Persona extends Model
 
     /**
      * ¿Puede esta persona tener una cuenta de usuario?
+     * Solo personas INTERNAS pueden tener usuario.
      */
     public function puedeSerUsuario(): bool
     {
-        return $this->tipo_persona === 'trabajador';
+        return $this->tipo === 'INTERNO';
     }
 
     /**

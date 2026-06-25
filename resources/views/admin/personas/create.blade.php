@@ -79,7 +79,7 @@
                                 Tipo de Persona
                                 <span class="text-danger">*</span>
                             </label>
-                            <select name="tipo" id="tipo" class="form-select @error('tipo') is-invalid @enderror">
+                            <select name="tipo" id="tipo" class="form-select @error('tipo') is-invalid @enderror" onchange="actualizarFormulario()">
                                 <option value="INTERNO" @selected(old('tipo') === 'INTERNO' || true)>Interno</option>
                                 <option value="EXTERNO" @selected(old('tipo') === 'EXTERNO')>Externo</option>
                             </select>
@@ -88,15 +88,15 @@
                             @enderror
                         </div>
 
-                        {{-- CARGO --}}
-                        <div class="mb-3">
+                        {{-- CARGO (solo para INTERNOS) --}}
+                        <div class="mb-3" id="cargoDiv">
                             <label class="form-label fw-semibold">
                                 Cargo
-                                <span class="text-danger">*</span>
+                                <span class="text-muted">(Opcional)</span>
                             </label>
                             <div class="input-group">
                                 <select name="idCargo" id="cargoSelect" class="form-select @error('idCargo') is-invalid @enderror">
-                                    <option value="">Seleccione o ingrese cargo</option>
+                                    <option value="">Seleccione un cargo</option>
                                     @foreach($cargos as $cargo)
                                         <option value="{{ $cargo->idCargo }}" @selected(old('idCargo') === (string)$cargo->idCargo)>
                                             {{ $cargo->nombre }}
@@ -104,10 +104,29 @@
                                     @endforeach
                                 </select>
                             </div>
-                            <small class="d-block text-muted mt-2">
-                                Seleccione un cargo existente o ingrese uno nuevo directamente.
-                            </small>
                             @error('idCargo')
+                                <div class="invalid-feedback d-block">{{ $message }}</div>
+                            @enderror
+                        </div>
+
+                        {{-- DEPARTAMENTO (solo para INTERNOS) --}}
+                        <div class="mb-3" id="departamentoDiv" style="display: none;">
+                            <label class="form-label fw-semibold">
+                                Departamento
+                                <span class="text-muted">(Opcional)</span>
+                            </label>
+                            <select name="idDepartamento" id="departamentoSelect" class="form-select @error('idDepartamento') is-invalid @enderror">
+                                <option value="">No asignar a departamento</option>
+                                @foreach(\App\Models\Departamento::orderBy('nombre')->get() as $depto)
+                                    <option value="{{ $depto->idDepartamento }}" @selected(old('idDepartamento') === (string)$depto->idDepartamento)>
+                                        {{ $depto->nombre }}
+                                    </option>
+                                @endforeach
+                            </select>
+                            <small class="d-block text-muted mt-2">
+                                También puedes agregar esta persona al departamento desde la sección de Departamentos.
+                            </small>
+                            @error('idDepartamento')
                                 <div class="invalid-feedback d-block">{{ $message }}</div>
                             @enderror
                         </div>
@@ -162,17 +181,33 @@
                             @enderror
                         </div>
 
-                        {{-- INSTITUCIÓN --}}
-                        <div class="mb-3">
+                        {{-- INSTITUCIÓN (OCULTO - Se asigna automáticamente) --}}
+                        <input type="hidden" name="institucion" value="EPAB">
+                        
+                        {{-- INSTITUCIÓN (solo para EXTERNOS) --}}
+                        <div class="mb-3" id="institucionDiv" style="display: none;">
                             <label class="form-label fw-semibold">
                                 Institución
+                                <span class="text-danger">*</span>
                             </label>
-                            <input type="text" name="institucion" 
+                            <input type="text" name="institucion" id="institucion"
                                    class="form-control @error('institucion') is-invalid @enderror"
-                                   value="{{ old('institucion') }}" placeholder="Ej: Ministerio de Educación">
+                                   value="{{ old('institucion') }}" 
+                                   placeholder="Ej: Universidad Mayor de San Andrés, Ministerio de Defensa, Empresa XYZ, Particular">
+                            <small class="d-block text-muted mt-2">
+                                Indicar la institución a la que pertenece esta persona. 
+                                Escriba "Particular" si no pertenece a institución alguna.
+                            </small>
                             @error('institucion')
                                 <div class="invalid-feedback d-block">{{ $message }}</div>
                             @enderror
+                        </div>
+
+                        <div class="alert alert-info mb-0" id="institucionInfo">
+                            <small>
+                                <i class="bi bi-info-circle"></i>
+                                <strong>Institución:</strong> Se asigna automáticamente como EPAB para personas internas.
+                            </small>
                         </div>
                     </div>
                 </div>
@@ -186,15 +221,16 @@
                         Información
                     </div>
                     <div class="card-body">
-                        <p class="text-muted mb-3">
-                            <strong>Tipo por defecto:</strong> Interno
+                        <p class="text-muted mb-3" id="infoTipo">
+                            <strong>Tipo:</strong> <span id="tipoTexto">Interno</span>
                         </p>
-                        <p class="text-muted mb-3">
-                            <strong>Cargo:</strong> Obligatorio. Seleccione de la lista o ingrese uno nuevo.
+                        <p class="text-muted mb-3" id="infoInstitucion">
+                            <strong>Institución:</strong> EPAB (Escuela de Postgrado de la Armada Boliviana)
                         </p>
                         <div class="alert alert-info mb-0">
-                            <small>
-                                <strong>Nota:</strong> Los remitentes se asignan automáticamente al registrar documentos.
+                            <small id="notaInfo">
+                                <strong>Nota:</strong> Los campos de Cargo y Departamento son opcionales. 
+                                Puedes asignarlos después desde la vista correspondiente.
                             </small>
                         </div>
                     </div>
@@ -214,5 +250,51 @@
     </form>
 
 </div>
+
+{{-- SCRIPT PARA FORMULARIO DINÁMICO --}}
+<script>
+function actualizarFormulario() {
+    const tipo = document.getElementById('tipo').value;
+    const cargoDiv = document.getElementById('cargoDiv');
+    const departamentoDiv = document.getElementById('departamentoDiv');
+    const institucionDiv = document.getElementById('institucionDiv');
+    const institucionInfo = document.getElementById('institucionInfo');
+    const tipoTexto = document.getElementById('tipoTexto');
+    const notaInfo = document.getElementById('notaInfo');
+    const institucion = document.getElementById('institucion');
+    
+    if (tipo === 'INTERNO') {
+        // Mostrar campos para INTERNOS
+        cargoDiv.style.display = 'block';
+        departamentoDiv.style.display = 'block';
+        institucionDiv.style.display = 'none';
+        institucionInfo.style.display = 'block';
+        tipoTexto.textContent = 'Interno';
+        institucion.removeAttribute('required');
+        notaInfo.innerHTML = `
+            <strong>Nota:</strong> Puedes asignar opcionalmente un Cargo y Departamento. 
+            También podrás hacerlo después desde la vista correspondiente.
+        `;
+    } else {
+        // Ocultar para EXTERNOS
+        cargoDiv.style.display = 'none';
+        departamentoDiv.style.display = 'none';
+        institucionDiv.style.display = 'block';
+        institucionInfo.style.display = 'none';
+        tipoTexto.textContent = 'Externo';
+        institucion.setAttribute('required', 'required');
+        notaInfo.innerHTML = `
+            <strong>Nota:</strong> Debes indicar la institución de procedencia de esta persona externa.
+            Si no pertenece a ninguna institución, escribe "Particular".
+        `;
+        // Limpiar valores
+        document.getElementById('cargoSelect').value = '';
+        document.getElementById('departamentoSelect').value = '';
+    }
+}
+
+// Ejecutar al cargar la página
+document.addEventListener('DOMContentLoaded', actualizarFormulario);
+</script>
 
 @endsection

@@ -24,13 +24,13 @@ use Illuminate\Contracts\Validation\Rule;
 class ValidarCIBoliviano implements Rule
 {
     /**
-     * Validar el CI Boliviano.
+     * Determine if the validation rule passes.
      *
      * @param  string  $attribute
      * @param  mixed  $value
      * @return bool
      */
-    public function validate($attribute, $value): bool
+    public function passes($attribute, $value): bool
     {
         // Eliminar espacios en blanco
         $ci = trim($value ?? '');

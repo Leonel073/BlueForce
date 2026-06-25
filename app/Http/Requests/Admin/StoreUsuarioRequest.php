@@ -4,10 +4,10 @@ namespace App\Http\Requests\Admin;
 
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Validation\Rule;
-use App\Rules\PersonaTrabajadorSinUsuario;
+use App\Rules\PersonaInternoSinUsuario;
 
 /**
- * Crea un usuario vinculado a una persona trabajadora.
+ * Crea un usuario vinculado a una persona interna.
  * Solo administradores pueden crear usuarios.
  */
 class StoreUsuarioRequest extends FormRequest
@@ -47,7 +47,7 @@ class StoreUsuarioRequest extends FormRequest
             'idPersona' => [
                 'required',
                 'integer',
-                new PersonaTrabajadorSinUsuario(),
+                new PersonaInternoSinUsuario(),
             ],
             'activo' => [
                 'nullable',
@@ -71,7 +71,7 @@ class StoreUsuarioRequest extends FormRequest
             'password.regex'     => 'La contraseña debe contener: mayúscula, minúscula, número y carácter especial (@$!%*?&).',
             'idRol.required'     => 'Debe seleccionar un rol.',
             'idRol.exists'       => 'El rol seleccionado no existe.',
-            'idPersona.required' => 'Debe seleccionar una persona trabajadora.',
+            'idPersona.required' => 'Debe seleccionar una persona interna.',
         ];
     }
 

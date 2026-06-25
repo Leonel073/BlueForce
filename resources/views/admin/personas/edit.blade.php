@@ -205,7 +205,7 @@
                 </div>
 
                 {{-- INSTITUCIÓN --}}
-                <div class="mb-3">
+                <div class="mb-3" id="institucion_section">
 
                     <label class="form-label fw-semibold">
 
@@ -215,8 +215,18 @@
 
                     <input type="text"
                            name="institucion"
+                           id="institucion"
                            class="form-control"
-                           value="{{ old('institucion', $persona->institucion) }}">
+                           value="{{ old('institucion', $persona->institucion) }}"
+                           placeholder="Ej: EPAB (para internos), Universidad Mayor de San Andrés (para externos)">
+
+                    <small class="text-muted d-block mt-2">
+
+                        <i class="bi bi-info-circle me-1"></i>
+
+                        <span id="institucionHelp">Para personas internas se asigna como EPAB. Para externas, indique la institución de procedencia o escriba "Particular".</span>
+
+                    </small>
 
                 </div>
 
@@ -321,22 +331,38 @@
 <script>
     /*
     |--------------------------------------------------------------------------
-    | MOSTRAR/OCULTAR CAMPO DE CARGO SEGÚN TIPO
+    | MOSTRAR/OCULTAR CAMPOS SEGÚN TIPO DE PERSONA
     |--------------------------------------------------------------------------
     */
 
     const tipoSelect = document.querySelector('select[name="tipo"]');
     const cargoSection = document.getElementById('cargo_section');
+    const institucionSection = document.getElementById('institucion_section');
     const idCargoSelect = document.getElementById('idCargo');
+    const institucionInput = document.querySelector('input[name="institucion"]');
+    const institucionHelp = document.getElementById('institucionHelp');
 
-    function toggleCargoField() {
+    function toggleFields() {
         if (tipoSelect.value === 'INTERNO') {
             cargoSection.style.display = 'block';
+            idCargoSelect.removeAttribute('disabled');
+            institucionInput.readOnly = true;
+            institucionInput.value = 'EPAB';
+            institucionHelp.textContent = 'Se asigna automáticamente como EPAB para personas internas.';
         } else {
             cargoSection.style.display = 'none';
-            idCargoSelect.value = ''; // Limpia el cargo si es externo
+            idCargoSelect.setAttribute('disabled', 'disabled');
+            idCargoSelect.value = '';
+            institucionInput.readOnly = false;
+            if (!institucionInput.value || institucionInput.value === 'EPAB') {
+                institucionInput.value = '';
+            }
+            institucionHelp.textContent = 'Indicar la institución de procedencia de esta persona externa. Escriba "Particular" si no pertenece a institución alguna.';
         }
     }
 
-    tipoSelect.addEventListener('change', toggleCargoField);
+    tipoSelect.addEventListener('change', toggleFields);
+    
+    // Ejecutar al cargar
+    document.addEventListener('DOMContentLoaded', toggleFields);
 </script>
