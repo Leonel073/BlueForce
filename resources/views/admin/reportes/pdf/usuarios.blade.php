@@ -3,45 +3,65 @@
 <head>
     <meta charset="UTF-8">
     <title>Reporte de Usuarios</title>
-    <style>
-        body { font-family: DejaVu Sans, sans-serif; font-size: 12px; color: #333; }
-        .header { width: 100%; margin-bottom: 25px; border-bottom: 3px solid #0B2D59; padding-bottom: 15px; }
-        .logo { width: 90px; }
-        .empresa { text-align: center; }
-        .empresa h1 { margin: 0; color: #0B2D59; font-size: 24px; }
-        .empresa p { margin: 3px 0; font-size: 12px; color: #666; }
-        .titulo { margin-top: 25px; margin-bottom: 20px; text-align: center; }
-        .titulo h2 { margin: 0; color: #0B2D59; font-size: 20px; }
-        table { width: 100%; border-collapse: collapse; }
-        table th { background-color: #0B2D59; color: white; padding: 10px; border: 1px solid #ddd; font-size: 12px; text-align: left;}
-        table td { border: 1px solid #ddd; padding: 8px; vertical-align: top; }
-        tbody tr:nth-child(even) { background-color: #f4f4f4; }
-        .footer { position: fixed; bottom: -10px; left: 0; right: 0; text-align: center; font-size: 10px; color: #777; }
-    </style>
+    @include('admin.reportes.pdf.partials.styles')
 </head>
 <body>
-    <table class="header">
+
+    {{-- HEADER --}}
+    <table class="pdf-header">
         <tr>
-            <td width="20%" style="border: none; background: transparent;">
-                <img src="{{ public_path('images/LogoEmpresa.png') }}" class="logo">
+            <td width="20%">
+                <img src="{{ public_path('images/LogoEmpresa.png') }}" class="pdf-logo">
             </td>
-            <td width="80%" class="empresa" style="border: none; background: transparent;">
-                <h1>Sistema de Gestión Documental</h1>
+            <td width="80%" class="pdf-brand">
+                <h1>Sistema de Gestion Documental</h1>
                 <p>Escuela de Posgrado de la Armada Boliviana</p>
                 <p>Generado: {{ now()->timezone('America/La_Paz')->format('d/m/Y H:i') }}</p>
             </td>
         </tr>
     </table>
 
-    <div class="titulo"><h2>Reporte de Actividad de Usuarios</h2></div>
+    {{-- TITULO --}}
+    <div class="pdf-title">
+        <h2>Reporte de Actividad de Usuarios</h2>
+        <p>Registro detallado de actividad documental por usuario</p>
+    </div>
 
-    <table>
+    {{-- RESUMEN --}}
+    @php
+        $activos = $usuarios->filter(fn($u) => $u->activo)->count();
+        $inactivos = $usuarios->filter(fn($u) => !$u->activo)->count();
+        $totalDocs = $usuarios->sum('correspondencias_count');
+    @endphp
+    <table class="pdf-summary">
+        <tr>
+            <td>
+                <div class="summary-label">TOTAL USUARIOS</div>
+                <div class="summary-value">{{ $usuarios->count() }}</div>
+            </td>
+            <td>
+                <div class="summary-label">ACTIVOS</div>
+                <div class="summary-value" style="color:#0D9E6E;">{{ $activos }}</div>
+            </td>
+            <td>
+                <div class="summary-label">INACTIVOS</div>
+                <div class="summary-value" style="color:#DC2626;">{{ $inactivos }}</div>
+            </td>
+            <td>
+                <div class="summary-label">TOTAL DOCUMENTOS</div>
+                <div class="summary-value">{{ $totalDocs }}</div>
+            </td>
+        </tr>
+    </table>
+
+    {{-- TABLA --}}
+    <table class="data-table">
         <thead>
             <tr>
                 <th>Usuario</th>
-                <th>Correo Electrónico</th>
-                <th style="text-align: center;">Doc. Registrados</th>
-                <th style="text-align: center;">Estado</th>
+                <th>Correo Electronico</th>
+                <th class="text-center">Doc. Registrados</th>
+                <th class="text-center">Estado</th>
             </tr>
         </thead>
         <tbody>
@@ -49,15 +69,21 @@
                 <tr>
                     <td><strong>{{ $usuario->name }}</strong></td>
                     <td>{{ $usuario->email }}</td>
-                    <td style="text-align: center;">{{ $usuario->correspondencias_count }}</td>
-                    <td style="text-align: center; font-weight: bold; color: {{ $usuario->activo ? 'green' : 'red' }}">
-                        {{ $usuario->activo ? 'Activo' : 'Inactivo' }}
+                    <td class="text-center">{{ $usuario->correspondencias_count }}</td>
+                    <td class="text-center">
+                        <span class="tag {{ $usuario->activo ? 'tag-success' : 'tag-danger' }}">
+                            {{ $usuario->activo ? 'Activo' : 'Inactivo' }}
+                        </span>
                     </td>
                 </tr>
             @endforeach
         </tbody>
     </table>
 
-    <div class="footer">SISGED — Reporte generado automáticamente</div>
+    {{-- FOOTER --}}
+    <div class="pdf-footer">
+        <strong>SISGED</strong> &mdash; Reporte generado automaticamente
+    </div>
+
 </body>
 </html>

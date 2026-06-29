@@ -171,13 +171,7 @@ use Illuminate\Support\Str;
                                         </a>
 
                                         {{-- DERIVACIONES --}}
-                                        <button type="button"
-                                           class="btn btn-sm btn-doc btn-doc-derive"
-                                           title="Ver historial"
-                                           data-bs-toggle="tooltip"
-                                           onclick="loadDerivaciones({{ $doc->idDocumento }})">
-                                            <i class="bi bi-arrow-left-right"></i>
-                                        </button>
+                                       
 
                                         {{-- EDITAR --}}
                                         <a href="{{ route('admin.documentos.edit', $doc->idDocumento) }}"
@@ -187,16 +181,6 @@ use Illuminate\Support\Str;
                                             <i class="bi bi-pencil"></i>
                                         </a>
 
-                                        {{-- PDF --}}
-                                        @if($doc->tiene_archivo)
-                                            <a href="{{ route('documentos.pdf.descargar', $doc->idDocumento) }}"
-                                               class="btn btn-sm btn-doc"
-                                               style="background: #c0392b; color: white;"
-                                               title="PDF"
-                                               data-bs-toggle="tooltip">
-                                                <i class="bi bi-file-pdf"></i>
-                                            </a>
-                                        @endif
 
                                     </div>
 

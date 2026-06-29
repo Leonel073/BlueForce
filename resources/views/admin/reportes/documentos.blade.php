@@ -1,149 +1,135 @@
-    @extends('layouts.app')
+@extends('layouts.app')
 
-    @section('title', 'Reporte General de Documentos')
+@section('title', 'Reporte General de Documentos')
 
-    @section('content')
-    <div class="container-fluid py-4">
-        <div class="card border-0 shadow-lg rounded-4 mb-4" style="background: linear-gradient(135deg,#0B2D59,#2E608C);">
-            <div class="card-body d-flex align-items-center">
-                <img src="{{ asset('images/LogoEmpresa.png') }}" alt="Logo Empresa" style="width: 80px; margin-right: 20px;">
-                <div>
-                    <h1 class="fw-bold text-white mb-1"><i class="bi bi-file-earmark-text-fill"></i> Reporte General de Documentos</h1>
-                    <p class="text-light mb-0">Listado integral de correspondencia con datos de origen y destino</p>
+@section('content')
+
+@include('admin.reportes.partials.styles')
+
+<div class="report-container">
+
+    {{-- HERO --}}
+    <div class="report-hero">
+        <div class="d-flex align-items-center">
+            <img src="{{ asset('images/LogoEmpresa.png') }}" alt="Logo">
+            <div>
+                <h1><i class="bi bi-file-earmark-text-fill"></i> Reporte General de Documentos</h1>
+                <p>Listado integral de correspondencia con datos de origen y destino</p>
+            </div>
+        </div>
+    </div>
+
+    {{-- FILTROS --}}
+    <div class="report-filter-area">
+        <form method="GET" action="{{ route('admin.reportes.documentos') }}" id="filtros-documentos">
+            <div class="row g-3">
+                <div class="col-md-2">
+                    <label>Buscar Documento</label>
+                    <input type="text" name="q" class="form-control" placeholder="Cite o asunto..." value="{{ request('q') }}">
+                </div>
+                <div class="col-md-2">
+                    <label>Tipo</label>
+                    <select name="idTipo" class="form-select">
+                        <option value="">Todos</option>
+                        @foreach($tipos as $t)
+                            <option value="{{ $t->idTipoDocumento }}" {{ request('idTipo') == $t->idTipoDocumento ? 'selected' : '' }}>
+                                {{ $t->nombre }}
+                            </option>
+                        @endforeach
+                    </select>
+                </div>
+                <div class="col-md-2">
+                    <label>Estado</label>
+                    <select name="idEstado" class="form-select">
+                        <option value="">Todos</option>
+                        @foreach($estados as $e)
+                            <option value="{{ $e->idEstado }}" {{ request('idEstado') == $e->idEstado ? 'selected' : '' }}>{{ $e->nombre }}</option>
+                        @endforeach
+                    </select>
+                </div>
+                <div class="col-md-2">
+                    <label>Remitente</label>
+                    <select name="idRemitente" class="form-select">
+                        <option value="">Todos</option>
+                        @foreach($personas as $p)
+                            <option value="{{ $p->idPersona }}" {{ request('idRemitente') == $p->idPersona ? 'selected' : '' }}>
+                                {{ substr($p->nombre, 0, 20) }}
+                            </option>
+                        @endforeach
+                    </select>
+                </div>
+                <div class="col-md-1">
+                    <label>Desde</label>
+                    <input type="date" name="fecha_inicio" class="form-control" value="{{ request('fecha_inicio') }}">
+                </div>
+                <div class="col-md-1">
+                    <label>Hasta</label>
+                    <input type="date" name="fecha_fin" class="form-control" value="{{ request('fecha_fin') }}">
+                </div>
+                <div class="col-md-2 d-flex align-items-end">
+                    <button type="submit" class="btn-bf-primary w-100"><i class="bi bi-search"></i> Buscar</button>
+                </div>
+            </div>
+            <div class="filter-actions mt-3">
+                <button type="button" class="btn-bf-secondary" onclick="resetFiltrosDocumentos()"><i class="bi bi-arrow-clockwise"></i> Limpiar</button>
+                <button type="button" class="btn-bf-secondary" onclick="mostrarEstadisticasDocumentos()"><i class="bi bi-bar-chart"></i> Estadisticas</button>
+                <a href="{{ route('admin.reportes.documentos.pdf', request()->query()) }}" class="btn-bf-danger"><i class="bi bi-file-pdf-fill"></i> Exportar PDF</a>
+                <button type="button" class="btn-bf-secondary" onclick="cerrar()"><i class="bi bi-x-lg"></i> Salida</button>
+            </div>
+        </form>
+    </div>
+
+    {{-- ESTADISTICAS --}}
+    @if($estadisticas['total_documentos'] > 0)
+    <div id="estadisticas-documentos" style="display: none;">
+        <div class="row g-3 mb-4">
+            <div class="col-md-3">
+                <div class="stat-card stat-navy">
+                    <div class="stat-icon"><i class="bi bi-file-earmark-text"></i></div>
+                    <div class="stat-value">{{ $estadisticas['total_documentos'] }}</div>
+                    <div class="stat-label">Total Documentos</div>
+                </div>
+            </div>
+            <div class="col-md-3">
+                <div class="stat-card stat-gold">
+                    <div class="stat-icon"><i class="bi bi-clock-history"></i></div>
+                    <div class="stat-value">{{ $estadisticas['documentos_pendientes'] }}</div>
+                    <div class="stat-label">Pendientes</div>
+                </div>
+            </div>
+            <div class="col-md-3">
+                <div class="stat-card stat-success">
+                    <div class="stat-icon"><i class="bi bi-check-circle"></i></div>
+                    <div class="stat-value">{{ $estadisticas['documentos_finalizados'] }}</div>
+                    <div class="stat-label">Finalizados</div>
+                </div>
+            </div>
+            <div class="col-md-3">
+                <div class="stat-card stat-danger">
+                    <div class="stat-icon"><i class="bi bi-exclamation-triangle"></i></div>
+                    <div class="stat-value">{{ $estadisticas['documentos_urgentes'] }}</div>
+                    <div class="stat-label">Urgentes</div>
                 </div>
             </div>
         </div>
+    </div>
+    @endif
 
-        <div class="card border-0 shadow-sm rounded-4 mb-4">
-            <div class="card-body">
-                <form method="GET" action="{{ route('admin.reportes.documentos') }}" id="filtros-documentos">
-                    <div class="row g-2">
-                        <div class="col-md-2">
-                            <label class="form-label small fw-bold">Buscar Documento</label>
-                            <input type="text" name="q" class="form-control form-control-sm" placeholder="Cite o asunto..." value="{{ request('q') }}">
-                        </div>
-                        <div class="col-md-2">
-                            <label class="form-label small fw-bold">Tipo</label>
-                            <select name="idTipo" class="form-select form-select-sm">
-                                <option value="">Todos</option>
-                                @foreach($tipos as $t)
-                                    <option value="{{ $t->idTipoDocumento }}" {{ request('idTipo') == $t->idTipoDocumento ? 'selected' : '' }}>
-                                        {{ $t->nombre }}
-                                    </option>
-                                @endforeach
-                            </select>
-                        </div>
-                        <div class="col-md-2">
-                            <label class="form-label small fw-bold">Estado</label>
-                            <select name="idEstado" class="form-select form-select-sm">
-                                <option value="">Todos</option>
-                                @foreach($estados as $e)
-                                    <option value="{{ $e->idEstado }}" {{ request('idEstado') == $e->idEstado ? 'selected' : '' }}>{{ $e->nombre }}</option>
-                                @endforeach
-                            </select>
-                        </div>
-                        <div class="col-md-2">
-                            <label class="form-label small fw-bold">Remitente</label>
-                            <select name="idRemitente" class="form-select form-select-sm">
-                                <option value="">Todos</option>
-                                @foreach($personas as $p)
-                                    <option value="{{ $p->idPersona }}" {{ request('idRemitente') == $p->idPersona ? 'selected' : '' }}>
-                                        {{ substr($p->nombre, 0, 20) }}
-                                    </option>
-                                @endforeach
-                            </select>
-                        </div>
-                        <div class="col-md-1">
-                            <label class="form-label small fw-bold">Desde</label>
-                            <input type="date" name="fecha_inicio" class="form-control form-control-sm" value="{{ request('fecha_inicio') }}">
-                        </div>
-                        <div class="col-md-1">
-                            <label class="form-label small fw-bold">Hasta</label>
-                            <input type="date" name="fecha_fin" class="form-control form-control-sm" value="{{ request('fecha_fin') }}">
-                        </div>
-                        <div class="col-md-1 d-flex align-items-end">
-                            <button type="submit" class="btn btn-dark btn-sm w-100" style="background-color:#0B2D59;"><i class="bi bi-search"></i></button>
-                        </div>
-                    </div>
-                    <div class="row mt-2">
-                        <div class="col-md-12">
-                            <button type="button" class="btn btn-secondary btn-sm" onclick="resetFiltrosDocumentos()">
-                                <i class="bi bi-arrow-clockwise"></i> Limpiar
-                            </button>
-                            <button type="button" class="btn btn-sm text-white" style="background-color:#2E608C;" onclick="mostrarEstadisticasDocumentos()">
-                                <i class="bi bi-bar-chart"></i> Ver Estadísticas
-                            </button>
-                            <a href="{{ route('admin.reportes.documentos.pdf', request()->query()) }}" class="btn btn-danger btn-sm">
-                                <i class="bi bi-file-pdf-fill"></i> Exportar PDF
-                            </a>
-                            <button type="button" class="btn btn-secondary btn-sm" onclick="cerrar()">
-                                <i class="bi bi-x-lg"></i> Salida
-                            </button>
-                        </div>
-                    </div>
-                </form>
-            </div>
+    {{-- TABLA --}}
+    <div class="report-card">
+        <div class="report-card-header d-flex justify-content-between align-items-center">
+            <h5 class="report-card-title"><i class="bi bi-list-ul"></i> Resultados de la busqueda ({{ $documentos->count() }})</h5>
         </div>
-
-        {{-- ESTADÍSTICAS PRE-VISUALIZACIÓN --}}
-        @if($estadisticas['total_documentos'] > 0)
-        <div class="card border-0 shadow-sm rounded-4 mb-4" id="estadisticas-documentos" style="display: none;">
-            <div class="card-body">
-                <h5 class="fw-bold mb-3">📊 Estadísticas del Reporte</h5>
-                <div class="row">
-                    <div class="col-md-3">
-                        <div class="card bg-light">
-                            <div class="card-body text-center">
-                                <h6 class="text-muted">Total Documentos</h6>
-                                <h2 class="fw-bold">{{ $estadisticas['total_documentos'] }}</h2>
-                            </div>
-                        </div>
-                    </div>
-                    <div class="col-md-3">
-                        <div class="card bg-light">
-                            <div class="card-body text-center">
-                                <h6 class="text-muted">Pendientes</h6>
-                                <h2 class="fw-bold text-warning">{{ $estadisticas['documentos_pendientes'] }}</h2>
-                            </div>
-                        </div>
-                    </div>
-                    <div class="col-md-3">
-                        <div class="card bg-light">
-                            <div class="card-body text-center">
-                                <h6 class="text-muted">Finalizados</h6>
-                                <h2 class="fw-bold text-success">{{ $estadisticas['documentos_finalizados'] }}</h2>
-                            </div>
-                        </div>
-                    </div>
-                    <div class="col-md-3">
-                        <div class="card bg-light">
-                            <div class="card-body text-center">
-                                <h6 class="text-muted">Urgentes</h6>
-                                <h2 class="fw-bold text-danger">{{ $estadisticas['documentos_urgentes'] }}</h2>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </div>
-        @endif
-
-        <div class="card border-0 shadow-lg rounded-4">
-        {{-- BOTÓN EXPORTAR EN LA CABECERA --}}
-        <div class="card-header bg-white border-0 pt-4 pb-0 d-flex justify-content-between align-items-center">
-            <h5 class="mb-0 fw-bold text-secondary">Resultados de la búsqueda ({{ $documentos->count() }})</h5>
-        </div>
-
-        <div class="card-body">
+        <div class="report-card-body p-0">
             <div class="table-responsive">
-                <table class="table table-hover align-middle" style="font-size: 0.9rem;">
-                    <thead class="table-dark" style="--bs-table-bg: #0B2D59;">
+                <table class="report-table">
+                    <thead>
                         <tr>
-                            <th class="text-white">Documento / Cite</th>
-                            <th class="text-white">Remitente (CI)</th>
-                            <th class="text-white">Tipo</th>
-                            <th class="text-white">Fecha</th>
-                            <th class="text-white">Estado</th>
+                            <th>Documento / Cite</th>
+                            <th>Remitente (CI)</th>
+                            <th>Tipo</th>
+                            <th>Fecha</th>
+                            <th>Estado</th>
                         </tr>
                     </thead>
                     <tbody>
@@ -155,14 +141,14 @@
                                 </td>
                                 <td>
                                     {{ $doc->remitente->nombre ?? 'N/A' }}<br>
-                                    <span class="badge bg-light text-dark border">{{ $doc->remitente->ci ?? 'S/R' }}</span>
+                                    <span class="badge-bf badge-bf-gray">{{ $doc->remitente->ci ?? 'S/R' }}</span>
                                 </td>
                                 <td>
-                                    <small class="badge bg-secondary">{{ $doc->tipoDocumento->nombre ?? 'N/A' }}</small>
+                                    <span class="badge-bf badge-bf-navy">{{ $doc->tipoDocumento->nombre ?? 'N/A' }}</span>
                                 </td>
                                 <td>{{ \Carbon\Carbon::parse($doc->fecha)->format('d/m/Y') }}</td>
                                 <td>
-                                    <span class="badge rounded-pill" style="background-color: #0B2D59;">{{ $doc->estado->nombre ?? 'N/A' }}</span>
+                                    <span class="badge-bf badge-bf-blue">{{ $doc->estado->nombre ?? 'N/A' }}</span>
                                 </td>
                             </tr>
                         @empty
@@ -173,27 +159,21 @@
             </div>
         </div>
     </div>
+</div>
 
-    <script>
-    function resetFiltrosDocumentos() {
-        document.getElementById('filtros-documentos').reset();
-        document.getElementById('filtros-documentos').submit();
+<script>
+function resetFiltrosDocumentos() {
+    document.getElementById('filtros-documentos').reset();
+    document.getElementById('filtros-documentos').submit();
+}
+function mostrarEstadisticasDocumentos() {
+    const s = document.getElementById('estadisticas-documentos');
+    if (s) s.style.display = s.style.display === 'none' ? 'block' : 'none';
+}
+function cerrar() {
+    if (confirm('Desea cerrar este reporte?')) {
+        window.location.href = '{{ route("admin.reportes.index") }}';
     }
-
-    function mostrarEstadisticasDocumentos() {
-        const seccion = document.getElementById('estadisticas-documentos');
-        if (seccion) {
-            seccion.style.display = seccion.style.display === 'none' ? 'block' : 'none';
-        }
-    }
-
-    function cerrar() {
-        if (confirm('¿Deseas cerrar este reporte?')) {
-            window.location.href = '{{ route("admin.reportes.index") }}';
-        }
-    }
-
-
-    
-    </script>
-    @endsection
+}
+</script>
+@endsection
