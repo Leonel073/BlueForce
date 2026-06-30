@@ -298,13 +298,15 @@
             ]
         );
 
-    // Para admin: siempre permitir, para usuarios normales: verificar responsabilidad actual
+    // Bloquear si documento está en estado final O si no es responsable actual
+    // Admin siempre tiene acceso excepto si el documento está finalizado/archivado
+    $esAdmin = Auth::user()->idRol == 1;
     $esResponsableActual = 
-        Auth::user()->idRol == 1 || 
+        $esAdmin || 
         ($ultimaDerivacion && $ultimaDerivacion->idUsuarioAsignado == Auth::id());
 
-    // Bloquear solo si documento está finalizado/archivado Y no es admin
-    $bloqueado = $bloqueadoPorEstado || (!$esResponsableActual && Auth::user()->idRol != 1);
+    // Bloquear botones si documento está finalizado/archivado O si no es responsable actual
+    $bloqueado = $bloqueadoPorEstado || !$esResponsableActual;
 
 @endphp
 

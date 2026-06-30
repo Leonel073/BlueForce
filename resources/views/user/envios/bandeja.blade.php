@@ -301,8 +301,9 @@
     // Usuario es responsable actual solo si:
     // 1. Es admin, O
     // 2. Es el idUsuarioAsignado de la última derivación
+    $esAdmin = Auth::user()->idRol == 1;
     $esResponsableActual = 
-        Auth::user()->idRol == 1 || 
+        $esAdmin || 
         ($ultimaDerivacion && $ultimaDerivacion->idUsuarioAsignado == Auth::id());
 
     // Bloquear si documento está finalizado/archivado O si no es responsable actual

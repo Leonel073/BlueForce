@@ -195,7 +195,7 @@
                                 </div>
                             </div>
 
-                            {{-- Campos ocultos para remitente "yo mismo" --}}
+                            {{-- Campos ocultos para remitente "yo mismo" que se enviarán al formulario --}}
                             <input type="hidden" name="ci_remitente" value="{{ Auth::user()->persona->ci ?? '' }}">
                             <input type="hidden" name="nombre_remitente" value="{{ Auth::user()->persona->nombre ?? Auth::user()->name }}">
                             <input type="hidden" name="telefono_celular" value="{{ Auth::user()->persona->telefono_celular ?? '' }}">
@@ -217,7 +217,7 @@
                             <div class="row">
                                 <div class="col-md-6 mb-3">
                                     <label class="form-label fw-semibold">Carnet de Identidad <span class="text-danger">*</span></label>
-                                    <input type="text" id="ci_remitente" name="ci_remitente_manual" class="form-control @error('ci_remitente') is-invalid @enderror" placeholder="Ej: 1234567-8" value="{{ old('ci_remitente') }}">
+                                    <input type="text" id="ci_remitente_otra" name="ci_remitente" class="form-control @error('ci_remitente') is-invalid @enderror" placeholder="Ej: 1234567-8" value="{{ old('ci_remitente') }}">
                                     @error('ci_remitente')
                                         <div class="invalid-feedback d-block"><i class="bi bi-exclamation-circle me-1"></i>{{ $message }}</div>
                                     @else
@@ -226,7 +226,7 @@
                                 </div>
                                 <div class="col-md-6 mb-3">
                                     <label class="form-label fw-semibold">Teléfono Celular <span class="text-danger">*</span></label>
-                                    <input type="text" id="telefono_celular" name="telefono_celular_manual" class="form-control @error('telefono_celular') is-invalid @enderror" placeholder="Ej: +591 71234567" value="{{ old('telefono_celular') }}">
+                                    <input type="text" id="telefono_celular_otra" name="telefono_celular" class="form-control @error('telefono_celular') is-invalid @enderror" placeholder="Ej: +591 71234567" value="{{ old('telefono_celular') }}">
                                     @error('telefono_celular')
                                         <div class="invalid-feedback d-block"><i class="bi bi-exclamation-circle me-1"></i>{{ $message }}</div>
                                     @else
@@ -238,13 +238,13 @@
                             <div class="row">
                                 <div class="col-md-6 mb-3">
                                     <label class="form-label fw-semibold">Teléfono Fijo</label>
-                                    <input type="text" id="telefono_fijo" name="telefono_fijo_manual" class="form-control" value="{{ old('telefono_fijo') }}">
+                                    <input type="text" id="telefono_fijo_otra" name="telefono_fijo" class="form-control" value="{{ old('telefono_fijo') }}">
                                 </div>
                             </div>
 
                             <div class="mb-3">
                                 <label class="form-label fw-semibold">Nombre Completo <span class="text-danger">*</span></label>
-                                <input type="text" id="nombre_remitente" name="nombre_remitente_manual" class="form-control @error('nombre_remitente') is-invalid @enderror" placeholder="Ej: Juan Carlos García López" value="{{ old('nombre_remitente') }}">
+                                <input type="text" id="nombre_remitente_otra" name="nombre_remitente" class="form-control @error('nombre_remitente') is-invalid @enderror" placeholder="Ej: Juan Carlos García López" value="{{ old('nombre_remitente') }}">
                                 @error('nombre_remitente')
                                     <div class="invalid-feedback d-block"><i class="bi bi-exclamation-circle me-1"></i>{{ $message }}</div>
                                 @else
@@ -255,7 +255,7 @@
                             <div class="row">
                                 <div class="col-md-6 mb-3">
                                     <label class="form-label fw-semibold">Correo</label>
-                                    <input type="email" id="correo_remitente" name="correo_remitente_manual" class="form-control @error('correo_remitente') is-invalid @enderror" placeholder="usuario@ejemplo.com" value="{{ old('correo_remitente') }}">
+                                    <input type="email" id="correo_remitente_otra" name="correo_remitente" class="form-control @error('correo_remitente') is-invalid @enderror" placeholder="usuario@ejemplo.com" value="{{ old('correo_remitente') }}">
                                     @error('correo_remitente')
                                         <div class="invalid-feedback d-block"><i class="bi bi-exclamation-circle me-1"></i>{{ $message }}</div>
                                     @else
@@ -264,7 +264,7 @@
                                 </div>
                                 <div class="col-md-6 mb-3" id="cargo_remitente_section" style="display: none;">
                                     <label class="form-label fw-semibold">Cargo</label>
-                                    <input type="text" id="cargo_remitente" name="cargo_remitente_manual" class="form-control" placeholder="Auto completado para internos" readonly>
+                                    <input type="text" id="cargo_remitente_otra" name="cargo_remitente" class="form-control" placeholder="Auto completado para internos" readonly>
                                     <small class="text-muted d-block mt-2"><i class="bi bi-info-circle me-1"></i>Se completa automáticamente para personas internas.</small>
                                 </div>
                             </div>
@@ -272,7 +272,7 @@
                             <div class="row">
                                 <div class="col-md-6 mb-3">
                                     <label class="form-label fw-semibold">Institución</label>
-                                    <input type="text" id="institucion_remitente" name="institucion_remitente_manual" class="form-control @error('institucion_remitente') is-invalid @enderror" placeholder="Ej: Ministerio de Educación" value="{{ old('institucion_remitente') }}">
+                                    <input type="text" id="institucion_remitente_otra" name="institucion_remitente" class="form-control @error('institucion_remitente') is-invalid @enderror" placeholder="Ej: Ministerio de Educación" value="{{ old('institucion_remitente') }}">
                                     @error('institucion_remitente')
                                         <div class="invalid-feedback d-block"><i class="bi bi-exclamation-circle me-1"></i>{{ $message }}</div>
                                     @else
@@ -281,7 +281,7 @@
                                 </div>
                                 <div class="col-md-6 mb-3">
                                     <label class="form-label fw-semibold">Tipo de Remitente <span class="text-danger">*</span></label>
-                                    <select name="tipo_remitente_manual" id="tipo_remitente" class="form-select @error('tipo_remitente') is-invalid @enderror" required>
+                                    <select name="tipo_remitente" id="tipo_remitente_otra" class="form-select @error('tipo_remitente') is-invalid @enderror" required>
                                         <option value="">-- Seleccione tipo --</option>
                                         <option value="INTERNO" @selected(old('tipo_remitente') == 'INTERNO')>INTERNO</option>
                                         <option value="EXTERNO" @selected(old('tipo_remitente') == 'EXTERNO')>EXTERNO</option>
@@ -510,50 +510,14 @@ function toggleRemitenteMode() {
     const bloqueOtra = document.getElementById('bloque_otra_persona');
     
     if (yoMismo) {
+        // Mostrar bloque "Yo Mismo" y ocultar "Otra Persona"
         bloqueYoMismo.style.display = 'block';
         bloqueOtra.style.display = 'none';
         
-        // Asegurar que los campos ocultos se envíen
-        document.querySelectorAll('#bloque_yo_mismo input[type="hidden"]').forEach(input => {
-            input.disabled = false;
-        });
-        document.querySelectorAll('#bloque_otra_persona input').forEach(input => {
-            if (input.type !== 'hidden') input.disabled = true;
-        });
-        
     } else {
+        // Ocultar bloque "Yo Mismo" y mostrar "Otra Persona"
         bloqueYoMismo.style.display = 'none';
         bloqueOtra.style.display = 'block';
-        
-        // Deshabilitar campos ocultos y habilitar entrada manual
-        document.querySelectorAll('#bloque_yo_mismo input[type="hidden"]').forEach(input => {
-            input.disabled = true;
-        });
-        document.querySelectorAll('#bloque_otra_persona input').forEach(input => {
-            if (input.type !== 'hidden') input.disabled = false;
-        });
-        
-        // Copiar valores de campos "otra persona" a los campos ocultos para que se envíen
-        document.getElementById('bloque_otra_persona').addEventListener('input', function(e) {
-            const yoMismoDiv = document.getElementById('bloque_yo_mismo');
-            if (e.target.name === 'ci_remitente_manual') {
-                yoMismoDiv.querySelector('input[name="ci_remitente"]').value = e.target.value;
-            } else if (e.target.name === 'nombre_remitente_manual') {
-                yoMismoDiv.querySelector('input[name="nombre_remitente"]').value = e.target.value;
-            } else if (e.target.name === 'telefono_celular_manual') {
-                yoMismoDiv.querySelector('input[name="telefono_celular"]').value = e.target.value;
-            } else if (e.target.name === 'telefono_fijo_manual') {
-                yoMismoDiv.querySelector('input[name="telefono_fijo"]').value = e.target.value;
-            } else if (e.target.name === 'correo_remitente_manual') {
-                yoMismoDiv.querySelector('input[name="correo_remitente"]').value = e.target.value;
-            } else if (e.target.name === 'cargo_remitente_manual') {
-                yoMismoDiv.querySelector('input[name="cargo_remitente"]').value = e.target.value;
-            } else if (e.target.name === 'institucion_remitente_manual') {
-                yoMismoDiv.querySelector('input[name="institucion_remitente"]').value = e.target.value;
-            } else if (e.target.name === 'tipo_remitente_manual') {
-                yoMismoDiv.querySelector('input[name="tipo_remitente"]').value = e.target.value;
-            }
-        });
     }
 }
 
