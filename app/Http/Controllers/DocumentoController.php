@@ -651,6 +651,179 @@ public function index()
                 'Estado documental actualizado.'
             );
     }
+    /**
+     * BÚSQUEDA INTELIGENTE DE PERSONAS
+     * Búsqueda avanzada y multicampo con debounce
+     */
+    public function buscarPersonasAvanzado(Request $request)
+    {
+        $buscar = trim($request->input('q', ''));
+
+        // Mínimo 2 caracteres para búsqueda
+        if (strlen($buscar) < 2) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Ingrese al menos 2 caracteres',
+                'resultados' => []
+            ]);
+        }
+
+        $query = Persona::where('activo', true);
+
+        // Búsqueda multicampo con OR
+        $query->where(function ($q) use ($buscar) {
+            $q->where('nombre', 'LIKE', "%{$buscar}%")
+              ->orWhere('ci', 'LIKE', "%{$buscar}%")
+              ->orWhere('correo', 'LIKE', "%{$buscar}%")
+              ->orWhere('institucion', 'LIKE', "%{$buscar}%")
+              ->orWhereHas('cargo', function ($q) use ($buscar) {
+                  $q->where('nombre', 'LIKE', "%{$buscar}%");
+              })
+              ->orWhereHas('departamento', function ($q) use ($buscar) {
+                  $q->where('nombre', 'LIKE', "%{$buscar}%");
+              });
+        });
+
+        // Cargar relaciones
+        $resultados = $query
+            ->with(['cargo', 'departamento'])
+            ->orderBy('nombre')
+            ->limit(10)
+            ->get()
+            ->map(function ($persona) {
+                return [
+                    'idPersona' => $persona->idPersona,
+                    'nombre' => $persona->nombre,
+                    'ci' => $persona->ci,
+                    'tipo' => $persona->tipo,
+                    'correo' => $persona->correo,
+                    'telefono_celular' => $persona->telefono_celular,
+                    'telefono_fijo' => $persona->telefono_fijo,
+                    'cargo' => $persona->cargo?->nombre ?? null,
+                    'departamento' => $persona->departamento?->nombre ?? null,
+                    'institucion' => $persona->institucion,
+                ];
+            });
+
+        return response()->json([
+            'success' => true,
+            'resultados' => $resultados,
+            'cantidad' => $resultados->count()
+        ]);
+    }
+
+    /**
+     * VERIFICAR DUPLICADOS ANTES DE CREAR
+     * Búsqueda por CI, correo, nombre, etc.
+     */
+    public function verificarDuplicados(Request $request)
+    {
+        $ci = trim($request->input('ci', ''));
+        $correo = trim($request->input('correo', ''));
+        $nombre = trim($request->input('nombre', ''));
+        $institucion = trim($request->input('institucion', ''));
+        $cargo = trim($request->input('cargo', ''));
+
+        $query = Persona::where('activo', true);
+
+        $encontrados = [];
+
+        // Búsqueda por CI (prioridad 1)
+        if (!empty($ci)) {
+            $porCI = (clone $query)->where('ci', $ci)->first();
+            if ($porCI) {
+                $encontrados[] = [
+                    'razon' => 'Coincidencia exacta por CI',
+                    'persona' => $this->formatearPersona($porCI),
+                ];
+            }
+        }
+
+        // Búsqueda por correo (prioridad 2)
+        if (!empty($correo) && empty($encontrados)) {
+            $porCorreo = (clone $query)->where('correo', $correo)->first();
+            if ($porCorreo) {
+                $encontrados[] = [
+                    'razon' => 'Coincidencia exacta por correo',
+                    'persona' => $this->formatearPersona($porCorreo),
+                ];
+            }
+        }
+
+        // Búsqueda por nombre + institución (prioridad 3)
+        if (!empty($nombre) && !empty($institucion) && empty($encontrados)) {
+            $porNombreInstitucion = (clone $query)
+                ->where('nombre', 'LIKE', "%{$nombre}%")
+                ->where('institucion', 'LIKE', "%{$institucion}%")
+                ->first();
+
+            if ($porNombreInstitucion) {
+                $encontrados[] = [
+                    'razon' => 'Coincidencia por nombre e institución',
+                    'persona' => $this->formatearPersona($porNombreInstitucion),
+                ];
+            }
+        }
+
+        // Búsqueda por nombre + cargo (prioridad 4)
+        if (!empty($nombre) && !empty($cargo) && empty($encontrados)) {
+            $porNombreCargo = (clone $query)
+                ->where('nombre', 'LIKE', "%{$nombre}%")
+                ->whereHas('cargo', function ($q) use ($cargo) {
+                    $q->where('nombre', 'LIKE', "%{$cargo}%");
+                })
+                ->first();
+
+            if ($porNombreCargo) {
+                $encontrados[] = [
+                    'razon' => 'Coincidencia por nombre y cargo',
+                    'persona' => $this->formatearPersona($porNombreCargo),
+                ];
+            }
+        }
+
+        // Búsqueda por nombre similar (prioridad 5)
+        if (!empty($nombre) && empty($encontrados)) {
+            $similar = (clone $query)
+                ->where('nombre', 'LIKE', "%{$nombre}%")
+                ->limit(3)
+                ->get();
+
+            if ($similar->count() > 0) {
+                foreach ($similar as $p) {
+                    $encontrados[] = [
+                        'razon' => 'Similitud por nombre',
+                        'persona' => $this->formatearPersona($p),
+                    ];
+                }
+            }
+        }
+
+        return response()->json([
+            'encontrados' => $encontrados,
+            'tiene_duplicados' => count($encontrados) > 0
+        ]);
+    }
+
+    /**
+     * Helper para formatear datos de persona
+     */
+    private function formatearPersona($persona)
+    {
+        return [
+            'idPersona' => $persona->idPersona,
+            'nombre' => $persona->nombre,
+            'ci' => $persona->ci,
+            'tipo' => $persona->tipo,
+            'correo' => $persona->correo,
+            'telefono_celular' => $persona->telefono_celular,
+            'telefono_fijo' => $persona->telefono_fijo,
+            'cargo' => $persona->cargo?->nombre ?? null,
+            'departamento' => $persona->departamento?->nombre ?? null,
+            'institucion' => $persona->institucion,
+        ];
+    }
+
     public function buscarRemitente(Request $request)
 {
     $buscar = trim($request->q);
