@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\Anuncio;
 use App\Models\Correspondencia;
 use App\Models\Derivacion;
 use App\Models\EstadoDocumento;
@@ -88,6 +89,12 @@ class UserDashboardController extends Controller
                     ->count()
             ]);
 
+        // ANUNCIOS NO VISTOS (pantallazo al ingresar)
+        $anuncioPendiente = Anuncio::activos()
+            ->whereDoesntHave('vistas', fn($q) => $q->where('idUsuario', $userId))
+            ->orderBy('fechaCreacion')
+            ->first();
+
         return view('user.dashboard', compact(
             'totalMis',
             'pendientes',
@@ -100,7 +107,8 @@ class UserDashboardController extends Controller
             'documentosPorMes',
             'documentosPorTipo',
             'estadosPorTipo',
-            'documentosPendientes'
+            'documentosPendientes',
+            'anuncioPendiente'
         ) + ['totalDocumentos' => $totalMis]);
     }
 }

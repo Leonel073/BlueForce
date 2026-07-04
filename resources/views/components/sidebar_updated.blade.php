@@ -28,6 +28,22 @@
 
     </a>
 
+    @if(Auth::user()->idRol != 1)
+    {{-- ANUNCIOS (USUARIO) --}}
+    <a href="{{ route('user.anuncios.index') }}"
+       class="nav-link {{ request()->routeIs('user.anuncios.*') ? 'active' : '' }}">
+
+        <span class="nav-icon">
+            <i class="bi bi-megaphone-fill"></i>
+        </span>
+
+        <span class="nav-label-text">
+            Anuncios
+        </span>
+
+    </a>
+    @endif
+
 </div>
 
 @if(Auth::user()->idRol == 1)
@@ -93,6 +109,20 @@
 
         <span class="nav-label-text">
             Personas
+        </span>
+
+    </a>
+
+    {{-- ANUNCIOS --}}
+    <a href="{{ route('admin.anuncios.index') }}"
+       class="nav-link {{ request()->routeIs('admin.anuncios.*') ? 'active' : '' }}">
+
+        <span class="nav-icon">
+            <i class="bi bi-megaphone-fill"></i>
+        </span>
+
+        <span class="nav-label-text">
+            Anuncios
         </span>
 
     </a>

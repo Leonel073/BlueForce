@@ -17,62 +17,83 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::table('PERSONA', function (Blueprint $table) {
-            // Agregar soporte para institución de personas externas
-            $table->string('institucion_externa', 200)
-                  ->nullable()
-                  ->after('institucion')
-                  ->comment('Institución de procedencia para personas externas (Universidad, Ministerio, Empresa, Particular, etc.)');
+            // Hacer la migración segura si columnas ya existen por migraciones previas.
+            if (!Schema::hasColumn('PERSONA', 'institucion_externa')) {
+                  Schema::table('PERSONA', function (Blueprint $table) {
+                        $table->string('institucion_externa', 200)
+                              ->nullable()
+                              ->after('institucion')
+                              ->comment('Institución de procedencia para personas externas (Universidad, Ministerio, Empresa, Particular, etc.)');
+                  });
+            }
 
-            // Agregar fechas de control de ciclo de vida
-            $table->timestamp('fecha_creacion')
-                  ->nullable()
-                  ->after('institucion_externa')
-                  ->comment('Fecha de registro de la persona en el sistema');
+            if (!Schema::hasColumn('PERSONA', 'fecha_creacion')) {
+                  Schema::table('PERSONA', function (Blueprint $table) {
+                        $table->timestamp('fecha_creacion')
+                              ->nullable()
+                              ->comment('Fecha de registro de la persona en el sistema');
+                  });
+            }
 
-            $table->timestamp('fecha_deshabilitacion')
-                  ->nullable()
-                  ->after('fecha_creacion')
-                  ->comment('Fecha de deshabilitación (borrado lógico). NULL = activo');
+            if (!Schema::hasColumn('PERSONA', 'fecha_deshabilitacion')) {
+                  Schema::table('PERSONA', function (Blueprint $table) {
+                        $table->timestamp('fecha_deshabilitacion')
+                              ->nullable()
+                              ->comment('Fecha de deshabilitación (borrado lógico). NULL = activo');
+                  });
+            }
 
-            // Agregar teléfono celular para mejor contactabilidad
-            $table->string('telefono_celular', 20)
-                  ->nullable()
-                  ->after('fecha_deshabilitacion')
-                  ->comment('Teléfono celular de contacto');
+            if (!Schema::hasColumn('PERSONA', 'telefono_celular')) {
+                  Schema::table('PERSONA', function (Blueprint $table) {
+                        $table->string('telefono_celular', 20)
+                              ->nullable()
+                              ->comment('Teléfono celular de contacto');
+                  });
+            }
 
-            // Agregar teléfono fijo
-            $table->string('telefono_fijo', 20)
-                  ->nullable()
-                  ->after('telefono_celular')
-                  ->comment('Teléfono fijo de contacto');
+            if (!Schema::hasColumn('PERSONA', 'telefono_fijo')) {
+                  Schema::table('PERSONA', function (Blueprint $table) {
+                        $table->string('telefono_fijo', 20)
+                              ->nullable()
+                              ->comment('Teléfono fijo de contacto');
+                  });
+            }
 
-            // Agregar FK para cargo (relación m:1)
-            $table->unsignedBigInteger('idCargo')
-                  ->nullable()
-                  ->after('telefono_fijo')
-                  ->comment('Cargo ocupado en la institución');
+            if (!Schema::hasColumn('PERSONA', 'idCargo')) {
+                  Schema::table('PERSONA', function (Blueprint $table) {
+                        $table->unsignedBigInteger('idCargo')
+                              ->nullable()
+                              ->comment('Cargo ocupado en la institución');
+                  });
+            }
 
-            // Agregar FK para departamento (relación m:1)
-            $table->unsignedBigInteger('idDepartamento')
-                  ->nullable()
-                  ->after('idCargo')
-                  ->comment('Departamento al que pertenece (solo internos)');
-        });
+            if (!Schema::hasColumn('PERSONA', 'idDepartamento')) {
+                  Schema::table('PERSONA', function (Blueprint $table) {
+                        $table->unsignedBigInteger('idDepartamento')
+                              ->nullable()
+                              ->comment('Departamento al que pertenece (solo internos)');
+                  });
+            }
     }
 
     public function down(): void
     {
-        Schema::table('PERSONA', function (Blueprint $table) {
-            $table->dropColumn([
-                'institucion_externa',
-                'fecha_creacion',
-                'fecha_deshabilitacion',
-                'telefono_celular',
-                'telefono_fijo',
-                'idCargo',
-                'idDepartamento',
-            ]);
-        });
+            $columns = [
+                  'institucion_externa',
+                  'fecha_creacion',
+                  'fecha_deshabilitacion',
+                  'telefono_celular',
+                  'telefono_fijo',
+                  'idCargo',
+                  'idDepartamento',
+            ];
+
+            foreach ($columns as $column) {
+                  if (Schema::hasColumn('PERSONA', $column)) {
+                        Schema::table('PERSONA', function (Blueprint $table) use ($column) {
+                              $table->dropColumn($column);
+                        });
+                  }
+            }
     }
 };

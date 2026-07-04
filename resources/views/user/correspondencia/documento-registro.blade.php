@@ -330,8 +330,8 @@
 
                             <i class="bi bi-search"></i>
 
-                            Ingrese el número de carnet para buscar automáticamente
-                            si el remitente ya existe en el sistema.
+                            Ingrese el número de carnet y, si ya existe en el sistema,
+                            los datos del remitente se completarán automáticamente.
 
                         </div>
 
@@ -354,6 +354,8 @@
                                     class="form-control @error('ci_remitente') is-invalid @enderror"
                                     placeholder="Ej: 1234567-8"
                                     value="{{ old('ci_remitente') }}"
+                                    autocomplete="off"
+                                    spellcheck="false"
                                     required>
 
                                 @error('ci_remitente')
@@ -377,6 +379,9 @@
                                     </small>
 
                                 @enderror
+
+                                <div id="sugerenciasRemitente"
+                                    class="list-group mt-2 d-none shadow-sm rounded-4 overflow-hidden"></div>
 
                             </div>
 
@@ -966,74 +971,178 @@
 
     /*
     |--------------------------------------------------------------------------
-    | BUSCAR PERSONA POR CI
+    | AUTOCOMPLETADO DEL REMITENTE POR CI
     |--------------------------------------------------------------------------
     */
 
-    document.getElementById('ci_remitente')
-    .addEventListener('blur', function () {
+    const ciRemitenteInput = document.getElementById('ci_remitente');
+    const sugerenciasRemitente = document.getElementById('sugerenciasRemitente');
+    const personaEncontrada = document.getElementById('personaEncontrada');
+    const nombreRemitenteInput = document.getElementById('nombre_remitente');
+    const correoRemitenteInput = document.getElementById('correo_remitente');
+    const institucionRemitenteInput = document.getElementById('institucion_remitente');
+    const telefonoCelularInput = document.getElementById('telefono_celular');
+    const telefonoFijoInput = document.getElementById('telefono_fijo');
+    const tipoRemitenteInput = document.getElementById('tipo_remitente');
+    const cargoRemitenteInput = document.getElementById('cargo_remitente');
+    const cargoRemitenteSection = document.getElementById('cargo_remitente_section');
 
-        let ci = this.value;
+    let remitenteAutocompletado = '';
+    let temporizadorBusqueda = null;
 
-        if(ci.length < 3)
+    function normalizarCi(valor) {
+        return (valor || '')
+            .toString()
+            .replace(/[^0-9a-zA-Z]/g, '')
+            .toLowerCase();
+    }
+
+    function ocultarSugerencias() {
+        sugerenciasRemitente.innerHTML = '';
+        sugerenciasRemitente.classList.add('d-none');
+    }
+
+    function limpiarRemitenteAutocompletado() {
+        nombreRemitenteInput.value = '';
+        correoRemitenteInput.value = '';
+        institucionRemitenteInput.value = '';
+        telefonoCelularInput.value = '';
+        telefonoFijoInput.value = '';
+        tipoRemitenteInput.value = '';
+        cargoRemitenteInput.value = '';
+        cargoRemitenteSection.style.display = 'none';
+        personaEncontrada.classList.add('d-none');
+    }
+
+    function completarRemitente(persona) {
+        nombreRemitenteInput.value = persona.nombre || '';
+        correoRemitenteInput.value = persona.correo || '';
+        institucionRemitenteInput.value = persona.institucion || '';
+        telefonoCelularInput.value = persona.telefono_celular || '';
+        telefonoFijoInput.value = persona.telefono_fijo || '';
+        tipoRemitenteInput.value = persona.tipo || '';
+
+        toggleCargoField();
+
+        if (persona.tipo === 'INTERNO' && persona.cargo) {
+            cargoRemitenteInput.value = persona.cargo;
+            cargoRemitenteSection.style.display = 'block';
+        } else {
+            cargoRemitenteInput.value = '';
+            cargoRemitenteSection.style.display = 'none';
+        }
+
+        personaEncontrada.classList.remove('d-none');
+    }
+
+    function renderizarSugerencias(resultados, ciActual) {
+        if (!resultados.length) {
+            sugerenciasRemitente.innerHTML = `
+                <div class="list-group-item text-muted">
+                    No se encontraron coincidencias.
+                </div>
+            `;
+            sugerenciasRemitente.classList.remove('d-none');
             return;
+        }
 
-        fetch(`/persona/buscar/${ci}`)
+        sugerenciasRemitente.innerHTML = '';
 
-        .then(response => response.json())
+        resultados.forEach((persona) => {
+            const item = document.createElement('button');
+            item.type = 'button';
+            item.className = 'list-group-item list-group-item-action';
+            item.innerHTML = `
+                <div class="d-flex justify-content-between align-items-start gap-3">
+                    <div>
+                        <strong>${persona.nombre ?? ''}</strong>
+                        <div class="small text-muted">CI: ${persona.ci ?? ''}</div>
+                    </div>
+                    <span class="badge bg-secondary-subtle text-secondary">Seleccionar</span>
+                </div>
+            `;
 
-        .then(data => {
+            item.addEventListener('click', () => {
+                ciRemitenteInput.value = persona.ci || ciActual;
+                completarRemitente(persona);
+                remitenteAutocompletado = normalizarCi(persona.ci || ciActual);
+                ocultarSugerencias();
+            });
 
-            if(data.success)
-            {
-                let p = data.persona;
-
-                document.getElementById('nombre_remitente')
-                    .value = p.nombre || '';
-
-                document.getElementById('correo_remitente')
-                    .value = p.correo || '';
-
-                document.getElementById('institucion_remitente')
-                    .value = p.institucion || '';
-
-                document.getElementById('telefono_celular')
-                    .value = p.telefono_celular || '';
-
-                document.getElementById('telefono_fijo')
-                    .value = p.telefono_fijo || '';
-
-                document.getElementById('tipo_remitente')
-                    .value = p.tipo || '';
-
-                // Mostrar/ocultar cargo según tipo
-                toggleCargoField();
-
-                // Si es interno y tiene cargo, mostrar
-                if (p.es_interno && p.cargo) {
-                    document.getElementById('cargo_remitente').value = p.cargo;
-                    document.getElementById('cargo_remitente_section').style.display = 'block';
-                } else {
-                    document.getElementById('cargo_remitente').value = '';
-                    document.getElementById('cargo_remitente_section').style.display = 'none';
-                }
-
-                document.getElementById('personaEncontrada')
-                    .classList.remove('d-none');
-            }
-            else
-            {
-                document.getElementById('personaEncontrada')
-                    .classList.add('d-none');
-                    
-                // Limpiar cargo
-                document.getElementById('cargo_remitente').value = '';
-                document.getElementById('cargo_remitente_section').style.display = 'none';
-            }
-
+            sugerenciasRemitente.appendChild(item);
         });
 
+        sugerenciasRemitente.classList.remove('d-none');
+    }
+
+    function buscarRemitentePorCi() {
+        const ciActual = ciRemitenteInput.value.trim();
+        const ciNormalizado = normalizarCi(ciActual);
+
+        if (ciNormalizado.length < 3) {
+            ocultarSugerencias();
+
+            if (remitenteAutocompletado && remitenteAutocompletado !== ciNormalizado) {
+                limpiarRemitenteAutocompletado();
+                remitenteAutocompletado = '';
+            }
+
+            return;
+        }
+
+        fetch(`/personas/buscar-avanzado?q=${encodeURIComponent(ciActual)}`)
+            .then(response => response.json())
+            .then(data => {
+                const resultados = Array.isArray(data.resultados) ? data.resultados : [];
+                const coincidenciaExacta = resultados.find(persona => normalizarCi(persona.ci) === ciNormalizado);
+
+                if (coincidenciaExacta) {
+                    completarRemitente(coincidenciaExacta);
+                    remitenteAutocompletado = ciNormalizado;
+                    ocultarSugerencias();
+                    return;
+                }
+
+                if (resultados.length > 0) {
+                    renderizarSugerencias(resultados, ciActual);
+                    personaEncontrada.classList.add('d-none');
+                    return;
+                }
+
+                ocultarSugerencias();
+
+                if (remitenteAutocompletado && remitenteAutocompletado !== ciNormalizado) {
+                    limpiarRemitenteAutocompletado();
+                    remitenteAutocompletado = '';
+                }
+            })
+            .catch(() => {
+                ocultarSugerencias();
+            });
+    }
+
+    ciRemitenteInput.addEventListener('input', function () {
+        clearTimeout(temporizadorBusqueda);
+        temporizadorBusqueda = setTimeout(buscarRemitentePorCi, 300);
     });
+
+    ciRemitenteInput.addEventListener('blur', buscarRemitentePorCi);
+
+    ciRemitenteInput.addEventListener('keydown', function (event) {
+        if (event.key === 'Escape') {
+            ocultarSugerencias();
+        }
+    });
+
+    document.addEventListener('click', function (event) {
+        if (!sugerenciasRemitente.contains(event.target) && event.target !== ciRemitenteInput) {
+            ocultarSugerencias();
+        }
+    });
+
+    if (ciRemitenteInput.value.trim().length >= 3) {
+        buscarRemitentePorCi();
+    }
 
     /*
     |--------------------------------------------------------------------------
@@ -1041,9 +1150,7 @@
     |--------------------------------------------------------------------------
     */
 
-    const tipoRemitenteSelect = document.getElementById('tipo_remitente');
-    const cargoRemitenteSection = document.getElementById('cargo_remitente_section');
-    const cargoRemitenteInput = document.getElementById('cargo_remitente');
+    const tipoRemitenteSelect = tipoRemitenteInput;
 
     function toggleCargoField() {
         const tipoValue = tipoRemitenteSelect.value;

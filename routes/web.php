@@ -22,6 +22,9 @@ use App\Http\Controllers\Admin\ReporteController;
 use App\Http\Controllers\Admin\DepartamentoController;
 use App\Http\Controllers\Admin\PersonaController;
 use App\Http\Controllers\AuditoriaController;
+use App\Http\Controllers\Admin\AnuncioController as AdminAnuncioController;
+use App\Http\Controllers\AnuncioController;
+use App\Http\Controllers\AnuncioPdfController;
 
 /*
 |--------------------------------------------------------------------------
@@ -47,6 +50,9 @@ Route::middleware('auth')->group(function () {
     Route::get('/profile', [ProfileController::class, 'edit'])->name('profile.edit');
     Route::patch('/profile', [ProfileController::class, 'update'])->name('profile.update');
     Route::delete('/profile', [ProfileController::class, 'destroy'])->name('profile.destroy');
+
+    Route::get('/anuncios/{id}/pdf/previsualizar', [AnuncioPdfController::class, 'previsualizar'])->name('anuncios.pdf.previsualizar');
+    Route::get('/anuncios/{id}/pdf/descargar', [AnuncioPdfController::class, 'descargar'])->name('anuncios.pdf.descargar');
 });
 
 /*
@@ -64,6 +70,11 @@ Route::middleware(['auth', 'verified', 'nocache', 'user'])->group(function () {
     */
     
     Route::get('/user/dashboard', [UserDashboardController::class, 'index'])->name('user.dashboard');
+
+    Route::get('/anuncios', [AnuncioController::class, 'index'])->name('user.anuncios.index');
+    Route::get('/anuncios/{id}', [AnuncioController::class, 'show'])->name('user.anuncios.show');
+    Route::post('/anuncios/{id}/visto', [AnuncioController::class, 'marcarVisto'])->name('anuncios.marcar-visto');
+    Route::get('/api/anuncios/pendiente', [AnuncioController::class, 'pendiente'])->name('api.anuncios.pendiente');
 
     /*
     |--------------------------------------------------------------------------
@@ -238,6 +249,19 @@ Route::middleware(['auth', 'verified', 'nocache', 'admin'])->prefix('admin')->na
     Route::get('/personas/{id}/edit', [PersonaController::class, 'edit'])->name('personas.edit');
     Route::put('/personas/{id}', [PersonaController::class, 'update'])->name('personas.update');
     Route::put('/personas/{id}/toggle', [PersonaController::class, 'toggle'])->name('personas.toggle');
+
+    /*
+    |--------------------------------------------------------------------------
+    | GESTIÓN DE ANUNCIOS
+    |--------------------------------------------------------------------------
+    */
+
+    Route::get('/anuncios', [AdminAnuncioController::class, 'index'])->name('anuncios.index');
+    Route::get('/anuncios/create', [AdminAnuncioController::class, 'create'])->name('anuncios.create');
+    Route::post('/anuncios', [AdminAnuncioController::class, 'store'])->name('anuncios.store');
+    Route::get('/anuncios/{id}', [AdminAnuncioController::class, 'show'])->name('anuncios.show');
+    Route::put('/anuncios/{id}/toggle', [AdminAnuncioController::class, 'toggle'])->name('anuncios.toggle');
+    Route::delete('/anuncios/{id}', [AdminAnuncioController::class, 'destroy'])->name('anuncios.destroy');
 
     /*
     |--------------------------------------------------------------------------

@@ -4,8 +4,65 @@
 
 @section('content')
 
+{{-- MODAL DE ANUNCIO (PANTALLAZO) --}}
+@if(isset($anuncioPendiente) && $anuncioPendiente)
+<div class="modal fade" id="anuncioModal" tabindex="-1" aria-labelledby="anuncioTitle" aria-hidden="true"
+     data-bs-backdrop="static" data-bs-keyboard="false">
+    <div class="modal-dialog modal-dialog-centered modal-lg">
+        <div class="modal-content border-0 shadow-lg">
+            <div class="modal-header dashboard-gradient text-white border-0 p-4">
+                <h5 class="modal-title fw-bold" id="anuncioTitle">
+                    <i class="bi bi-megaphone-fill me-2"></i>{{ $anuncioPendiente->titulo }}
+                </h5>
+            </div>
+            <div class="modal-body p-4">
+                <div class="mb-4" style="white-space: pre-wrap; line-height: 1.7; font-size: 1.05rem;">
+                    {{ $anuncioPendiente->asunto }}
+                </div>
+
+                @if($anuncioPendiente->tienePdf())
+                    <div class="card border-0 shadow-sm rounded-4 mb-3">
+                        <div class="card-header text-white rounded-top-4 border-0 py-2 px-3"
+                             style="background: linear-gradient(135deg,#0B2D59,#2E608C);">
+                            <small>
+                                <i class="bi bi-file-earmark-pdf me-1"></i>
+                                {{ $anuncioPendiente->archivo_pdf }}
+                            </small>
+                        </div>
+                        <div class="card-body p-0">
+                            <iframe src="{{ route('anuncios.pdf.previsualizar', $anuncioPendiente->idAnuncio) }}"
+                                    class="w-100 rounded-bottom-4"
+                                    style="height:350px; border:none;"
+                                    title="PDF del anuncio"></iframe>
+                        </div>
+                    </div>
+                @endif
+            </div>
+            <div class="modal-footer border-top p-4 justify-content-center">
+                <form action="{{ route('anuncios.marcar-visto', $anuncioPendiente->idAnuncio) }}" method="POST">
+                    @csrf
+                    <input type="hidden" name="redirect" value="{{ route('user.dashboard') }}">
+                    <button type="submit"
+                            class="btn text-white rounded-4 px-5 py-2"
+                            style="background: linear-gradient(135deg,#D9A23D,#BF8A2E); border:none;">
+                        <i class="bi bi-check-circle-fill me-2"></i>Marcar como visto
+                    </button>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        const anuncioModal = new bootstrap.Modal(document.getElementById('anuncioModal'));
+        anuncioModal.show();
+    });
+</script>
+@endif
+
 {{-- MODAL DE NOTIFICACIÓN: DOCUMENTOS PENDIENTES --}}
-@if($documentosPendientes && count($documentosPendientes) > 0)
+@if($documentosPendientes && count($documentosPendientes) > 0 && empty($anuncioPendiente))
 <div class="modal fade" id="notificacionPendientesModal" tabindex="-1" role="dialog" aria-labelledby="notificacionTitle" aria-hidden="true">
     <div class="modal-dialog modal-dialog-centered modal-lg" role="document">
         <div class="modal-content border-0 shadow-lg">
