@@ -227,6 +227,14 @@
                                     <small class="text-muted d-block mt-2"><i class="bi bi-info-circle me-1"></i>Búsqueda en tiempo real. Mínimo 2 caracteres.</small>
                                 </div>
 
+                                {{-- BOTÓN PERMANENTE: REGISTRAR NUEVA PERSONA --}}
+                                <div class="mb-4">
+                                    <button type="button" class="btn btn-success w-100 rounded-3 py-2" onclick="irAEstadoCrearNueva(); event.preventDefault();">
+                                        <i class="bi bi-plus-circle me-2"></i>Registrar Nueva Persona
+                                    </button>
+                                    <small class="text-muted d-block mt-2"><i class="bi bi-info-circle me-1"></i>Si la persona no existe, use este botón para registrarla.</small>
+                                </div>
+
                                 {{-- RESULTADOS DE BÚSQUEDA --}}
                                 <div id="resultados_busqueda" class="mb-4" style="display: none;">
                                     <div class="d-flex justify-content-between align-items-center mb-3">
@@ -244,7 +252,7 @@
                                 <div id="no_encontrado" class="alert alert-warning border-0 rounded-4" style="display: none;">
                                     <i class="bi bi-exclamation-triangle me-2"></i>
                                     <strong>No encontrado</strong><br>
-                                    <small>No existe una persona registrada con esa información. Puede crear una nueva persona completando el formulario.</small>
+                                    <small>No existe una persona registrada con esa información. Use el botón "Registrar Nueva Persona" arriba para crear una.</small>
                                 </div>
 
                                 <button type="button" class="btn btn-outline-primary w-100 rounded-3" onclick="irAEstadoCrearNueva(); event.preventDefault();" style="display: none;" id="btn_crear_nueva_desde_busqueda">
@@ -462,7 +470,7 @@
                                         <i class="bi bi-check-circle-fill me-2"></i>Registrar Nueva Persona
                                     </button>
                                     <button type="button" class="btn btn-outline-secondary flex-grow-1 rounded-3" onclick="volverAlBuscador(); event.preventDefault();">
-                                        <i class="bi bi-x-lg me-2"></i>Cancelar
+                                        <i class="bi bi-arrow-left me-2"></i>Volver a Buscar
                                     </button>
                                 </div>
                             </div>
@@ -865,7 +873,7 @@ function buscarPersonasAvanzado(buscar) {
             if (resultados.length === 0) {
                 document.getElementById('no_encontrado').style.display = 'block';
                 document.getElementById('resultados_busqueda').style.display = 'none';
-                document.getElementById('btn_crear_nueva_desde_busqueda').style.display = 'block';
+                // Nota: El botón "Registrar Nueva Persona" ahora es permanente, no lo mostramos aquí
                 return;
             }
             
@@ -878,7 +886,6 @@ function buscarPersonasAvanzado(buscar) {
             
             document.getElementById('resultados_busqueda').style.display = 'block';
             document.getElementById('no_encontrado').style.display = 'none';
-            document.getElementById('btn_crear_nueva_desde_busqueda').style.display = 'none';
         })
         .catch(error => {
             console.error('Error en búsqueda:', error);
