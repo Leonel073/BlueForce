@@ -25,11 +25,11 @@ class StoreDocumentoRequest extends FormRequest
      */
     public function rules(): array
     {
-        return [
+        $rules = [
             
             /*
             |--------------------------------------------------------------------------
-            | DOCUMENTO
+            | DOCUMENTO - SIEMPRE VALIDAR
             |--------------------------------------------------------------------------
             */
 
@@ -48,56 +48,7 @@ class StoreDocumentoRequest extends FormRequest
 
             /*
             |--------------------------------------------------------------------------
-            | REMITENTE
-            |--------------------------------------------------------------------------
-            */
-
-            'nombre_remitente' => [
-                'required',
-                'string',
-                'max:200',
-                'regex:/^[\pL\s]+$/u'
-            ],
-
-            'correo_remitente' => 
-                'nullable|email|max:150',
-
-            // Cargo es read-only y se valida en el servidor (no incluir validación aquí)
-
-            'institucion_remitente' => [
-                'nullable',
-                'string',
-                'max:200',
-                'regex:/^[\pL\pN\s]+$/u'
-            ],
-
-            'tipo_remitente' => 
-                'required|in:INTERNO,EXTERNO',
-
-            'ci_remitente' => [
-                'required',
-                'string',
-                'max:20',
-                'regex:/^[0-9A-Za-z\-]+$/'
-            ],
-
-            'telefono_celular' => [
-                'required',
-                'string',
-                'max:20',
-                'regex:/^[0-9\+\-\s]+$/'
-            ],
-
-            'telefono_fijo' => [
-                'nullable',
-                'string',
-                'max:20',
-                'regex:/^[0-9\+\-\s]+$/'
-            ],
-
-            /*
-            |--------------------------------------------------------------------------
-            | DESTINO
+            | DESTINO - SIEMPRE VALIDAR
             |--------------------------------------------------------------------------
             */
 
@@ -122,6 +73,74 @@ class StoreDocumentoRequest extends FormRequest
                 'max:' . config('app.max_pdf_size_kb', 10240),
             ],
         ];
+
+        /*
+        |--------------------------------------------------------------------------
+        | VALIDACIÓN CONDICIONAL SEGÚN OPCIÓN DE REMITENTE
+        |--------------------------------------------------------------------------
+        */
+
+        $opcionRemitente = $this->input('opcion_remitente');
+
+        if ($opcionRemitente === 'otra_persona') {
+            /*
+            |--------------------------------------------------------------------------
+            | VALIDAR SOLO CUANDO SE SELECCIONA "OTRA PERSONA"
+            |--------------------------------------------------------------------------
+            */
+            $rules['nombre_remitente'] = [
+                'required',
+                'string',
+                'max:200',
+                // Permitir: letras (incluyendo acentos, ñ), espacios
+                'regex:/^[\pL\s\-áéíóúÁÉÍÓÚñÑ]+$/u'
+            ];
+
+            $rules['correo_remitente'] = 
+                'nullable|email|max:150';
+
+            $rules['institucion_remitente'] = [
+                'nullable',
+                'string',
+                'max:200',
+                'regex:/^[\pL\pN\s\-áéíóúÁÉÍÓÚñÑ]+$/u'
+            ];
+
+            $rules['tipo_remitente'] = 
+                'required|in:INTERNO,EXTERNO';
+
+            $rules['ci_remitente'] = [
+                'required',
+                'string',
+                'max:20',
+                'regex:/^[0-9A-Za-z\-]+$/'
+            ];
+
+            $rules['telefono_celular'] = [
+                'required',
+                'string',
+                'max:20',
+                'regex:/^[0-9\+\-\s]+$/'
+            ];
+
+            $rules['telefono_fijo'] = [
+                'nullable',
+                'string',
+                'max:20',
+                'regex:/^[0-9\+\-\s]+$/'
+            ];
+
+        } else {
+            /*
+            |--------------------------------------------------------------------------
+            | CUANDO SE SELECCIONA "YO MISMO"
+            | No validar los campos del remitente, se usan datos del usuario autenticado
+            |--------------------------------------------------------------------------
+            */
+            // Los campos del remitente son enviados como hidden inputs, no se validan
+        }
+
+        return $rules;
     }
 
     /**
@@ -174,11 +193,30 @@ class StoreDocumentoRequest extends FormRequest
 
             /*
             |--------------------------------------------------------------------------
+            | REMITENTE - NOMBRE
+            | Solo se valida cuando se selecciona "Otra Persona"
+            |--------------------------------------------------------------------------
+            */
+            'nombre_remitente.required' => 
+                'El nombre completo del remitente es obligatorio.',
+            
+            'nombre_remitente.string' => 
+                'El nombre debe ser un texto válido.',
+            
+            'nombre_remitente.max' => 
+                'El nombre no puede exceder 200 caracteres.',
+            
+            'nombre_remitente.regex' => 
+                'El nombre solo puede contener letras, espacios, acentos (á, é, í, ó, ú) y la letra ñ. Ejemplos válidos: Juan Pérez, María Fernanda López, José Luis García.',
+
+            /*
+            |--------------------------------------------------------------------------
             | REMITENTE - CI
+            | Solo se valida cuando se selecciona "Otra Persona"
             |--------------------------------------------------------------------------
             */
             'ci_remitente.required' => 
-                'El carnet de identidad es obligatorio. Por favor, ingrese el CI del remitente.',
+                'El carnet de identidad es obligatorio.',
             
             'ci_remitente.string' => 
                 'El CI debe ser un texto válido.',
@@ -191,28 +229,12 @@ class StoreDocumentoRequest extends FormRequest
 
             /*
             |--------------------------------------------------------------------------
-            | REMITENTE - NOMBRE
-            |--------------------------------------------------------------------------
-            */
-            'nombre_remitente.required' => 
-                'El nombre completo del remitente es obligatorio. Por favor, ingrese el nombre.',
-            
-            'nombre_remitente.string' => 
-                'El nombre debe ser un texto válido.',
-            
-            'nombre_remitente.max' => 
-                'El nombre no puede exceder 200 caracteres.',
-            
-            'nombre_remitente.regex' => 
-                'El nombre solo puede contener letras y espacios.',
-
-            /*
-            |--------------------------------------------------------------------------
             | REMITENTE - TELÉFONO CELULAR
+            | Solo se valida cuando se selecciona "Otra Persona"
             |--------------------------------------------------------------------------
             */
             'telefono_celular.required' => 
-                'El teléfono celular es obligatorio. Por favor, ingrese un número válido.',
+                'El teléfono celular es obligatorio.',
             
             'telefono_celular.string' => 
                 'El teléfono celular debe ser un texto válido.',
@@ -226,6 +248,7 @@ class StoreDocumentoRequest extends FormRequest
             /*
             |--------------------------------------------------------------------------
             | REMITENTE - TELÉFONO FIJO
+            | Solo se valida cuando se selecciona "Otra Persona"
             |--------------------------------------------------------------------------
             */
             'telefono_fijo.string' => 
@@ -240,6 +263,7 @@ class StoreDocumentoRequest extends FormRequest
             /*
             |--------------------------------------------------------------------------
             | REMITENTE - CORREO
+            | Solo se valida cuando se selecciona "Otra Persona"
             |--------------------------------------------------------------------------
             */
             'correo_remitente.email' => 
@@ -250,21 +274,8 @@ class StoreDocumentoRequest extends FormRequest
 
             /*
             |--------------------------------------------------------------------------
-            | REMITENTE - CARGO
-            |--------------------------------------------------------------------------
-            */
-            'cargo_remitente.string' => 
-                'El cargo debe ser un texto válido.',
-            
-            'cargo_remitente.max' => 
-                'El cargo no puede exceder 150 caracteres.',
-            
-            'cargo_remitente.regex' => 
-                'El cargo solo puede contener letras y espacios.',
-
-            /*
-            |--------------------------------------------------------------------------
             | REMITENTE - INSTITUCIÓN
+            | Solo se valida cuando se selecciona "Otra Persona"
             |--------------------------------------------------------------------------
             */
             'institucion_remitente.string' => 
@@ -274,15 +285,16 @@ class StoreDocumentoRequest extends FormRequest
                 'La institución no puede exceder 200 caracteres.',
             
             'institucion_remitente.regex' => 
-                'La institución solo puede contener letras, números y espacios.',
+                'La institución solo puede contener letras, números, espacios, acentos y la letra ñ.',
 
             /*
             |--------------------------------------------------------------------------
             | REMITENTE - TIPO
+            | Solo se valida cuando se selecciona "Otra Persona"
             |--------------------------------------------------------------------------
             */
             'tipo_remitente.required' => 
-                'Debe seleccionar el tipo de remitente (Interno o Externo). Este campo es obligatorio.',
+                'Debe seleccionar el tipo de remitente (Interno o Externo).',
             
             'tipo_remitente.in' => 
                 'El tipo de remitente debe ser "INTERNO" o "EXTERNO".',

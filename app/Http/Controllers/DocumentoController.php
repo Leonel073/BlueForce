@@ -147,85 +147,112 @@ public function index()
 
         $validated = $request->validated();
 
-    /*
-    |--------------------------------------------------------------------------
-    | LIMPIEZA DE DATOS
-    |--------------------------------------------------------------------------
-    */
+        /*
+        |--------------------------------------------------------------------------
+        | DETERMINAR OPCIÓN DE REMITENTE
+        |--------------------------------------------------------------------------
+        */
 
-    $validated = array_map(function ($value) {
+        $opcionRemitente = $request->input('opcion_remitente');
 
-        if (is_string($value)) {
+        /*
+        |--------------------------------------------------------------------------
+        | LIMPIEZA DE DATOS
+        |--------------------------------------------------------------------------
+        */
 
-            $value = strip_tags($value);
+        $validated = array_map(function ($value) {
 
-            $value = trim($value);
+            if (is_string($value)) {
 
-            $value = preg_replace('/\s+/', ' ', $value);
-        }
+                $value = strip_tags($value);
 
-        return $value;
+                $value = trim($value);
 
-    }, $validated);
-
-    try {
-
-        DB::transaction(function () use ($validated) {
-
-            /*
-            |--------------------------------------------------------------------------
-            | BUSCAR PERSONA POR CI
-            |--------------------------------------------------------------------------
-            */
-
-            $persona = Persona::where(
-                'ci',
-                $validated['ci_remitente']
-            )->first();
-
-            /*
-            |--------------------------------------------------------------------------
-            | SI NO EXISTE → CREAR
-            |--------------------------------------------------------------------------
-            */
-
-            if (!$persona)
-            {
-                $persona = Persona::create([
-
-                    'nombre' =>
-                        e($validated['nombre_remitente']),
-
-                    'correo' =>
-                        $validated['correo_remitente'] ?? null,
-
-                    'telefono_celular' =>
-                        $validated['telefono_celular'],
-
-                    'telefono_fijo' =>
-                        $validated['telefono_fijo'] ?? null,
-
-                    'ci' =>
-                        $validated['ci_remitente'],
-
-                    'cargo' =>
-                        isset($validated['cargo_remitente'])
-                            ? e($validated['cargo_remitente'])
-                            : null,
-
-                    'institucion' =>
-                        isset($validated['institucion_remitente'])
-                            ? e($validated['institucion_remitente'])
-                            : null,
-
-                    'idDepartamento' => null,
-
-                    'tipo' =>
-                        $validated['tipo_remitente'],
-
-                    'activo' => true,
-                ]);
+                $value = preg_replace('/\s+/', ' ', $value);
             }
+
+            return $value;
+
+        }, $validated);
+
+        try {
+
+            DB::transaction(function () use ($validated, $opcionRemitente) {
+
+                /*
+                |--------------------------------------------------------------------------
+                | DETERMINAR LA PERSONA REMITENTE
+                |--------------------------------------------------------------------------
+                | CASO 1: "Yo Mismo" → Usar autenticado
+                | CASO 2: "Otra Persona" → Usar datos del formulario
+                |--------------------------------------------------------------------------
+                */
+
+                if ($opcionRemitente === 'yo_mismo') {
+                    // CASO 1: "Yo Mismo" - Usar la persona autenticada
+                    $persona = Auth::user()->persona;
+                    
+                    if (!$persona) {
+                        throw new \Exception('El usuario autenticado no tiene una persona asociada.');
+                    }
+                } else {
+                    // CASO 2: "Otra Persona" - Buscar por CI o crear
+                    /*
+                    |--------------------------------------------------------------------------
+                    | BUSCAR PERSONA POR CI
+                    |--------------------------------------------------------------------------
+                    */
+
+                    $persona = Persona::where(
+                        'ci',
+                        $validated['ci_remitente']
+                    )->first();
+
+                    /*
+                    |--------------------------------------------------------------------------
+                    | SI NO EXISTE → CREAR
+                    |--------------------------------------------------------------------------
+                    */
+
+                    if (!$persona)
+                    {
+                        $persona = Persona::create([
+
+                            'nombre' =>
+                                e($validated['nombre_remitente']),
+
+                            'correo' =>
+                                $validated['correo_remitente'] ?? null,
+
+                            'telefono_celular' =>
+                                $validated['telefono_celular'],
+
+                            'telefono_fijo' =>
+                                $validated['telefono_fijo'] ?? null,
+
+                            'ci' =>
+                                $validated['ci_remitente'],
+
+                            'cargo' =>
+                                isset($validated['cargo_remitente'])
+                                    ? e($validated['cargo_remitente'])
+                                    : null,
+
+                            'institucion' =>
+                                isset($validated['institucion_remitente'])
+                                    ? e($validated['institucion_remitente'])
+                                    : null,
+
+                            'idDepartamento' => null,
+
+                            'tipo' =>
+                                $validated['tipo_remitente'],
+
+                            'activo' => true,
+                        ]);
+                    }
+                }
 
             /*
             |--------------------------------------------------------------------------
@@ -410,7 +437,7 @@ public function index()
 
             /*
             |--------------------------------------------------------------------------
-            | ARCHIVO PDF (OPCIONAL)
+            | ARCHIVO PDF (OPCIONAL) - GUARDADO CON NOMBRE DEL CITE
             |--------------------------------------------------------------------------
             */
 
@@ -426,9 +453,9 @@ public function index()
                     throw new \Exception('El archivo adjunto no es un PDF válido.');
                 }
 
-                // Nombre único para evitar sobreescrituras y enumeración
-                $nombreUnico = 'doc_' . $documento->idDocumento . '_' . uniqid() . '.pdf';
-                $ruta = $file->storeAs('documentos', $nombreUnico, 'local');
+                // Guardar con el nombre del CITE para fácil identificación
+                $nombreArchivo = $cite . '.pdf';
+                $ruta = $file->storeAs('documentos', $nombreArchivo, 'local');
 
                 $documento->update([
                     'archivo_pdf'    => $file->getClientOriginalName(),
@@ -890,8 +917,9 @@ public function index()
             Storage::disk('local')->delete($documento->ruta_pdf);
         }
 
-        $nombreUnico = 'doc_' . $documento->idDocumento . '_' . uniqid() . '.pdf';
-        $ruta = $file->storeAs('documentos', $nombreUnico, 'local');
+        // Guardar con el nombre del CITE para fácil identificación
+        $nombreArchivo = $documento->cite . '.pdf';
+        $ruta = $file->storeAs('documentos', $nombreArchivo, 'local');
 
         $documento->update([
             'archivo_pdf'    => $file->getClientOriginalName(),

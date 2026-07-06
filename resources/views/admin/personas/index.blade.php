@@ -153,13 +153,13 @@
                                         <td>
                                             @if(is_null($persona->fecha_deshabilitacion))
                                                 <span class="badge bg-success">
-                                                    <i class="bi bi-check-lg"></i>
+                                                    <i class="bi bi-circle-fill"></i>
                                                     Activo
                                                 </span>
                                             @else
                                                 <span class="badge bg-danger">
-                                                    <i class="bi bi-x-lg"></i>
-                                                    Inactivo
+                                                    <i class="bi bi-circle-fill"></i>
+                                                    Deshabilitado
                                                 </span>
                                             @endif
                                         </td>
@@ -268,13 +268,13 @@
                                         <td>
                                             @if(is_null($persona->fecha_deshabilitacion))
                                                 <span class="badge bg-success">
-                                                    <i class="bi bi-check-lg"></i>
+                                                    <i class="bi bi-circle-fill"></i>
                                                     Activo
                                                 </span>
                                             @else
                                                 <span class="badge bg-danger">
-                                                    <i class="bi bi-x-lg"></i>
-                                                    Inactivo
+                                                    <i class="bi bi-circle-fill"></i>
+                                                    Deshabilitado
                                                 </span>
                                             @endif
                                         </td>
@@ -393,3 +393,6 @@
 </style>
 
 @endsection
+
+
+

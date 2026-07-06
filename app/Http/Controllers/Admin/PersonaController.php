@@ -24,9 +24,8 @@ class PersonaController extends Controller
         // Búsqueda (independiente por tab)
         $search = trim($request->get('q', ''));
 
-        // PERSONAS INTERNAS
-        $queryInternas = Persona::where('tipo', 'INTERNO')
-            ->activas();
+        // PERSONAS INTERNAS - MOSTRAR TODAS (activas + deshabilitadas)
+        $queryInternas = Persona::where('tipo', 'INTERNO');
 
         if ($search) {
             $queryInternas->where(function ($q) use ($search) {
@@ -41,9 +40,8 @@ class PersonaController extends Controller
             ->paginate(15, ['*'], 'page_internas')
             ->appends(['tab' => 'internas', 'q' => $search]);
 
-        // PERSONAS EXTERNAS
-        $queryExternas = Persona::where('tipo', 'EXTERNO')
-            ->activas();
+        // PERSONAS EXTERNAS - MOSTRAR TODAS (activas + deshabilitadas)
+        $queryExternas = Persona::where('tipo', 'EXTERNO');
 
         if ($search) {
             $queryExternas->where(function ($q) use ($search) {
@@ -58,15 +56,19 @@ class PersonaController extends Controller
             ->paginate(15, ['*'], 'page_externas')
             ->appends(['tab' => 'externas', 'q' => $search]);
 
-        // Contadores totales (sin búsqueda)
-        $totalInternas = Persona::where('tipo', 'INTERNO')->activas()->count();
-        $totalExternas = Persona::where('tipo', 'EXTERNO')->activas()->count();
+        // Contadores totales - mostrar ambas categorías
+        $totalInternas = Persona::where('tipo', 'INTERNO')->count();
+        $totalExternas = Persona::where('tipo', 'EXTERNO')->count();
+        $totalInternasActivas = Persona::where('tipo', 'INTERNO')->activas()->count();
+        $totalExternasActivas = Persona::where('tipo', 'EXTERNO')->activas()->count();
 
         return view('admin.personas.index', compact(
             'personasInternas',
             'personasExternas',
             'totalInternas',
             'totalExternas',
+            'totalInternasActivas',
+            'totalExternasActivas',
             'tab',
             'search'
         ));

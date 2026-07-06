@@ -90,8 +90,10 @@ class AnuncioController extends Controller
             return;
         }
 
-        $nombreUnico = 'anuncio_' . $anuncio->idAnuncio . '_' . uniqid() . '.pdf';
-        $ruta = $file->storeAs('anuncios', $nombreUnico, 'local');
+        // Guardar con nombre basado en ID y título del anuncio para fácil identificación
+        $nombreLimpio = preg_replace('/[^a-zA-Z0-9_-]/', '', substr($anuncio->titulo, 0, 30));
+        $nombreArchivo = 'anuncio_' . $anuncio->idAnuncio . '_' . $nombreLimpio . '.pdf';
+        $ruta = $file->storeAs('anuncios', $nombreArchivo, 'local');
 
         $anuncio->update([
             'archivo_pdf' => $file->getClientOriginalName(),

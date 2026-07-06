@@ -391,8 +391,7 @@
                                     <label class="form-label fw-semibold">Tipo de Remitente <span class="text-danger">*</span></label>
                                     <select id="tipo_remitente_otra" 
                                             name="tipo_remitente" 
-                                            class="form-select @error('tipo_remitente') is-invalid @enderror" 
-                                            required
+                                            class="form-select @error('tipo_remitente') is-invalid @enderror"
                                             onchange="actualizarCamposTipo()">
                                         <option value="">-- Seleccione tipo --</option>
                                         <option value="INTERNO" @selected(old('tipo_remitente') == 'INTERNO')>INTERNO (Dentro de la institución)</option>
@@ -828,10 +827,16 @@ function toggleRemitenteMode() {
     const bloqueOtra = document.getElementById('bloque_otra_persona');
     
     if (yoMismo) {
+        // Seleccionado: "Yo Mismo"
         bloqueYoMismo.style.display = 'block';
         bloqueOtra.style.display = 'none';
         limpiarFormularioOtraPersona();
+        
+        // Limpiar los campos de formulario que se enviarán
+        // De esta manera, cuando se valide, no habrá conflicto con los campos
+        // del remitente de "Otra Persona"
     } else {
+        // Seleccionado: "Otra Persona"
         bloqueYoMismo.style.display = 'none';
         bloqueOtra.style.display = 'block';
         // Iniciar en estado buscador

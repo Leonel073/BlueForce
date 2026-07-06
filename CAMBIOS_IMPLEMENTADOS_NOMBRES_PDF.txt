@@ -1,0 +1,287 @@
+IMPLEMENTACION: PDFs Guardados con Nombre del CITE
+Fecha: Julio 2026
+Estado: COMPLETADO
+
+
+OBJETIVO
+
+Modificar el sistema para que los PDFs de documentos se guarden con el nombre
+del CITE (Código Identificador único), en lugar de nombres genéricos con ID
+y timestamps.
+
+BENEFICIOS
+
+1. Identificación Fácil:
+   - Nombre del archivo = CITE del documento
+   - Ejemplo: DO-2026-07-06-143025.pdf
+   - No requiere buscar en base de datos para saber qué documento es
+
+2. Auditoría Mejorada:
+   - Al revisar archivos en almacenamiento, se ve claramente qué documento es
+   - Facilita búsqueda en sistema de archivos
+   - Mejor trazabilidad
+
+3. Integración Externa:
+   - Sistemas externos pueden usar CITE para identificar PDFs
+   - No dependen de rutas o IDs internos de BD
+
+4. Cumplimiento Normativo:
+   - CITE es el identificador oficial del documento
+   - Nombres de archivo coinciden con identificador oficial
+
+
+CAMBIOS REALIZADOS
+
+1. Archivo: app/Http/Controllers/DocumentoController.php
+   
+   Método: store()
+   Cambio: 
+     ANTES: $nombreUnico = 'doc_' . $documento->idDocumento . '_' . uniqid() . '.pdf';
+     AHORA: $nombreArchivo = $cite . '.pdf';
+   
+   Línea aproximada: 379-389
+   
+   Impacto:
+   - Nuevos documentos se guardan como: [CITE].pdf
+   - Ejemplo: MN-2026-07-06-143025.pdf
+
+   Método: subirPdf()
+   Cambio:
+     ANTES: $nombreUnico = 'doc_' . $documento->idDocumento . '_' . uniqid() . '.pdf';
+     AHORA: $nombreArchivo = $documento->cite . '.pdf';
+   
+   Línea aproximada: 930-940
+   
+   Impacto:
+   - Reemplazo de PDFs también usa CITE
+   - Mantiene consistencia
+
+
+2. Archivo: app/Http/Controllers/Admin/AnuncioController.php
+   
+   Método: guardarPdf() (privado)
+   Cambio:
+     ANTES: $nombreUnico = 'anuncio_' . $anuncio->idAnuncio . '_' . uniqid() . '.pdf';
+     AHORA: $nombreLimpio = preg_replace('/[^a-zA-Z0-9_-]/', '', substr($anuncio->titulo, 0, 30));
+            $nombreArchivo = 'anuncio_' . $anuncio->idAnuncio . '_' . $nombreLimpio . '.pdf';
+   
+   Línea aproximada: 85-95
+   
+   Impacto:
+   - Anuncios se guardan como: anuncio_[ID]_[titulo_limpio].pdf
+   - Ejemplo: anuncio_5_ConvocatoriaInterna2026.pdf
+   - El título hace más clara la identificación que uniqid()
+
+
+COMPATIBILIDAD
+
+Los cambios son BACKWARD COMPATIBLE:
+
+1. Descargas Existentes:
+   ✅ Funcionarán sin cambios
+   - Usan Storage::disk('local')->download($ruta_pdf)
+   - La ruta está almacenada en base de datos
+   - No afecta existentes, solo nuevos
+
+2. PDFs Anteriores:
+   ✅ Seguirán accesibles
+   - Los archivos antiguos no se eliminan
+   - Seguirán siendo descargables si la BD tiene la ruta
+
+3. Métodos de Descarga:
+   ✅ Sin cambios requeridos
+   - DocumentoPdfController::descargar()
+   - DocumentoPdfController::previsualizar()
+   - AnuncioPdfController::descargar()
+   - AnuncioPdfController::previsualizar()
+   - Todos siguen funcionando igual
+
+4. Auditoría:
+   ✅ Se registra automáticamente
+   - Tabla AUDITORIA registra cambios
+   - Nombre del archivo se guarda en campo archivo_pdf
+   - Usuario puede ver qué archivo se subió
+
+
+ESTRUCTURA DE ALMACENAMIENTO
+
+Antes:
+```
+storage/app/documentos/
+  doc_1_5f3a2b1c.pdf
+  doc_2_5f3a2b2d.pdf
+  doc_3_5f3a2b3e.pdf
+```
+
+Después (Nuevos):
+```
+storage/app/documentos/
+  doc_1_5f3a2b1c.pdf           (antiguo - mantiene acceso)
+  DO-2026-07-06-143025.pdf     (nuevo - CITE)
+  OF-2026-07-06-143045.pdf     (nuevo - CITE)
+  CO-2026-07-06-143055.pdf     (nuevo - CITE)
+```
+
+Anuncios:
+```
+storage/app/anuncios/
+  anuncio_1_Avisos2026.pdf
+  anuncio_2_CambioHorario.pdf
+  anuncio_3_Convocatoria.pdf
+```
+
+
+TESTING RECOMENDADO
+
+1. Registrar nuevo documento con PDF:
+   - ✓ Verificar que PDF se guarda con nombre del CITE
+   - ✓ Verificar que CITE está correcto
+   - ✓ Verificar que se puede descargar
+
+2. Reemplazar PDF:
+   - ✓ Subir nuevo PDF a documento existente
+   - ✓ Verificar que archivo se reemplaza
+   - ✓ Verificar que nombre se actualiza al CITE
+
+3. Crear anuncio con PDF:
+   - ✓ Verificar que se guarda con formato: anuncio_ID_titulo.pdf
+   - ✓ Verificar que se puede descargar
+
+4. Descargar PDFs:
+   - ✓ Documentos nuevos: Descargan correctamente
+   - ✓ Documentos antiguos: Descargan correctamente
+   - ✓ Previsualización: Funciona
+
+5. Auditoría:
+   - ✓ Revisar AUDITORIA para verificar que cambios se registran
+   - ✓ Verificar que se guarda nombre del archivo
+
+
+MIGRACION DE DATOS EXISTENTES (Opcional)
+
+Si se desea renombrar archivos existentes:
+
+Script de Migración Manual (NO RECOMENDADO AUTOMÁTICO):
+
+```php
+// En comando artisan o tinker
+
+$documentos = Correspondencia::all();
+
+foreach ($documentos as $doc) {
+    if ($doc->ruta_pdf && Storage::exists($doc->ruta_pdf)) {
+        $nuevoNombre = $doc->cite . '.pdf';
+        $nuevoPath = 'documentos/' . $nuevoNombre;
+        
+        // Copiar archivo a nueva ruta
+        $contenido = Storage::get($doc->ruta_pdf);
+        Storage::put($nuevoPath, $contenido);
+        
+        // Actualizar BD
+        $doc->update(['ruta_pdf' => $nuevoPath]);
+        
+        // Opcionalmente eliminar antiguo
+        // Storage::delete($doc->ruta_pdf);
+    }
+}
+```
+
+RECOMENDACION: Hacer manualmente o con backup primero
+
+
+IMPACTO EN PRODUCCION
+
+Riesgo: BAJO
+
+- No cambia estructura de base de datos
+- No cambia rutas de acceso (todas usan BD)
+- No afecta funcionamiento existente
+- Cambio es puramente en nombres de archivos
+
+Requisitos:
+- Backup de storage/ antes de cambios (recomendado)
+- Probar en staging primero
+- No requiere downtime
+- Cambios efectivos inmediatamente después de deploy
+
+
+CONSIDERACIONES FUTURAS
+
+1. Limpieza de Archivos Antiguos:
+   - Si se desea liberar espacio, eliminar archivos antiguos
+   - Pero mantener por auditoría mínimo 7 años
+
+2. Validación de Nombres:
+   - CITE pueden contener caracteres especiales (guiones, dos puntos)
+   - Todos válidos en nombres de archivo en sistemas Unix/Windows
+
+3. Sincronización:
+   - Si se reemplaza PDF, archivo anterior se elimina
+   - Nuevo archivo se crea con mismo nombre
+   - Se sobrescribe de manera segura
+
+4. Recuperación:
+   - Si se necesita versión anterior, revisar AUDITORIA
+   - AUDITORIA registra archivo anterior en JSON
+
+
+DEPLOYMENT
+
+Pasos:
+1. Hacer backup de storage/app/documentos/ y storage/app/anuncios/
+2. Hacer backup de base de datos
+3. Desplegar código actualizado
+4. Probar registrar documento con PDF
+5. Probar reemplazar PDF
+6. Verificar descargas
+7. Si error, rollback de código (archivos se mantienen válidos)
+
+
+RESULTADOS ESPERADOS
+
+Después de este cambio:
+
+1. Todos los PDFs nuevos se guardan con CITE
+2. PDFs reemplazados se actualizan al nombre del CITE
+3. Descargas funcionan sin cambios
+4. Auditoría registra operaciones
+5. Sistema es más identificable y auditable
+6. Compatible con integraciones externas
+
+
+ARCHIVO ORIGINAL
+
+El archivo CITE se genera en:
+- Ubicación: DocumentoController::store() línea ~300
+- Formato: [TIPO][URGENCIA]-YYYY-MM-DD-HHMMSS
+- Ejemplo: DO-2026-07-06-143025 (Documento Ordinario, 2026, julio 6, etc)
+
+
+SOPORTE
+
+Si hay problemas:
+
+1. PDFs no descargan:
+   - Verificar que ruta_pdf en BD apunta a archivo correcto
+   - Verificar permisos de storage/
+
+2. Nombramientos incoherentes:
+   - Buscar en AUDITORIA qué sucedió
+   - Regenerar manualmente si es necesario
+
+3. Duplicados:
+   - Si se sube mismo PDF dos veces, se sobrescribe
+   - Comportamiento esperado
+
+
+CONCLUSION
+
+Este cambio mejora la identificabilidad de archivos PDF al usar CITE como
+nombre, facilitando auditoría, integración externa y cumplimiento normativo.
+
+El cambio es retrocompatible y no requiere migración de datos.
+
+
+================================================================================
+FIN DEL DOCUMENTO DE CAMBIOS
+================================================================================
