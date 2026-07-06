@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
 use App\Models\Persona;
 use App\Models\Departamento;
 use App\Models\Cargo;
@@ -92,9 +93,6 @@ class PersonaController extends Controller
         // Si tipo=INTERNO, la institución debe ser EPAB
         if ($validated['tipo'] === 'INTERNO') {
             $validated['institucion'] = 'EPAB';
-        } else {
-            // Los externos usan el campo institucion para guardar su institución
-            // Mantener el valor ingresado
         }
 
         $persona = Persona::create([
@@ -105,11 +103,16 @@ class PersonaController extends Controller
             'telefono_fijo'        => $validated['telefono_fijo'] ?? null,
             'correo'               => $validated['correo'] ?? null,
             'institucion'          => $validated['institucion'] ?? null,
-            'idCargo'              => $validated['tipo'] === 'INTERNO' ? ($validated['idCargo'] ?? null) : null,
+            'idCargo'              => null,
             'idDepartamento'       => $validated['tipo'] === 'INTERNO' ? ($validated['idDepartamento'] ?? null) : null,
             'activo'               => true,
             'fecha_creacion'       => now(),
         ]);
+
+        // Sincronizar cargos desde el formulario (nombres separados por coma)
+        if ($validated['tipo'] === 'INTERNO' && !empty($validated['cargos_nombres'])) {
+            $this->syncCargos($persona, $validated['cargos_nombres']);
+        }
 
         return redirect()->route('admin.personas.index')
             ->with('success', 'Persona creada correctamente.');
@@ -140,18 +143,16 @@ class PersonaController extends Controller
             'correo'               => 'nullable|email|max:150',
             'telefono_celular'     => 'nullable|string|max:20',
             'telefono_fijo'        => 'nullable|string|max:20',
-            'idCargo'              => 'nullable|exists:CARGO,idCargo',
             'institucion'          => 'nullable|string|max:200',
             'tipo'                 => 'required|in:INTERNO,EXTERNO',
             'idDepartamento'       => 'nullable|exists:DEPARTAMENTO,idDepartamento',
+            'cargos_nombres'       => 'nullable|string',
         ]);
 
-        // Si es EXTERNO, no puede tener cargo ni departamento
+        // Si es EXTERNO, no puede tener departamento
         if ($validated['tipo'] === 'EXTERNO') {
-            $validated['idCargo'] = null;
             $validated['idDepartamento'] = null;
         } else {
-            // Si es INTERNO, debe tener institución=EPAB
             $validated['institucion'] = 'EPAB';
         }
 
@@ -161,15 +162,81 @@ class PersonaController extends Controller
             'correo'               => $validated['correo'] ?? null,
             'telefono_celular'     => $validated['telefono_celular'] ?? null,
             'telefono_fijo'        => $validated['telefono_fijo'] ?? null,
-            'idCargo'              => $validated['idCargo'] ?? null,
             'institucion'          => $validated['institucion'] ?? null,
             'tipo'                 => $validated['tipo'],
             'idDepartamento'       => $validated['idDepartamento'] ?? null,
         ]);
 
+        // Sincronizar cargos
+        if ($validated['tipo'] === 'INTERNO' && !empty($validated['cargos_nombres'])) {
+            $this->syncCargos($persona, $validated['cargos_nombres']);
+        } else {
+            // Si es EXTERNO, desactivar todos los cargos del pivote
+            $persona->cargos()->detach();
+        }
+
         return redirect()
             ->route('admin.personas.index')
             ->with('success', 'Persona actualizada correctamente.');
+    }
+
+    /**
+     * Sincronizar cargos de una persona desde una cadena separada por comas.
+     * Crea cargos nuevos si no existen (evitando duplicados por nombre).
+     * Marca el primero como principal.
+     */
+    private function syncCargos(Persona $persona, string $cargosNombres): void
+    {
+        $nombres = array_filter(
+            array_map('trim', explode(',', $cargosNombres)),
+            fn($n) => $n !== ''
+        );
+
+        if (empty($nombres)) {
+            return;
+        }
+
+        $cargosIds = [];
+
+        foreach ($nombres as $nombre) {
+            $nombreUpper = strtoupper($nombre);
+
+            // Buscar o crear el cargo (evitar duplicados por nombre)
+            $cargo = Cargo::firstOrCreate(
+                ['nombre' => $nombreUpper],
+                [
+                    'activo' => true,
+                    'nivel'  => 'Operativo',
+                ]
+            );
+
+            $cargosIds[] = $cargo->idCargo;
+        }
+
+        // Desactivar cargos anteriores
+        DB::table('PERSONA_CARGO')
+            ->where('idPersona', $persona->idPersona)
+            ->update(['activo' => false]);
+
+        // Insertar nuevos cargos (el primero como principal)
+        foreach ($cargosIds as $index => $cargoId) {
+            DB::table('PERSONA_CARGO')->updateOrInsert(
+                [
+                    'idPersona' => $persona->idPersona,
+                    'idCargo'   => $cargoId,
+                ],
+                [
+                    'activo'           => true,
+                    'principal'        => $index === 0,
+                    'fecha_asignacion' => now(),
+                    'created_at'       => now(),
+                    'updated_at'       => now(),
+                ]
+            );
+        }
+
+        // Actualizar el campo legacy idCargo con el principal
+        $persona->update(['idCargo' => $cargosIds[0] ?? null]);
     }
 
     /**
@@ -213,7 +280,7 @@ class PersonaController extends Controller
                 $query->where('nombre', 'LIKE', "%{$q}%")
                       ->orWhere('ci', 'LIKE', "%{$q}%");
             })
-            ->with('cargo', 'departamento')
+            ->with('cargos', 'departamento')
             ->limit(10)
             ->get([
                 'idPersona',
@@ -230,12 +297,32 @@ class PersonaController extends Controller
                     'nombre'             => $persona->nombre,
                     'ci'                 => $persona->ci,
                     'tipo'               => $persona->tipo,
-                    'cargo'              => $persona->cargo?->nombre ?? null,
+                    'cargo'              => $persona->cargos_nombres,
                     'departamento'       => $persona->departamento?->nombre ?? null,
                     'institucion'        => $persona->institucion ?? null,
                 ];
             });
 
         return response()->json($personas);
+    }
+
+    /**
+     * Buscar cargos existentes (AJAX) - para autocompletado
+     */
+    public function buscarCargos(Request $request)
+    {
+        $q = trim($request->q ?? '');
+
+        if (strlen($q) < 2) {
+            return response()->json([]);
+        }
+
+        $cargos = Cargo::where('activo', true)
+            ->where('nombre', 'LIKE', "%{$q}%")
+            ->orderBy('nombre')
+            ->limit(10)
+            ->get(['idCargo', 'nombre']);
+
+        return response()->json($cargos);
     }
 }

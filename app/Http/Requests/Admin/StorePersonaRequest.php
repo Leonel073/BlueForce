@@ -48,7 +48,7 @@ class StorePersonaRequest extends FormRequest
                 'string',
                 'max:200',
                 'min:3',
-                'regex:/^[\pL\s]+$/u',
+                'regex:/^[\pL\s.\-]+$/u',
             ],
 
             'ci' => [
@@ -105,6 +105,12 @@ class StorePersonaRequest extends FormRequest
                 'nullable',
                 'integer',
                 Rule::exists('CARGO', 'idCargo')->where('activo', 1),
+            ],
+
+            'cargos_nombres' => [
+                'nullable',
+                'string',
+                'max:500',
             ],
 
             'idDepartamento' => [

@@ -519,8 +519,8 @@ public function index()
             'persona' => [
                 'nombre' => $persona->nombre ?? '',
                 'correo' => $persona->correo ?? '',
-                'cargo' => $persona->tipo === 'INTERNO' && $persona->cargo 
-                    ? $persona->cargo->nombre 
+                'cargo' => $persona->tipo === 'INTERNO'
+                    ? $persona->cargos_nombres
                     : null,
                 'institucion' => $persona->institucion ?? '',
                 'telefono_celular' => $persona->telefono_celular ?? '',
@@ -547,7 +547,7 @@ public function index()
                 return [
                     'idPersona' => $persona->idPersona,
                     'nombre' => $persona->nombre,
-                    'cargo' => $persona->cargo ? $persona->cargo->nombre : 'Sin cargo'
+                    'cargo' => $persona->cargos_nombres
                 ];
             });
 
@@ -580,7 +580,7 @@ public function index()
                     'idPersona' => $persona->idPersona,
                     'nombre' => $persona->nombre,
                     'ci' => $persona->ci,
-                    'cargo' => $persona->cargo ? $persona->cargo->nombre : 'Sin cargo asignado'
+                    'cargo' => $persona->cargos_nombres
                 ];
             });
 
@@ -699,7 +699,7 @@ public function index()
                     'correo' => $persona->correo,
                     'telefono_celular' => $persona->telefono_celular,
                     'telefono_fijo' => $persona->telefono_fijo,
-                    'cargo' => $persona->cargo?->nombre ?? null,
+                    'cargo' => $persona->cargos_nombres ?: null,
                     'departamento' => $persona->departamento?->nombre ?? null,
                     'institucion' => $persona->institucion,
                 ];
@@ -818,7 +818,7 @@ public function index()
             'correo' => $persona->correo,
             'telefono_celular' => $persona->telefono_celular,
             'telefono_fijo' => $persona->telefono_fijo,
-            'cargo' => $persona->cargo?->nombre ?? null,
+            'cargo' => $persona->cargos_nombres ?: null,
             'departamento' => $persona->departamento?->nombre ?? null,
             'institucion' => $persona->institucion,
         ];

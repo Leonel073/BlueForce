@@ -448,7 +448,7 @@
 
                         <strong>Cargo:</strong>
 
-                       {{ $documento->remitente->cargo->nombre ?? 'N/A' }}
+                       {{ $documento->remitente->cargos_nombres ?? 'N/A' }}
 
                     </p>
 

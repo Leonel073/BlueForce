@@ -55,7 +55,7 @@ class UsuarioController extends Controller
                     'nombre'      => $persona->nombre,
                     'ci'          => $persona->ci,
                     'correo'      => $persona->correo,
-                    'cargo'       => $persona->cargo ? $persona->cargo->nombre : 'Sin cargo',
+                    'cargo'       => $persona->cargos_nombres,
                     'departamento' => $persona->departamento ? $persona->departamento->nombre : 'Sin departamento'
                 ];
             });
@@ -71,7 +71,7 @@ class UsuarioController extends Controller
 
     public function index(Request $request)
     {
-        $query = User::with('persona.cargo', 'persona.departamento', 'rol');
+        $query = User::with('persona.cargos', 'persona.departamento', 'rol');
 
         if ($request->filled('buscar')) {
             $query->where(function ($q) use ($request) {
@@ -160,7 +160,7 @@ class UsuarioController extends Controller
     public function show($id)
     {
         $usuario = User::with([
-            'persona.cargo',
+            'persona.cargos',
             'persona.departamento',
             'rol',
             'correspondencias.estado',
@@ -180,7 +180,7 @@ class UsuarioController extends Controller
 
     public function edit($id)
     {
-        $usuario = User::with('persona.cargo', 'persona.departamento', 'rol')
+        $usuario = User::with('persona.cargos', 'persona.departamento', 'rol')
                        ->findOrFail($id);
 
         $roles = Rol::orderBy('nombre')->get();

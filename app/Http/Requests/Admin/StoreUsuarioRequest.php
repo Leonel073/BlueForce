@@ -4,6 +4,7 @@ namespace App\Http\Requests\Admin;
 
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Validation\Rule;
+use Illuminate\Validation\Rules\Password;
 use App\Rules\PersonaInternoSinUsuario;
 
 /**
@@ -24,7 +25,7 @@ class StoreUsuarioRequest extends FormRequest
                 'required',
                 'string',
                 'max:255',
-                'regex:/^[\pL\s]+$/u',
+                'regex:/^[\pL\s.\-]+$/u',
             ],
             'email' => [
                 'required',
@@ -37,7 +38,7 @@ class StoreUsuarioRequest extends FormRequest
                 'string',
                 'min:12',
                 'confirmed',
-                'regex:/^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])[a-zA-Z\d@$!%*?&]+$/',
+                Password::min(12)->mixedCase()->numbers()->symbols(),
             ],
             'idRol' => [
                 'required',
@@ -68,7 +69,9 @@ class StoreUsuarioRequest extends FormRequest
             'password.required'  => 'La contraseña es obligatoria.',
             'password.min'       => 'La contraseña debe tener mínimo 12 caracteres.',
             'password.confirmed' => 'La confirmación de contraseña no coincide.',
-            'password.regex'     => 'La contraseña debe contener: mayúscula, minúscula, número y carácter especial (@$!%*?&).',
+            'password.mixed'     => 'La contraseña debe contener al menos una mayúscula y una minúscula.',
+            'password.numbers'   => 'La contraseña debe contener al menos un número.',
+            'password.symbols'   => 'La contraseña debe contener al menos un carácter especial (@$!%*?&).',
             'idRol.required'     => 'Debe seleccionar un rol.',
             'idRol.exists'       => 'El rol seleccionado no existe.',
             'idPersona.required' => 'Debe seleccionar una persona interna.',

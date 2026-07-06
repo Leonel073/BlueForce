@@ -44,7 +44,7 @@ class UpdatePersonaRequest extends FormRequest
                 'string',
                 'max:200',
                 'min:3',
-                'regex:/^[\pL\s]+$/u',
+                'regex:/^[\pL\s.\-]+$/u',
             ],
 
             'ci' => [

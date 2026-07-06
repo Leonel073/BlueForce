@@ -83,7 +83,7 @@
                                         </div>
                                         <div class="col-md-6">
                                             <small class="text-muted d-block">Cargo</small>
-                                            <span>{{ $usuario->persona->cargo?->nombre ?? 'Sin cargo' }}</span>
+                                            <span>{{ $usuario->persona->cargos_nombres ?? 'Sin cargo' }}</span>
                                         </div>
                                         <div class="col-md-6">
                                             <small class="text-muted d-block">Departamento</small>

@@ -152,7 +152,7 @@
                             <small class="d-block"><i class="bi bi-telephone me-1"></i>{{ $p->telefono ?? 'N/A' }}</small>
                             <hr class="report-divider">
                             <strong class="d-block">{{ $p->institucion ?? 'Independiente' }}</strong>
-                            <small class="text-muted">{{ $p->cargo->nombre ?? 'Sin cargo' }}</small>
+                            <small class="text-muted">{{ $p->cargos_nombres }}</small>
                         </td>
                         <td>
                             @if($p->documentos->count() > 0)

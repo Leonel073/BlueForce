@@ -182,7 +182,7 @@
                                                 </div>
                                                 <div class="col-md-6 mb-3">
                                                     <label class="form-label text-muted small">Cargo</label>
-                                                    <div>{{ Auth::user()->persona->cargo?->nombre ?? 'No asignado' }}</div>
+                                                    <div>{{ Auth::user()->persona->cargos_nombres ?? 'No asignado' }}</div>
                                                 </div>
                                             </div>
                                         @else
@@ -201,7 +201,7 @@
                             <input type="hidden" name="telefono_celular" value="{{ Auth::user()->persona->telefono_celular ?? '' }}">
                             <input type="hidden" name="telefono_fijo" value="{{ Auth::user()->persona->telefono_fijo ?? '' }}">
                             <input type="hidden" name="correo_remitente" value="{{ Auth::user()->persona->correo ?? '' }}">
-                            <input type="hidden" name="cargo_remitente" value="{{ Auth::user()->persona->cargo?->nombre ?? '' }}">
+                            <input type="hidden" name="cargo_remitente" value="{{ Auth::user()->persona->cargos_nombres ?? '' }}">
                             <input type="hidden" name="institucion_remitente" value="{{ Auth::user()->persona->institucion ?? '' }}">
                             <input type="hidden" name="tipo_remitente" value="{{ Auth::user()->persona->tipo ?? 'INTERNO' }}">
                         </div>

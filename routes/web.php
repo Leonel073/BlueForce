@@ -249,6 +249,7 @@ Route::middleware(['auth', 'verified', 'nocache', 'admin'])->prefix('admin')->na
     Route::get('/personas/{id}/edit', [PersonaController::class, 'edit'])->name('personas.edit');
     Route::put('/personas/{id}', [PersonaController::class, 'update'])->name('personas.update');
     Route::put('/personas/{id}/toggle', [PersonaController::class, 'toggle'])->name('personas.toggle');
+    Route::get('/personas/buscar-cargos', [PersonaController::class, 'buscarCargos'])->name('personas.buscar-cargos');
 
     /*
     |--------------------------------------------------------------------------

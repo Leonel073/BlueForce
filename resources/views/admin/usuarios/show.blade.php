@@ -106,7 +106,7 @@
                             <strong>CI:</strong> {{ $usuario->persona->ci ?? 'N/A' }}
                         </p>
                         <p class="mb-1">
-                            <strong>Cargo:</strong> {{ $usuario->persona->cargo?->nombre ?? 'Sin cargo' }}
+                            <strong>Cargo:</strong> {{ $usuario->persona->cargos_nombres ?? 'Sin cargo' }}
                         </p>
                         <p class="mb-1">
                             <strong>Departamento:</strong> {{ $usuario->persona->departamento?->nombre ?? 'Sin departamento' }}

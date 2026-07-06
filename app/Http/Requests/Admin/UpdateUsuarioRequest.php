@@ -4,6 +4,7 @@ namespace App\Http\Requests\Admin;
 
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Validation\Rule;
+use Illuminate\Validation\Rules\Password;
 
 /**
  * Form Request para actualizar un Usuario (Admin)
@@ -41,7 +42,7 @@ class UpdateUsuarioRequest extends FormRequest
                 'required',
                 'string',
                 'max:255',
-                'regex:/^[\pL\s]+$/u',
+                'regex:/^[\pL\s.\-]+$/u',
             ],
 
             'email' => [

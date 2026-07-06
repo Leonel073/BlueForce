@@ -172,7 +172,9 @@ public function index(Request $request)
         */
 
         if ($user->idRol != 1) {
-            $query->where('idUsuario', $user->id);
+            $query->whereHas('ultimaDerivacion',
+                fn($q) => $q->where('idUsuarioAsignado', $user->id)
+            );
         }
 
         if ($request->filled('buscar')) {

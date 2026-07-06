@@ -4,6 +4,7 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 
 class Cargo extends Model
 {
@@ -33,7 +34,7 @@ class Cargo extends Model
     */
 
     /**
-     * Relación: Un cargo puede tener muchas personas
+     * Relación: Un cargo puede tener muchas personas (legacy - mantener compatibilidad)
      * 
      * @return HasMany
      */
@@ -44,6 +45,23 @@ class Cargo extends Model
             'idCargo',
             'idCargo'
         );
+    }
+
+    /**
+     * Relación: Un cargo puede estar asignado a muchas personas (N:N via pivote)
+     * 
+     * @return BelongsToMany
+     */
+    public function personasAsignadas(): BelongsToMany
+    {
+        return $this->belongsToMany(
+            Persona::class,
+            'PERSONA_CARGO',
+            'idCargo',
+            'idPersona'
+        )
+        ->withPivot('activo', 'principal', 'fecha_asignacion')
+        ->wherePivot('activo', true);
     }
 
     /*

@@ -437,6 +437,20 @@ class CorrespondenciaController extends Controller
 
         /*
         |--------------------------------------------------------------------------
+        | ACTUALIZAR ESTADO — Al derivar, el documento queda Pendiente
+        |--------------------------------------------------------------------------
+        */
+
+        $estadoPendiente = EstadoDocumento::where('nombre', 'Pendiente')->first();
+
+        if ($estadoPendiente) {
+            $documento->update([
+                'idEstado' => $estadoPendiente->idEstado
+            ]);
+        }
+
+        /*
+        |--------------------------------------------------------------------------
         | REGISTRAR SEGUIMIENTO
         |--------------------------------------------------------------------------
         */
@@ -451,7 +465,7 @@ class CorrespondenciaController extends Controller
                 => 'Documento derivado',
 
             'idEstado'
-                => $documento->idEstado,
+                => $documento->fresh()->idEstado,
 
             'activo' => true,
 

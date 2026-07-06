@@ -4,6 +4,7 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 
 class Persona extends Model
@@ -42,7 +43,7 @@ class Persona extends Model
     */
 
     /**
-     * Relación: Una persona pertenece a UN cargo (o ninguno)
+     * Relación: Una persona pertenece a UN cargo (legacy - mantener compatibilidad)
      * 
      * @return BelongsTo
      */
@@ -53,6 +54,59 @@ class Persona extends Model
             'idCargo',
             'idCargo'
         );
+    }
+
+    /**
+     * Relación: Una persona puede tener MÚLTIPLES cargos (N:N via pivote)
+     * 
+     * @return BelongsToMany
+     */
+    public function cargos(): BelongsToMany
+    {
+        return $this->belongsToMany(
+            Cargo::class,
+            'PERSONA_CARGO',
+            'idPersona',
+            'idCargo'
+        )
+        ->withPivot('activo', 'principal', 'fecha_asignacion')
+        ->wherePivot('activo', true)
+        ->orderByPivot('principal', 'desc');
+    }
+
+    /**
+     * Obtener el cargo principal de la persona (el marcado como principal en el pivote)
+     * 
+     * @return \App\Models\Cargo|null
+     */
+    public function getCargoActualAttribute(): ?Cargo
+    {
+        $cargosActivos = $this->cargos()->get();
+
+        if ($cargosActivos->isEmpty()) {
+            // Fallback: si no hay en pivote, usar el legacy idCargo
+            return $this->cargo;
+        }
+
+        $principal = $cargosActivos->firstWhere('pivot->principal', true);
+
+        return $principal ?? $cargosActivos->first();
+    }
+
+    /**
+     * Obtener nombres de todos los cargos activos separados por coma
+     * 
+     * @return string
+     */
+    public function getCargosNombresAttribute(): string
+    {
+        $cargos = $this->cargos()->pluck('nombre');
+
+        if ($cargos->isEmpty()) {
+            return $this->cargo?->nombre ?? 'Sin cargo';
+        }
+
+        return $cargos->implode(', ');
     }
 
     /**

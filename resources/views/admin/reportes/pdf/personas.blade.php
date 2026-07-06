@@ -72,7 +72,7 @@
                             Email: {{ $p->correo ?? '-' }}
                         </span><br><br>
                         <strong>{{ $p->institucion ?? 'Independiente' }}</strong><br>
-                        <span class="muted">{{ $p->cargo->nombre ?? 'Sin cargo' }}</span>
+                        <span class="muted">{{ $p->cargos_nombres }}</span>
                     </td>
                     <td>
                         @if($p->documentos->count() > 0)

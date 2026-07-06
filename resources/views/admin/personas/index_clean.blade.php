@@ -116,7 +116,7 @@
                                     <td>{{ $persona->ci }}</td>
                                     <td class="fw-semibold">{{ $persona->nombre }}</td>
                                     <td>{{ $persona->departamento?->nombre ?? 'N/A' }}</td>
-                                    <td>{{ $persona->cargo?->nombre ?? 'N/A' }}</td>
+                                    <td>{{ $persona->cargos_nombres ?? 'N/A' }}</td>
                                     <td>{{ $persona->telefono_celular ?? 'N/A' }}</td>
                                     <td>
                                         <span class="badge {{ $persona->tipo == 'INTERNO' ? 'bg-primary' : 'bg-warning' }}">
@@ -191,7 +191,7 @@
                                     <td>{{ $persona->ci }}</td>
                                     <td class="fw-semibold">{{ $persona->nombre }}</td>
                                     <td>{{ $persona->correo ?? 'N/A' }}</td>
-                                    <td>{{ $persona->cargo?->nombre ?? 'N/A' }}</td>
+                                    <td>{{ $persona->cargos_nombres ?? 'N/A' }}</td>
                                     <td>{{ $persona->telefono_fijo ?? 'N/A' }}</td>
                                     <td>{{ $persona->institucion ?? 'N/A' }}</td>
                                     <td>

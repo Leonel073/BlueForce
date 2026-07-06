@@ -108,7 +108,7 @@
                                                 data-nombre="{{ $persona->nombre }}"
                                                 data-ci="{{ $persona->ci ?? 'N/A' }}"
                                                 data-correo="{{ $persona->correo ?? '' }}"
-                                                data-cargo="{{ $persona->cargo?->nombre ?? 'Sin cargo' }}"
+                                                data-cargo="{{ $persona->cargos_nombres ?? 'Sin cargo' }}"
                                                 data-departamento="{{ $persona->departamento?->nombre ?? 'Sin departamento' }}">
                                             {{ $persona->nombre }}
                                             — CI: {{ $persona->ci ?? 'N/A' }}
@@ -325,7 +325,7 @@ $personasJson = $personas->map(function ($p) {
         'nombre' => $p->nombre,
         'ci' => $p->ci ?? '',
         'correo' => $p->correo ?? '',
-        'cargo' => optional($p->cargo)->nombre ?? 'Sin cargo',
+        'cargo' => $p->cargos_nombres ?? 'Sin cargo',
         'departamento' => optional($p->departamento)->nombre ?? 'Sin departamento',
     ];
 })->values()->toArray();
