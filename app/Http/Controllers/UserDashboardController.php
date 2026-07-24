@@ -91,6 +91,7 @@ class UserDashboardController extends Controller
 
         // ANUNCIOS NO VISTOS (pantallazo al ingresar)
         $anuncioPendiente = Anuncio::activos()
+            ->with('creador')
             ->whereDoesntHave('vistas', fn($q) => $q->where('idUsuario', $userId))
             ->orderBy('fechaCreacion')
             ->first();
@@ -112,4 +113,3 @@ class UserDashboardController extends Controller
         ) + ['totalDocumentos' => $totalMis]);
     }
 }
-

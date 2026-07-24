@@ -5,7 +5,6 @@ namespace App\Http\Controllers\Admin;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\Admin\StoreAnuncioRequest;
 use App\Models\Anuncio;
-use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Storage;
 
@@ -44,7 +43,7 @@ class AnuncioController extends Controller
 
         return redirect()
             ->route('admin.anuncios.index')
-            ->with('success', 'Anuncio publicado correctamente. Todos los usuarios lo verán al ingresar.');
+            ->with('success', 'Anuncio publicado correctamente. Usuarios y administradores lo veran al ingresar.');
     }
 
     public function show(int $id)

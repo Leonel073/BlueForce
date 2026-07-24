@@ -8,7 +8,9 @@ use App\Models\Correspondencia;
 use App\Models\Derivacion;
 use App\Models\User;
 use App\Models\Departamento;
+use App\Models\Anuncio;
 
+use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Cache;
 
@@ -271,6 +273,18 @@ class DashboardController extends Controller
 
         /*
         |--------------------------------------------------------------------------
+        | ANUNCIOS NO VISTOS
+        |--------------------------------------------------------------------------
+        */
+
+        $anuncioPendiente = Anuncio::activos()
+            ->with('creador')
+            ->whereDoesntHave('vistas', fn($q) => $q->where('idUsuario', Auth::id()))
+            ->orderBy('fechaCreacion')
+            ->first();
+
+        /*
+        |--------------------------------------------------------------------------
         | RETORNO
         |--------------------------------------------------------------------------
         */
@@ -294,7 +308,8 @@ class DashboardController extends Controller
                 'departamentosActivos',
 
                 'documentosRecientes',
-                'derivacionesRecientes'
+                'derivacionesRecientes',
+                'anuncioPendiente'
             )
         );
     }

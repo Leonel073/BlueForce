@@ -7,11 +7,26 @@
 </head>
 <body>
 
+    @if(!empty($showPrintToolbar))
+        <div class="print-toolbar">
+            <div>
+                <strong>Vista imprimible del reporte</strong>
+                <span>Use el boton imprimir para generar el PDF desde el navegador.</span>
+            </div>
+            <div class="print-toolbar-actions">
+                <button type="button" onclick="window.print()">Imprimir</button>
+                <a href="{{ route('admin.reportes.personas', request()->query()) }}">Volver al reporte</a>
+            </div>
+        </div>
+    @endif
+
     {{-- HEADER --}}
     <table class="pdf-header">
         <tr>
             <td width="20%">
-                <img src="{{ public_path('images/LogoEmpresa.png') }}" class="pdf-logo">
+                @if(!empty($logoDataUri))
+                    <img src="{{ $logoDataUri }}" class="pdf-logo">
+                @endif
             </td>
             <td width="80%" class="pdf-brand">
                 <h1>Sistema de Gestion Documental</h1>
@@ -36,15 +51,36 @@
             </td>
             <td>
                 <div class="summary-label">CON DOCUMENTOS</div>
-                <div class="summary-value">{{ $personas->filter(fn($p) => $p->documentos->count() > 0)->count() }}</div>
+                <div class="summary-value">{{ $estadisticas['personas_con_documentos'] ?? $personas->filter(fn($p) => $p->documentos->count() > 0)->count() }}</div>
             </td>
             <td>
+                <div class="summary-label">DOCS. ENVIADOS</div>
+                <div class="summary-value">{{ $estadisticas['total_documentos_enviados'] ?? $personas->sum('total_documentos') }}</div>
+            </td>
+            <td>
+                <div class="summary-label">DERIVACIONES</div>
+                <div class="summary-value">{{ $estadisticas['total_derivaciones'] ?? 0 }}</div>
+            </td>
+        </tr>
+    </table>
+
+    <table class="pdf-summary">
+        <tr>
+            <td>
                 <div class="summary-label">INTERNAS</div>
-                <div class="summary-value">{{ $personas->filter(fn($p) => $p->tipo === 'INTERNO')->count() }}</div>
+                <div class="summary-value">{{ $estadisticas['personas_internas'] ?? $personas->filter(fn($p) => $p->tipo === 'INTERNO')->count() }}</div>
             </td>
             <td>
                 <div class="summary-label">EXTERNAS</div>
-                <div class="summary-value">{{ $personas->filter(fn($p) => $p->tipo === 'EXTERNO')->count() }}</div>
+                <div class="summary-value">{{ $estadisticas['personas_externas'] ?? $personas->filter(fn($p) => $p->tipo === 'EXTERNO')->count() }}</div>
+            </td>
+            <td>
+                <div class="summary-label">PROMEDIO DOCS/PERSONA</div>
+                <div class="summary-value">{{ $estadisticas['promedio_documentos_por_persona'] ?? 0 }}</div>
+            </td>
+            <td>
+                <div class="summary-label">DOCS. CON SEGUIMIENTO</div>
+                <div class="summary-value">{{ $estadisticas['documentos_con_derivacion'] ?? 0 }}</div>
             </td>
         </tr>
     </table>
@@ -64,11 +100,13 @@
                     <td>
                         <span class="strong-navy" style="font-size:11px;">{{ $p->nombre }}</span><br>
                         <span class="muted">CI: {{ $p->ci ?? 'N/A' }}</span><br><br>
-                        <span class="tag {{ $p->tipo === 'INTERNO' ? 'tag-success' : 'tag-gold' }}">{{ $p->tipo }}</span>
+                        <span class="tag {{ $p->tipo === 'INTERNO' ? 'tag-success' : 'tag-gold' }}">{{ $p->tipo }}</span><br>
+                        <span class="tag tag-navy">{{ $p->documentos_enviados ?? $p->total_documentos ?? $p->documentos->count() }} docs enviados</span>
                     </td>
                     <td>
                         <span class="muted">
-                            Tel: {{ $p->telefono ?? '-' }}<br>
+                            Cel: {{ $p->telefono_celular ?? '-' }}<br>
+                            Fijo: {{ $p->telefono_fijo ?? '-' }}<br>
                             Email: {{ $p->correo ?? '-' }}
                         </span><br><br>
                         <strong>{{ $p->institucion ?? 'Independiente' }}</strong><br>
