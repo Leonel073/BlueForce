@@ -12,6 +12,7 @@ use App\Models\Derivacion;
 use App\Models\EstadoDocumento;
 use App\Models\Departamento;
 use App\Models\TipoDocumento;
+use App\Models\NivelUrgencia;
 use Barryvdh\DomPDF\Facade\Pdf;
 use App\Models\Persona;
 use Illuminate\Support\Facades\DB;
@@ -27,12 +28,18 @@ class ReporteController extends Controller
         ?string $orientation = null
     ): Response
     {
+        $data['logoDataUri'] = $this->getLogoDataUri();
+
         if (!extension_loaded('gd')) {
+            $data['showPrintToolbar'] = true;
+
             return response()
                 ->view($view, $data)
                 ->header('Content-Type', 'text/html; charset=UTF-8')
                 ->header('Content-Disposition', 'inline; filename="' . $fileName . '.html"');
         }
+
+        $data['showPrintToolbar'] = false;
 
         $pdf = Pdf::loadView($view, $data);
 
@@ -42,7 +49,24 @@ class ReporteController extends Controller
             $pdf->setPaper($paper);
         }
 
-        return $pdf->download($fileName . '.pdf');
+        return $pdf->stream($fileName . '.pdf');
+    }
+
+    private function getLogoDataUri(): ?string
+    {
+        $logoPath = public_path('images/LogoEmpresa.png');
+
+        if (!is_file($logoPath)) {
+            return null;
+        }
+
+        $logoContent = file_get_contents($logoPath);
+
+        if ($logoContent === false) {
+            return null;
+        }
+
+        return 'data:image/png;base64,' . base64_encode($logoContent);
     }
 
     public function index()
@@ -163,7 +187,9 @@ class ReporteController extends Controller
 
             $persona->documentos = $docQuery->get();
             $persona->total_documentos = $persona->documentos->count();
+            $persona->documentos_enviados = $persona->total_documentos;
             $persona->documentos_derivados = $persona->documentos->filter(fn($d) => $d->derivaciones->count() > 0)->count();
+            $persona->total_derivaciones = $persona->documentos->sum(fn($d) => $d->derivaciones->count());
         }
 
         // Filtrar personas sin documentos si se requiere
@@ -180,7 +206,11 @@ class ReporteController extends Controller
             'personas_internas' => $personas->filter(fn($p) => $p->tipo === 'INTERNO')->count(),
             'personas_externas' => $personas->filter(fn($p) => $p->tipo === 'EXTERNO')->count(),
             'total_documentos' => $personas->sum('total_documentos'),
-            'total_derivaciones' => $personas->sum('documentos_derivados')
+            'total_documentos_enviados' => $personas->sum('documentos_enviados'),
+            'personas_con_documentos' => $personas->filter(fn($p) => $p->total_documentos > 0)->count(),
+            'promedio_documentos_por_persona' => $personas->count() > 0 ? round($personas->sum('total_documentos') / $personas->count(), 2) : 0,
+            'documentos_con_derivacion' => $personas->sum('documentos_derivados'),
+            'total_derivaciones' => $personas->sum('total_derivaciones')
         ];
 
         return view('admin.reportes.personas', compact('personas', 'departamentos', 'estadisticas'));
@@ -300,7 +330,15 @@ class ReporteController extends Controller
 
 public function personasPDF(Request $request)
     {
-        $query = Persona::query()->whereNull('idDepartamento');
+        $query = Persona::with([
+            'cargo',
+            'cargos',
+            'departamento'
+        ])->whereNull('idDepartamento');
+
+        if ($request->filled('solo_con_tramites') && $request->solo_con_tramites == '1') {
+            $query->whereHas('correspondenciasComoRemitente');
+        }
 
         if ($request->filled('nombre')) {
             $query->where('nombre', 'like', '%' . $request->nombre . '%');
@@ -311,11 +349,17 @@ public function personasPDF(Request $request)
         if ($request->filled('tipo')) {
             $query->where('tipo', $request->tipo);
         }
+        if ($request->filled('idDepartamento')) {
+            $query->where('idDepartamento', $request->idDepartamento);
+        }
+        if ($request->filled('activo')) {
+            $query->where('activo', $request->activo);
+        }
 
-        $personas = $query->orderBy('idPersona', 'desc')->get();
+        $personas = $query->orderBy('nombre')->get();
 
         foreach ($personas as $persona) {
-            $docQuery = Correspondencia::with(['tipoDocumento', 'estado'])
+            $docQuery = Correspondencia::with(['tipoDocumento', 'estado', 'derivaciones'])
                                        ->where('idRemitente', $persona->idPersona);
 
             if ($request->filled('fecha_inicio')) {
@@ -326,11 +370,31 @@ public function personasPDF(Request $request)
             }
 
             $persona->documentos = $docQuery->get();
+            $persona->total_documentos = $persona->documentos->count();
+            $persona->documentos_enviados = $persona->total_documentos;
+            $persona->documentos_derivados = $persona->documentos->filter(fn($d) => $d->derivaciones->count() > 0)->count();
+            $persona->total_derivaciones = $persona->documentos->sum(fn($d) => $d->derivaciones->count());
         }
+
+        if ($request->filled('solo_con_tramites') && $request->solo_con_tramites == '1') {
+            $personas = $personas->filter(fn($p) => $p->total_documentos > 0);
+        }
+
+        $estadisticas = [
+            'total_personas' => $personas->count(),
+            'personas_internas' => $personas->filter(fn($p) => $p->tipo === 'INTERNO')->count(),
+            'personas_externas' => $personas->filter(fn($p) => $p->tipo === 'EXTERNO')->count(),
+            'total_documentos' => $personas->sum('total_documentos'),
+            'total_documentos_enviados' => $personas->sum('documentos_enviados'),
+            'personas_con_documentos' => $personas->filter(fn($p) => $p->total_documentos > 0)->count(),
+            'promedio_documentos_por_persona' => $personas->count() > 0 ? round($personas->sum('total_documentos') / $personas->count(), 2) : 0,
+            'documentos_con_derivacion' => $personas->sum('documentos_derivados'),
+            'total_derivaciones' => $personas->sum('total_derivaciones')
+        ];
 
         return $this->buildPdfOrPrintableResponse(
             'admin.reportes.pdf.personas',
-            compact('personas'),
+            compact('personas', 'estadisticas'),
             'reporte-integral-personas'
         );
     }
@@ -344,7 +408,8 @@ public function personasPDF(Request $request)
         if ($request->filled('estado')) $query->where('activo', $request->estado);
 
         // AUDITORÍA - Cargar relaciones
-        $usuarios = $query->withCount(['correspondencias'])
+        $usuarios = $query->with(['rol', 'persona.departamento', 'persona.cargo', 'persona.cargos'])
+            ->withCount(['correspondencias'])
             ->with(['correspondencias' => function($q) {
                 $q->with(['estado', 'tipoDocumento'])->latest('fecha')->take(10);
             }])
@@ -354,15 +419,6 @@ public function personasPDF(Request $request)
         foreach ($usuarios as $user) {
             // Total de documentos
             $user->total_documentos = $user->correspondencias_count;
-
-            // Últimos cambios (basado en documentos recientes) - AHORA CON CITE
-            $user->ultimos_cambios = $user->correspondencias->map(fn($doc) => [
-                'fecha' => $doc->fecha,
-                'cite' => $doc->cite ?? 'S/C',
-                'asunto' => $doc->asunto,
-                'estado' => $doc->estado->nombre ?? 'Desconocido',
-                'tipo' => $doc->tipoDocumento->nombre ?? 'Desconocido'
-            ]);
 
             // Filtrar por fecha si se requiere
             if ($request->filled('fecha_inicio') || $request->filled('fecha_fin')) {
@@ -380,6 +436,17 @@ public function personasPDF(Request $request)
                     return stripos($doc->cite, $request->cite) !== false;
                 });
             }
+
+            $user->documentos_en_reporte = $user->correspondencias->count();
+
+            // Últimos cambios visibles en el reporte, ya respetando filtros aplicados
+            $user->ultimos_cambios = $user->correspondencias->map(fn($doc) => [
+                'fecha' => $doc->fecha,
+                'cite' => $doc->cite ?? 'S/C',
+                'asunto' => $doc->asunto,
+                'estado' => $doc->estado->nombre ?? 'Desconocido',
+                'tipo' => $doc->tipoDocumento->nombre ?? 'Desconocido'
+            ]);
         }
 
         // Obtener departamentos para filtro
@@ -391,6 +458,8 @@ public function personasPDF(Request $request)
             'usuarios_activos' => $usuarios->filter(fn($u) => $u->activo)->count(),
             'usuarios_inactivos' => $usuarios->filter(fn($u) => !$u->activo)->count(),
             'total_documentos' => $usuarios->sum('total_documentos'),
+            'usuarios_con_actividad' => $usuarios->filter(fn($u) => $u->documentos_en_reporte > 0)->count(),
+            'documentos_en_reporte' => $usuarios->sum('documentos_en_reporte'),
             'promedio_documentos_por_usuario' => $usuarios->count() > 0 ? round($usuarios->sum('total_documentos') / $usuarios->count(), 2) : 0
         ];
 
@@ -405,17 +474,71 @@ public function personasPDF(Request $request)
         if ($request->filled('correo')) $query->where('email', 'like', "%{$request->correo}%");
         if ($request->filled('estado')) $query->where('activo', $request->estado);
 
-        $usuarios = $query->withCount(['correspondencias'])->get();
+        $usuarios = $query->with(['rol', 'persona.departamento', 'persona.cargo', 'persona.cargos'])
+            ->withCount(['correspondencias'])
+            ->with(['correspondencias' => function($q) {
+                $q->with(['estado', 'tipoDocumento'])->latest('fecha')->take(10);
+            }])
+            ->get();
+
+        foreach ($usuarios as $user) {
+            $user->total_documentos = $user->correspondencias_count;
+
+            if ($request->filled('fecha_inicio') || $request->filled('fecha_fin')) {
+                $user->correspondencias = $user->correspondencias->filter(function($doc) use ($request) {
+                    $fecha = $doc->fecha;
+                    if ($request->filled('fecha_inicio') && $fecha < $request->fecha_inicio) return false;
+                    if ($request->filled('fecha_fin') && $fecha > $request->fecha_fin) return false;
+                    return true;
+                });
+            }
+
+            if ($request->filled('cite')) {
+                $user->correspondencias = $user->correspondencias->filter(function($doc) use ($request) {
+                    return stripos($doc->cite, $request->cite) !== false;
+                });
+            }
+
+            $user->documentos_en_reporte = $user->correspondencias->count();
+            $user->ultimos_cambios = $user->correspondencias->map(fn($doc) => [
+                'fecha' => $doc->fecha,
+                'cite' => $doc->cite ?? 'S/C',
+                'asunto' => $doc->asunto,
+                'estado' => $doc->estado->nombre ?? 'Desconocido',
+                'tipo' => $doc->tipoDocumento->nombre ?? 'Desconocido'
+            ]);
+        }
+
+        $estadisticas = [
+            'total_usuarios' => $usuarios->count(),
+            'usuarios_activos' => $usuarios->filter(fn($u) => $u->activo)->count(),
+            'usuarios_inactivos' => $usuarios->filter(fn($u) => !$u->activo)->count(),
+            'total_documentos' => $usuarios->sum('total_documentos'),
+            'usuarios_con_actividad' => $usuarios->filter(fn($u) => $u->documentos_en_reporte > 0)->count(),
+            'documentos_en_reporte' => $usuarios->sum('documentos_en_reporte'),
+            'promedio_documentos_por_usuario' => $usuarios->count() > 0 ? round($usuarios->sum('total_documentos') / $usuarios->count(), 2) : 0
+        ];
 
         return $this->buildPdfOrPrintableResponse(
             'admin.reportes.pdf.usuarios',
-            compact('usuarios'),
-            'reporte-usuarios'
+            compact('usuarios', 'estadisticas'),
+            'reporte-usuarios',
+            'letter',
+            'landscape'
         );
     }
     public function documentos(Request $request)
     {
-        $query = Correspondencia::with(['tipoDocumento', 'estado', 'remitente', 'derivaciones']);
+        $query = Correspondencia::with([
+            'tipoDocumento',
+            'estado',
+            'urgencia',
+            'remitente.departamento',
+            'derivaciones.departamentoOrigen',
+            'derivaciones.departamentoDestino',
+            'derivaciones.usuarioAsignado.persona',
+            'derivaciones.usuarioEnvio.persona'
+        ]);
 
         // Filtros
         if ($request->filled('q')) {
@@ -436,27 +559,31 @@ public function personasPDF(Request $request)
         if ($request->filled('fecha_inicio')) $query->whereDate('fecha', '>=', $request->fecha_inicio);
         if ($request->filled('fecha_fin')) $query->whereDate('fecha', '<=', $request->fecha_fin);
 
-        $documentos = $query->latest('idDocumento')->get();
+        $documentos = $this->enriquecerDocumentosReporte($query->latest('idDocumento')->get());
 
         $tipos = TipoDocumento::all();
         $estados = EstadoDocumento::all();
+        $urgencias = NivelUrgencia::all();
         $personas = Persona::where('activo', true)->orderBy('nombre')->get();
 
         // Estadísticas para pre-visualización
-        $estadisticas = [
-            'total_documentos' => $documentos->count(),
-            'documentos_pendientes' => $documentos->filter(fn($d) => $d->estado->nombre === 'Pendiente')->count(),
-            'documentos_finalizados' => $documentos->filter(fn($d) => $d->estado->nombre === 'Finalizado')->count(),
-            'documentos_urgentes' => $documentos->filter(fn($d) => $d->urgencia->nombre === 'Urgente')->count(),
-            'documentos_derivados' => $documentos->filter(fn($d) => $d->derivaciones->count() > 0)->count()
-        ];
+        $estadisticas = $this->estadisticasDocumentosReporte($documentos);
 
-        return view('admin.reportes.documentos', compact('documentos', 'tipos', 'estados', 'personas', 'estadisticas'));
+        return view('admin.reportes.documentos', compact('documentos', 'tipos', 'estados', 'urgencias', 'personas', 'estadisticas'));
     }
 
 public function documentosPDF(Request $request)
 {
-    $query = Correspondencia::with(['tipoDocumento', 'estado', 'remitente']);
+    $query = Correspondencia::with([
+        'tipoDocumento',
+        'estado',
+        'urgencia',
+        'remitente.departamento',
+        'derivaciones.departamentoOrigen',
+        'derivaciones.departamentoDestino',
+        'derivaciones.usuarioAsignado.persona',
+        'derivaciones.usuarioEnvio.persona'
+    ]);
 
     if ($request->filled('q')) {
         $query->where(function($f) use ($request) {
@@ -464,21 +591,72 @@ public function documentosPDF(Request $request)
               ->orWhere('asunto', 'like', "%{$request->q}%");
         });
     }
-if ($request->filled('idTipo')) $query->where('idTipoDocumento', $request->idTipo);
+    if ($request->filled('idRemitente')) $query->where('idRemitente', $request->idRemitente);
+    if ($request->filled('idTipo')) $query->where('idTipoDocumento', $request->idTipo);
     if ($request->filled('idEstado')) $query->where('idEstado', $request->idEstado);
+    if ($request->filled('idUrgencia')) $query->where('idUrgencia', $request->idUrgencia);
     if ($request->filled('fecha_inicio')) $query->whereDate('fecha', '>=', $request->fecha_inicio);
     if ($request->filled('fecha_fin')) $query->whereDate('fecha', '<=', $request->fecha_fin);
 
-    $documentos = $query->latest('idDocumento')->get();
+    $documentos = $this->enriquecerDocumentosReporte($query->latest('idDocumento')->get());
+    $estadisticas = $this->estadisticasDocumentosReporte($documentos);
 
     return $this->buildPdfOrPrintableResponse(
         'admin.reportes.pdf.documentos',
-        compact('documentos'),
+        compact('documentos', 'estadisticas'),
         'reporte-general-documentos',
         'letter',
         'landscape'
     );
 }
+
+    private function enriquecerDocumentosReporte($documentos)
+    {
+        foreach ($documentos as $doc) {
+            $derivacionesOrdenadas = $doc->derivaciones
+                ->sortByDesc(fn($derivacion) => $derivacion->orden ?? 0)
+                ->values();
+            $derivacionesCronologicas = $doc->derivaciones
+                ->sortBy(fn($derivacion) => $derivacion->orden ?? 0)
+                ->values();
+            $ultimaDerivacion = $derivacionesOrdenadas->first();
+
+            $doc->total_derivaciones = $derivacionesOrdenadas->count();
+            $doc->derivaciones_reporte = $derivacionesCronologicas;
+            $doc->ultima_derivacion_reporte = $ultimaDerivacion;
+            $doc->ubicacion_actual_reporte = $ultimaDerivacion
+                ? ($ultimaDerivacion->departamentoDestino->nombre ?? 'Destino no identificado')
+                : 'Sin derivacion';
+            $doc->ultimo_movimiento_reporte = $ultimaDerivacion
+                ? (($ultimaDerivacion->departamentoOrigen->nombre ?? 'Origen no identificado') . ' -> ' . ($ultimaDerivacion->departamentoDestino->nombre ?? 'Destino no identificado'))
+                : 'Sin movimiento';
+            $doc->estado_fisico_reporte = !$ultimaDerivacion
+                ? 'Registrado'
+                : ($ultimaDerivacion->fechaRecepcion ? 'Recibido' : 'En transito');
+            $doc->dias_registro = $doc->fecha
+                ? \Carbon\Carbon::parse($doc->fecha)->startOfDay()->diffInDays(now()->startOfDay())
+                : null;
+        }
+
+        return $documentos;
+    }
+
+    private function estadisticasDocumentosReporte($documentos): array
+    {
+        return [
+            'total_documentos' => $documentos->count(),
+            'documentos_pendientes' => $documentos->filter(fn($d) => ($d->estado->nombre ?? '') === 'Pendiente')->count(),
+            'documentos_finalizados' => $documentos->filter(fn($d) => in_array(($d->estado->nombre ?? ''), ['Finalizado', 'Atendido', 'Archivado']))->count(),
+            'documentos_archivados' => $documentos->filter(fn($d) => ($d->estado->nombre ?? '') === 'Archivado')->count(),
+            'documentos_urgentes' => $documentos->filter(fn($d) => strtolower($d->urgencia->nombre ?? '') === 'urgente')->count(),
+            'documentos_derivados' => $documentos->filter(fn($d) => $d->total_derivaciones > 0)->count(),
+            'documentos_sin_derivacion' => $documentos->filter(fn($d) => $d->total_derivaciones === 0)->count(),
+            'derivaciones_total' => $documentos->sum('total_derivaciones'),
+            'promedio_derivaciones' => $documentos->count() > 0 ? round($documentos->sum('total_derivaciones') / $documentos->count(), 2) : 0,
+            'con_pdf' => $documentos->filter(fn($d) => $d->tiene_archivo)->count()
+        ];
+    }
+
     public function departamentos(Request $request)
     {
         $query = Departamento::with(['personaEncargada']);
@@ -507,6 +685,8 @@ if ($request->filled('idTipo')) $query->where('idTipoDocumento', $request->idTip
             // Contar documentos
             $dep->recibidos = $qRecibidos->count();
             $dep->enviados = $qEnviados->count();
+            $dep->movimiento_total = $dep->recibidos + $dep->enviados;
+            $dep->balance_flujo = $dep->recibidos - $dep->enviados;
 
             // Personal del departamento
             $personas = Persona::where('idDepartamento', $dep->idDepartamento)->get();
@@ -551,7 +731,10 @@ if ($request->filled('idTipo')) $query->where('idTipoDocumento', $request->idTip
                 'archivados' => $dep->documentos_archivados,
                 'tasa_completitud' => $dep->documentos_originarios > 0 ? 
                     round(($dep->documentos_derivados_finalizados / $dep->documentos_originarios) * 100, 2) : 0,
-                'personal_total' => $dep->total_personas
+                'personal_total' => $dep->total_personas,
+                'movimiento_total' => $dep->movimiento_total,
+                'balance_flujo' => $dep->balance_flujo,
+                'documentos_destinatarios' => $dep->documentos_destinatarios
             ];
         }
 
@@ -559,13 +742,18 @@ if ($request->filled('idTipo')) $query->where('idTipoDocumento', $request->idTip
         $estadisticas = [
             'total_departamentos' => $departamentos->count(),
             'total_derivaciones' => $departamentos->sum('recibidos'),
+            'total_recibidos' => $departamentos->sum('recibidos'),
+            'total_enviados' => $departamentos->sum('enviados'),
+            'movimiento_total' => $departamentos->sum('movimiento_total'),
             'total_documentos' => $departamentos->sum('documentos_originarios'),
             'total_en_curso' => $departamentos->sum('documentos_en_curso'),
             'total_finalizados' => $departamentos->sum('documentos_derivados_finalizados'),
             'total_archivados' => $departamentos->sum('documentos_archivados'),
             'promedio_documentos_por_depto' => $departamentos->count() > 0 ? 
                 round($departamentos->sum('documentos_originarios') / $departamentos->count(), 2) : 0,
-            'total_personal' => $departamentos->sum('total_personas')
+            'total_personal' => $departamentos->sum('total_personas'),
+            'departamentos_con_personal' => $departamentos->filter(fn($d) => $d->total_personas > 0)->count(),
+            'departamentos_sin_movimiento' => $departamentos->filter(fn($d) => $d->movimiento_total === 0)->count()
         ];
 
         return view('admin.reportes.departamentos', compact('departamentos', 'estadisticas'));
@@ -596,6 +784,8 @@ if ($request->filled('idTipo')) $query->where('idTipoDocumento', $request->idTip
 
             $dep->recibidos = $qRecibidos->count();
             $dep->enviados = $qEnviados->count();
+            $dep->movimiento_total = $dep->recibidos + $dep->enviados;
+            $dep->balance_flujo = $dep->recibidos - $dep->enviados;
 
             // Personal
             $personas = Persona::where('idDepartamento', $dep->idDepartamento)->get();
@@ -626,11 +816,40 @@ if ($request->filled('idTipo')) $query->where('idTipoDocumento', $request->idTip
             })->count();
 
             $dep->documentos_destinatarios = Derivacion::where('idDepartamentoDestino', $dep->idDepartamento)->count();
+
+            $dep->estadisticas = [
+                'total_documentos' => $dep->documentos_originarios,
+                'en_curso' => $dep->documentos_en_curso,
+                'finalizados' => $dep->documentos_derivados_finalizados,
+                'archivados' => $dep->documentos_archivados,
+                'tasa_completitud' => $dep->documentos_originarios > 0 ?
+                    round(($dep->documentos_derivados_finalizados / $dep->documentos_originarios) * 100, 2) : 0,
+                'personal_total' => $dep->total_personas,
+                'movimiento_total' => $dep->movimiento_total,
+                'balance_flujo' => $dep->balance_flujo,
+                'documentos_destinatarios' => $dep->documentos_destinatarios
+            ];
         }
+
+        $estadisticas = [
+            'total_departamentos' => $departamentos->count(),
+            'total_recibidos' => $departamentos->sum('recibidos'),
+            'total_enviados' => $departamentos->sum('enviados'),
+            'movimiento_total' => $departamentos->sum('movimiento_total'),
+            'total_documentos' => $departamentos->sum('documentos_originarios'),
+            'total_en_curso' => $departamentos->sum('documentos_en_curso'),
+            'total_finalizados' => $departamentos->sum('documentos_derivados_finalizados'),
+            'total_archivados' => $departamentos->sum('documentos_archivados'),
+            'total_personal' => $departamentos->sum('total_personas'),
+            'promedio_documentos_por_depto' => $departamentos->count() > 0 ?
+                round($departamentos->sum('documentos_originarios') / $departamentos->count(), 2) : 0,
+            'departamentos_con_personal' => $departamentos->filter(fn($d) => $d->total_personas > 0)->count(),
+            'departamentos_sin_movimiento' => $departamentos->filter(fn($d) => $d->movimiento_total === 0)->count(),
+        ];
 
         return $this->buildPdfOrPrintableResponse(
             'admin.reportes.pdf.departamentos',
-            compact('departamentos'),
+            compact('departamentos', 'estadisticas'),
             'reporte-flujo-departamentos',
             'letter',
             'landscape'

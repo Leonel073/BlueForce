@@ -9,6 +9,67 @@
         line-height: 1.5;
     }
 
+    .print-toolbar {
+        position: sticky;
+        top: 0;
+        z-index: 10;
+        display: table;
+        width: 100%;
+        box-sizing: border-box;
+        margin: 0 0 18px 0;
+        padding: 12px 18px;
+        background: #0B2D59;
+        color: #fff;
+        border-bottom: 4px solid #D9A23D;
+        font-family: Arial, sans-serif;
+        font-size: 13px;
+    }
+
+    .print-toolbar > div {
+        display: table-cell;
+        vertical-align: middle;
+    }
+
+    .print-toolbar span {
+        display: block;
+        margin-top: 2px;
+        color: #dbeafe;
+        font-size: 11px;
+    }
+
+    .print-toolbar-actions {
+        text-align: right;
+        white-space: nowrap;
+    }
+
+    .print-toolbar button,
+    .print-toolbar a {
+        display: inline-block;
+        border: 0;
+        border-radius: 4px;
+        padding: 8px 12px;
+        margin-left: 6px;
+        font-weight: bold;
+        text-decoration: none;
+        cursor: pointer;
+    }
+
+    .print-toolbar button {
+        background: #D9A23D;
+        color: #172033;
+    }
+
+    .print-toolbar a {
+        background: #ffffff;
+        color: #0B2D59;
+    }
+
+    @media print {
+        .print-toolbar {
+            display: none !important;
+        }
+    }
+
     .pdf-header {
         width: 100%;
         border-collapse: collapse;

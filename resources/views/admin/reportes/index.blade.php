@@ -108,16 +108,6 @@
             </a>
         </div>
 
-        {{-- DERIVACIONES --}}
-        <div class="col-md-4 mb-3">
-            <a href="{{ route('admin.reportes.derivaciones') }}" class="menu-card">
-                <div class="report-card">
-                    <div class="icon-wrapper icon-deriv"><i class="bi bi-arrow-left-right"></i></div>
-                    <div class="menu-title">Derivaciones</div>
-                    <p class="menu-desc">Trazabilidad documental</p>
-                </div>
-            </a>
-        </div>
     </div>
 
 </div>

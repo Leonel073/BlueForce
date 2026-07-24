@@ -4,6 +4,14 @@
 
 @section('content')
 
+@if(isset($anuncioPendiente) && $anuncioPendiente)
+    @include('anuncios.partials.pending-modal', [
+        'modalId' => 'adminAnuncioModal',
+        'redirectUrl' => route('admin.dashboard'),
+        'detalleUrl' => route('admin.anuncios.show', $anuncioPendiente->idAnuncio),
+    ])
+@endif
+
 <div class="container-fluid py-4">
 
     {{-- ESTILOS --}}
@@ -296,31 +304,6 @@
                     <h5 class="fw-bold mb-0">
 
                         Reportes
-
-                    </h5>
-
-                </div>
-
-            </a>
-
-        </div>
-
-        <div class="col-md-3 mb-3">
-
-            <a href="{{ route('admin.reportes.derivaciones') }}"
-               class="text-decoration-none quick-link">
-
-                <div class="card glass-card shadow-sm text-center p-4">
-
-                    <div class="stat-icon bg-danger bg-opacity-10 text-danger mx-auto mb-3">
-
-                        <i class="bi bi-arrow-left-right"></i>
-
-                    </div>
-
-                    <h5 class="fw-bold mb-0">
-
-                        Derivaciones
 
                     </h5>
 

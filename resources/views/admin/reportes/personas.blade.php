@@ -77,7 +77,9 @@
             <div class="filter-actions mt-3">
                 <button type="submit" class="btn-bf-primary"><i class="bi bi-search"></i> Buscar</button>
                 <button type="button" class="btn-bf-secondary" onclick="resetFiltros()"><i class="bi bi-arrow-clockwise"></i> Limpiar</button>
-                <button type="button" class="btn-bf-secondary" onclick="mostrarEstadisticas()"><i class="bi bi-bar-chart"></i> Estadisticas</button>
+                <button type="button" id="btn-estadisticas-personas" class="btn-bf-gold" onclick="mostrarEstadisticas()" aria-expanded="false" aria-controls="estadisticas-section">
+                    <i class="bi bi-bar-chart"></i> Ver estadisticas
+                </button>
                 <a href="{{ route('admin.reportes.personas.pdf', request()->query()) }}" class="btn-bf-danger"><i class="bi bi-file-pdf-fill"></i> Exportar a PDF</a>
                 <button type="button" class="btn-bf-secondary" onclick="cerrar()"><i class="bi bi-x-lg"></i> Salida</button>
             </div>
@@ -111,9 +113,43 @@
             </div>
             <div class="col-md-3">
                 <div class="stat-card stat-blue">
-                    <div class="stat-icon"><i class="bi bi-file-earmark"></i></div>
-                    <div class="stat-value">{{ $estadisticas['total_documentos'] }}</div>
-                    <div class="stat-label">Total Documentos</div>
+                    <div class="stat-icon"><i class="bi bi-send-check"></i></div>
+                    <div class="stat-value">{{ $estadisticas['total_documentos_enviados'] }}</div>
+                    <div class="stat-label">Docs. Enviados</div>
+                </div>
+            </div>
+        </div>
+
+        @php
+            $personaMayorActividad = $personas->sortByDesc('documentos_enviados')->first();
+        @endphp
+        <div class="report-card">
+            <div class="report-card-header justify-content-between flex-wrap">
+                <div>
+                    <h5 class="report-card-title"><i class="bi bi-clipboard-data"></i> Lectura de actividad</h5>
+                    <small class="text-muted">Resumen del rol de las personas como remitentes dentro del periodo filtrado.</small>
+                </div>
+                <span class="badge-bf badge-bf-navy">Promedio: {{ $estadisticas['promedio_documentos_por_persona'] }} docs/persona</span>
+            </div>
+            <div class="report-card-body">
+                <div class="row g-3">
+                    <div class="col-md-3">
+                        <strong style="color:var(--bf-navy);">Con documentos enviados</strong><br>
+                        <span class="badge-bf badge-bf-blue mt-2">{{ $estadisticas['personas_con_documentos'] }} personas</span>
+                    </div>
+                    <div class="col-md-3">
+                        <strong style="color:var(--bf-navy);">Mayor actividad</strong><br>
+                        <span class="text-muted">{{ $personaMayorActividad?->nombre ?? 'N/A' }}</span><br>
+                        <span class="badge-bf badge-bf-gold mt-2">{{ $personaMayorActividad?->documentos_enviados ?? 0 }} enviados</span>
+                    </div>
+                    <div class="col-md-3">
+                        <strong style="color:var(--bf-navy);">Docs. con seguimiento</strong><br>
+                        <span class="badge-bf badge-bf-success mt-2">{{ $estadisticas['documentos_con_derivacion'] }} documentos</span>
+                    </div>
+                    <div class="col-md-3">
+                        <strong style="color:var(--bf-navy);">Movimientos derivados</strong><br>
+                        <span class="badge-bf badge-bf-gray mt-2">{{ $estadisticas['total_derivaciones'] }} derivaciones</span>
+                    </div>
                 </div>
             </div>
         </div>
@@ -146,10 +182,16 @@
                             @else
                                 <span class="badge-bf badge-bf-gold">EXTERNO</span>
                             @endif
+                            <div class="mt-2">
+                                <span class="badge-bf badge-bf-blue">
+                                    <i class="bi bi-send-check"></i> {{ $p->documentos_enviados }} documentos enviados
+                                </span>
+                            </div>
                         </td>
                         <td>
                             <small class="d-block"><i class="bi bi-envelope me-1"></i>{{ $p->correo ?? 'N/A' }}</small>
-                            <small class="d-block"><i class="bi bi-telephone me-1"></i>{{ $p->telefono ?? 'N/A' }}</small>
+                            <small class="d-block"><i class="bi bi-phone me-1"></i>Cel: {{ $p->telefono_celular ?? 'N/A' }}</small>
+                            <small class="d-block"><i class="bi bi-telephone me-1"></i>Fijo: {{ $p->telefono_fijo ?? 'N/A' }}</small>
                             <hr class="report-divider">
                             <strong class="d-block">{{ $p->institucion ?? 'Independiente' }}</strong>
                             <small class="text-muted">{{ $p->cargos_nombres }}</small>
@@ -185,12 +227,23 @@
 
 <script>
 function resetFiltros() {
-    document.getElementById('filtros-form').reset();
-    document.getElementById('filtros-form').submit();
+    window.location.href = '{{ route("admin.reportes.personas") }}';
 }
 function mostrarEstadisticas() {
     const s = document.getElementById('estadisticas-section');
-    s.style.display = s.style.display === 'none' ? 'block' : 'none';
+    const btn = document.getElementById('btn-estadisticas-personas');
+    if (!s || !btn) return;
+
+    const oculto = s.style.display === 'none' || s.style.display === '';
+    s.style.display = oculto ? 'block' : 'none';
+    btn.setAttribute('aria-expanded', oculto ? 'true' : 'false');
+    btn.innerHTML = oculto
+        ? '<i class="bi bi-eye-slash"></i> Ocultar estadisticas'
+        : '<i class="bi bi-bar-chart"></i> Ver estadisticas';
+
+    if (oculto) {
+        setTimeout(() => s.scrollIntoView({ behavior: 'smooth', block: 'start' }), 80);
+    }
 }
 function cerrar() {
     if (confirm('Desea cerrar este reporte?')) {
