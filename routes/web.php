@@ -53,6 +53,7 @@ Route::middleware('auth')->group(function () {
 
     Route::get('/anuncios/{id}/pdf/previsualizar', [AnuncioPdfController::class, 'previsualizar'])->name('anuncios.pdf.previsualizar');
     Route::get('/anuncios/{id}/pdf/descargar', [AnuncioPdfController::class, 'descargar'])->name('anuncios.pdf.descargar');
+    Route::post('/anuncios/{id}/visto', [AnuncioController::class, 'marcarVisto'])->name('anuncios.marcar-visto');
 });
 
 /*
@@ -73,7 +74,6 @@ Route::middleware(['auth', 'verified', 'nocache', 'user'])->group(function () {
 
     Route::get('/anuncios', [AnuncioController::class, 'index'])->name('user.anuncios.index');
     Route::get('/anuncios/{id}', [AnuncioController::class, 'show'])->name('user.anuncios.show');
-    Route::post('/anuncios/{id}/visto', [AnuncioController::class, 'marcarVisto'])->name('anuncios.marcar-visto');
     Route::get('/api/anuncios/pendiente', [AnuncioController::class, 'pendiente'])->name('api.anuncios.pendiente');
 
     /*

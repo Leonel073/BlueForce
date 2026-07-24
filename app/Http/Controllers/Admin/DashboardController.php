@@ -279,6 +279,7 @@ class DashboardController extends Controller
 
         $anuncioPendiente = Anuncio::activos()
             ->with('creador')
+            ->where('idUsuarioCreador', '!=', Auth::id())
             ->whereDoesntHave('vistas', fn($q) => $q->where('idUsuario', Auth::id()))
             ->orderBy('fechaCreacion')
             ->first();

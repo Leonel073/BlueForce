@@ -48,7 +48,9 @@ class AnuncioController extends Controller
 
         $redirect = $request->input('redirect');
         if (!$redirect || !str_starts_with($redirect, url('/'))) {
-            $redirect = route('user.anuncios.index');
+            $redirect = Auth::user()->isAdmin()
+                ? route('admin.dashboard')
+                : route('user.anuncios.index');
         }
 
         if ($request->expectsJson()) {
@@ -64,6 +66,7 @@ class AnuncioController extends Controller
         $userId = Auth::id();
 
         $pendientes = Anuncio::activos()
+            ->where('idUsuarioCreador', '!=', $userId)
             ->whereDoesntHave('vistas', fn($q) => $q->where('idUsuario', $userId))
             ->orderBy('fechaCreacion')
             ->get();
