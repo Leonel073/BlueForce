@@ -56,9 +56,9 @@ class UpdateUsuarioRequest extends FormRequest
             'password' => [
                 'nullable',
                 'string',
-                'min:12',
+                'min:8',
                 'confirmed',
-                'regex:/^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])[a-zA-Z\d@$!%*?&]+$/',
+                Password::min(8)->mixedCase()->symbols(),
             ],
 
             'idRol' => [
@@ -93,9 +93,10 @@ class UpdateUsuarioRequest extends FormRequest
             'email.unique' => 'Este email ya está registrado en el sistema.',
 
             'password.string' => 'La contraseña debe ser un texto válido.',
-            'password.min' => 'La contraseña debe tener mínimo 12 caracteres.',
+            'password.min' => 'La contraseña debe tener mínimo 8 caracteres.',
             'password.confirmed' => 'La confirmación de contraseña no coincide.',
-            'password.regex' => 'La contraseña debe contener: mayúscula, minúscula, número y carácter especial (@$!%*?&).',
+            'password.mixed' => 'La contraseña debe contener al menos una mayúscula y una minúscula.',
+            'password.symbols' => 'La contraseña debe contener al menos un carácter especial (@$!%*?&).',
 
             'idRol.integer' => 'El ID del rol debe ser un número entero.',
             'idRol.exists' => 'El rol especificado no existe.',

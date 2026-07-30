@@ -38,7 +38,7 @@ public function store(Request $request): RedirectResponse
             'password' => [
                 'required', 
                 'confirmed', 
-                // Exigimos 8 caracteres, al menos 1 mayúscula y 1 símbolo/carácter especial
+                // Exigimos 8 caracteres, mayúscula, minúscula y símbolo/carácter especial
                 \Illuminate\Validation\Rules\Password::min(8)->mixedCase()->symbols()
             ],
         ], [
@@ -49,7 +49,7 @@ public function store(Request $request): RedirectResponse
             'password.required' => 'La contraseña es obligatoria.',
             'password.confirmed' => 'Las contraseñas no coinciden.',
             'password.min' => 'La contraseña debe tener al menos 8 caracteres.',
-            'password.mixed' => 'La contraseña debe contener al menos una letra mayúscula.',
+            'password.mixed' => 'La contraseña debe contener al menos una mayúscula y una minúscula.',
             'password.symbols' => 'La contraseña debe contener al menos un carácter especial (@, $, !, %, etc.).'
         ]);
 
@@ -73,6 +73,6 @@ public function store(Request $request): RedirectResponse
 
         Auth::login($user);
 
-        return redirect(route('user.dashboard', absolute: false));
+        return redirect(route('dashboard', absolute: false));
     }
 }

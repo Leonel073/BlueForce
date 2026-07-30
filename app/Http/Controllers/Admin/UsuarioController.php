@@ -9,6 +9,7 @@ use Illuminate\Support\Facades\Hash;
 use App\Models\User;
 use App\Models\Persona;
 use App\Models\Rol;
+use Illuminate\Validation\Rules\Password;
 
 /**
  * UsuarioController (Admin)
@@ -211,7 +212,12 @@ class UsuarioController extends Controller
 
         if ($request->filled('password')) {
             $request->validate([
-                'password' => 'min:12|confirmed',
+                'password' => ['min:8', 'confirmed', Password::min(8)->mixedCase()->symbols()],
+            ], [
+                'password.min' => 'La contraseña debe tener mínimo 8 caracteres.',
+                'password.confirmed' => 'La confirmación de contraseña no coincide.',
+                'password.mixed' => 'La contraseña debe contener al menos una mayúscula y una minúscula.',
+                'password.symbols' => 'La contraseña debe contener al menos un carácter especial (@$!%*?&).',
             ]);
             $usuario->password = Hash::make($request->password);
         }

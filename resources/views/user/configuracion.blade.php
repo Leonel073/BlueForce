@@ -258,6 +258,10 @@
 
                             @enderror
 
+                            <div class="form-text">
+                                Mínimo 8 caracteres, mayúscula, minúscula y símbolo.
+                            </div>
+
                         </div>
 
                         {{-- CONFIRMAR CONTRASEÑA --}}

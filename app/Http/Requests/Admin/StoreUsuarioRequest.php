@@ -36,9 +36,9 @@ class StoreUsuarioRequest extends FormRequest
             'password' => [
                 'required',
                 'string',
-                'min:12',
+                'min:8',
                 'confirmed',
-                Password::min(12)->mixedCase()->numbers()->symbols(),
+                Password::min(8)->mixedCase()->symbols(),
             ],
             'idRol' => [
                 'required',
@@ -67,10 +67,9 @@ class StoreUsuarioRequest extends FormRequest
             'email.email'        => 'El correo debe tener un formato válido.',
             'email.unique'       => 'Este correo ya está registrado en el sistema.',
             'password.required'  => 'La contraseña es obligatoria.',
-            'password.min'       => 'La contraseña debe tener mínimo 12 caracteres.',
+            'password.min'       => 'La contraseña debe tener mínimo 8 caracteres.',
             'password.confirmed' => 'La confirmación de contraseña no coincide.',
             'password.mixed'     => 'La contraseña debe contener al menos una mayúscula y una minúscula.',
-            'password.numbers'   => 'La contraseña debe contener al menos un número.',
             'password.symbols'   => 'La contraseña debe contener al menos un carácter especial (@$!%*?&).',
             'idRol.required'     => 'Debe seleccionar un rol.',
             'idRol.exists'       => 'El rol seleccionado no existe.',

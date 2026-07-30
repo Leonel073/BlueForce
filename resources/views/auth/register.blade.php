@@ -68,7 +68,7 @@
                 <!-- Lista de Requisitos -->
                 <ul class="req-list" id="passwordRequirements">
                     <li id="req-length" class="req-item"><i class="bi bi-x-circle req-icon"></i>Mínimo 8 caracteres</li>
-                    <li id="req-upper" class="req-item"><i class="bi bi-x-circle req-icon"></i>Mínimo 1 mayúscula</li>
+                    <li id="req-mixed" class="req-item"><i class="bi bi-x-circle req-icon"></i>Mayúsculas y minúsculas</li>
                     <li id="req-special" class="req-item"><i class="bi bi-x-circle req-icon"></i>Mínimo 1 carácter especial (@, $, !, %, *, ?, &)</li>
                 </ul>
             </div>
@@ -106,7 +106,7 @@
 
             // Elementos de la lista
             const reqLength = document.getElementById('req-length');
-            const reqUpper = document.getElementById('req-upper');
+            const reqMixed = document.getElementById('req-mixed');
             const reqSpecial = document.getElementById('req-special');
 
             function updateItem(el, isValid) {
@@ -128,14 +128,14 @@
                 
                 // Expresiones regulares
                 const hasLength = val.length >= 8;
-                const hasUpper = /[A-Z]/.test(val);
+                const hasMixed = /[A-Z]/.test(val) && /[a-z]/.test(val);
                 // Busca cualquier cosa que NO sea letra o número
                 const hasSpecial = /[^A-Za-z0-9]/.test(val); 
                 const isMatch = val === confVal && val !== '';
 
                 // Actualizar interfaz visual
                 updateItem(reqLength, hasLength);
-                updateItem(reqUpper, hasUpper);
+                updateItem(reqMixed, hasMixed);
                 updateItem(reqSpecial, hasSpecial);
 
                 // Validar coincidencia de confirmación
@@ -146,7 +146,7 @@
                 }
 
                 // Habilitar o deshabilitar botón
-                if (hasLength && hasUpper && hasSpecial && isMatch) {
+                if (hasLength && hasMixed && hasSpecial && isMatch) {
                     btnSubmit.disabled = false;
                 } else {
                     btnSubmit.disabled = true;

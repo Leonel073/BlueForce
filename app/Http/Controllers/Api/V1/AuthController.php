@@ -10,6 +10,7 @@ use App\Models\User;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Validation\Rules\Password;
 
 /**
  * AuthController
@@ -259,7 +260,7 @@ class AuthController extends BaseController
             // Validar datos
             $data = request()->validate([
                 'current_password' => 'required|string',
-                'new_password' => 'required|string|min:8|confirmed',
+                'new_password' => ['required', 'string', 'min:8', 'confirmed', Password::min(8)->mixedCase()->symbols()],
             ]);
 
             // Validar contraseña actual

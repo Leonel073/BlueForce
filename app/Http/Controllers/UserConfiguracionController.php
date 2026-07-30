@@ -6,6 +6,7 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Hash;
 use App\Models\User;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Validation\Rules\Password;
 
 class UserConfiguracionController extends Controller
 {
@@ -31,7 +32,12 @@ class UserConfiguracionController extends Controller
 
             $request->validate([
                 'current_password' => 'required',
-                'password' => 'required|min:8|confirmed',
+                'password' => ['required', 'min:8', 'confirmed', Password::min(8)->mixedCase()->symbols()],
+            ], [
+                'password.min' => 'La contraseña debe tener mínimo 8 caracteres.',
+                'password.confirmed' => 'La confirmación de contraseña no coincide.',
+                'password.mixed' => 'La contraseña debe contener al menos una mayúscula y una minúscula.',
+                'password.symbols' => 'La contraseña debe contener al menos un carácter especial (@$!%*?&).',
             ]);
 
             // VERIFICAR CONTRASEÑA ACTUAL
@@ -44,7 +50,7 @@ class UserConfiguracionController extends Controller
             $user->password = Hash::make($request->password);
         }
 
-        $user->Auth::save();
+        $user->save();
 
         return back()->with('success', 'Configuración actualizada correctamente.');
     }

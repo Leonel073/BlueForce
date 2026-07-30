@@ -7,6 +7,7 @@ use App\Http\Resources\UserResource;
 use App\Models\User;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Support\Facades\Hash;
+use Illuminate\Validation\Rules\Password;
 
 /**
  * UsuarioController
@@ -38,7 +39,7 @@ class UsuarioController extends BaseController
             $data = request()->validate([
                 'name' => 'required|string|max:255',
                 'email' => 'required|email:rfc,dns|unique:users',
-                'password' => 'required|string|min:8',
+                'password' => ['required', 'string', 'min:8', Password::min(8)->mixedCase()->symbols()],
                 'idPersona' => 'required|exists:PERSONA,idPersona',
                 'idRol' => 'required|exists:ROL,idRol',
             ]);
@@ -165,7 +166,7 @@ class UsuarioController extends BaseController
             }
 
             $data = request()->validate([
-                'new_password' => 'required|string|min:8',
+                'new_password' => ['required', 'string', 'min:8', Password::min(8)->mixedCase()->symbols()],
             ]);
 
             $user->update([

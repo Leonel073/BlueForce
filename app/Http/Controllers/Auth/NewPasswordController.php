@@ -35,6 +35,11 @@ class NewPasswordController extends Controller
             'token' => ['required'],
             'email' => ['required', 'email'],
             'password' => ['required', 'confirmed', Rules\Password::defaults()],
+        ], [
+            'password.min' => 'La contraseña debe tener mínimo 8 caracteres.',
+            'password.confirmed' => 'La confirmación de contraseña no coincide.',
+            'password.mixed' => 'La contraseña debe contener al menos una mayúscula y una minúscula.',
+            'password.symbols' => 'La contraseña debe contener al menos un carácter especial (@$!%*?&).',
         ]);
 
         // Here we will attempt to reset the user's password. If it is successful we

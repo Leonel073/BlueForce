@@ -5,6 +5,7 @@ namespace App\Providers;
 use Illuminate\Pagination\Paginator;
 use Illuminate\Support\ServiceProvider;
 use Illuminate\Support\Facades\Gate;
+use Illuminate\Validation\Rules\Password;
 use App\Observers\GenericAuditObserver;
 use App\Models\{
     Correspondencia,
@@ -47,6 +48,10 @@ class AppServiceProvider extends ServiceProvider
     {
         Paginator::useBootstrapFive();
 
+        Password::defaults(function () {
+            return Password::min(8)->mixedCase()->symbols();
+        });
+
         // ==============================
         // REGISTRAR POLICIES DE AUTORIZACIÓN
         // ==============================
@@ -76,4 +81,3 @@ class AppServiceProvider extends ServiceProvider
         }
     }
 }
-

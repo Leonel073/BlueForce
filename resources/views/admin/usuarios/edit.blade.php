@@ -203,7 +203,7 @@
                                 <div class="text-danger small mt-1">{{ $message }}</div>
                             @enderror
                             <small class="text-muted">
-                                Si ingresa contraseña: mínimo 8 caracteres, confirmación requerida.
+                                Si ingresa contraseña: mínimo 8 caracteres, mayúscula, minúscula, símbolo y confirmación requerida.
                             </small>
                         </div>
 

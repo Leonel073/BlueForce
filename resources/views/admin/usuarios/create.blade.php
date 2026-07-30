@@ -209,7 +209,7 @@
                                        name="password"
                                        id="password"
                                        class="form-control rounded-start-3 @error('password') is-invalid @enderror"
-                                       placeholder="Mínimo 12 caracteres"
+                                       placeholder="Mínimo 8 caracteres"
                                        required>
                                 <button type="button"
                                         class="btn btn-outline-secondary"
@@ -221,8 +221,8 @@
                                 <div class="text-danger small mt-1">{{ $message }}</div>
                             @enderror
                             <small class="text-muted">
-                                Debe contener: mayúscula, minúscula, número y carácter especial (@$!%*?&).
-                                Mínimo 12 caracteres.
+                                Debe contener: mayúscula, minúscula y carácter especial (@$!%*?&).
+                                Mínimo 8 caracteres.
                             </small>
                         </div>
 
@@ -308,7 +308,7 @@
                         </li>
                         <li class="d-flex gap-2">
                             <i class="bi bi-lock-fill text-secondary mt-1 flex-shrink-0"></i>
-                            <span>La contraseña debe tener mínimo <strong>12 caracteres</strong> con complejidad.</span>
+                            <span>La contraseña debe tener mínimo <strong>8 caracteres</strong>, mayúscula, minúscula y símbolo.</span>
                         </li>
                     </ul>
                 </div>

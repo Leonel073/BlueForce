@@ -1,6 +1,7 @@
 <?php
 
 use Illuminate\Support\Facades\Route;
+use Illuminate\Support\Facades\Auth;
 
 /*
 |--------------------------------------------------------------------------
@@ -33,12 +34,24 @@ use App\Http\Controllers\AnuncioPdfController;
 */
 
 Route::get('/', function () {
+    if (Auth::check()) {
+        return redirect()->route(Auth::user()->idRol === 1 ? 'admin.dashboard' : 'user.dashboard');
+    }
+
     return view('welcome');
 });
 
 Route::get('/page', function () {
+    if (Auth::check()) {
+        return redirect()->route(Auth::user()->idRol === 1 ? 'admin.dashboard' : 'user.dashboard');
+    }
+
     return view('auth.page');
 })->name('page');
+
+Route::get('/dashboard', function () {
+    return redirect()->route(Auth::user()->idRol === 1 ? 'admin.dashboard' : 'user.dashboard');
+})->middleware(['auth', 'verified'])->name('dashboard');
 
 /*
 |--------------------------------------------------------------------------
@@ -194,10 +207,7 @@ Route::middleware(['auth', 'verified', 'nocache', 'admin'])->prefix('admin')->na
     Route::get('/dashboard', [DashboardController::class, 'index'])->name('dashboard');
     Route::get('/api/dashboard-estadisticas', [DashboardController::class, 'estadisticasDashboard'])->name('api.estadisticas.dashboard');
     Route::get('/api/dashboard-departamentos', [DashboardController::class, 'estadisticasDepartamentos'])->name('api.estadisticas.departamentos');
-    Route::get(
-    '/documentos',
-    [DocumentoController::class, 'adminIndex']
-)->name('documentos.index');
+    Route::get('/documentos', [DocumentoController::class, 'adminIndex'])->name('documentos.index');
     
     /*
     |--------------------------------------------------------------------------
@@ -207,7 +217,6 @@ Route::middleware(['auth', 'verified', 'nocache', 'admin'])->prefix('admin')->na
     
     Route::get('/documentos/{id}/edit', [DocumentoController::class, 'edit'])->name('documentos.edit');
     Route::put('/documentos/{id}', [DocumentoController::class, 'update'])->name('documentos.update');
-    Route::get('/documentos/{id}', [DocumentoController::class, 'detalle'])->name('documentos.detalle');
     /*
     |--------------------------------------------------------------------------
     | GESTIÓN DE USUARIOS
@@ -322,9 +331,9 @@ Route::middleware(['auth', 'verified', 'nocache', 'admin'])->prefix('admin')->na
     Route::get('/reportes/personas/pdf', [ReporteController::class, 'personasPDF'])->name('reportes.personas.pdf');
 
     // API Endpoints para gráficos
-    Route::get('/api/estadisticas/dashboard', [ReporteController::class, 'getEstadisticasDashboard'])->name('api.estadisticas.dashboard');
-    Route::get('/api/estadisticas/departamentos', [ReporteController::class, 'getEstadisticasDepartamentos'])->name('api.estadisticas.departamentos');
-    Route::get('/api/estadisticas/personas', [ReporteController::class, 'getEstadisticasPersonas'])->name('api.estadisticas.personas');
+    Route::get('/api/estadisticas/dashboard', [ReporteController::class, 'getEstadisticasDashboard'])->name('api.reportes.estadisticas.dashboard');
+    Route::get('/api/estadisticas/departamentos', [ReporteController::class, 'getEstadisticasDepartamentos'])->name('api.reportes.estadisticas.departamentos');
+    Route::get('/api/estadisticas/personas', [ReporteController::class, 'getEstadisticasPersonas'])->name('api.reportes.estadisticas.personas');
 
     /*
     |--------------------------------------------------------------------------
