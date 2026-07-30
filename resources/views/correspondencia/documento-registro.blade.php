@@ -3,6 +3,120 @@
 @section('title', 'Registro de Documentos')
 
 @section('content')
+@php
+    $isAdminDocumento = Auth::user()?->idRol == 1;
+    $documentoStoreRoute = route($isAdminDocumento ? 'admin.documentos.store' : 'documentos.store');
+    $responsablesEndpoint = $isAdminDocumento
+        ? url('/admin/documentos/responsables-departamento')
+        : url('/documentos/responsables-departamento');
+    $personasBuscarEndpoint = route($isAdminDocumento ? 'admin.personas.buscar-avanzado' : 'personas.buscar-avanzado');
+    $duplicadosEndpoint = route($isAdminDocumento ? 'admin.personas.verificar-duplicados' : 'personas.verificar-duplicados');
+    $oldOpcionRemitente = old('opcion_remitente', 'yo_mismo');
+@endphp
+
+<style>
+    .remitente-flow {
+        border: 1px solid #d8e0ea;
+        border-radius: 8px;
+        background: #f8fafc;
+        padding: 1rem;
+    }
+
+    .remitente-stepper {
+        display: grid;
+        grid-template-columns: repeat(3, 1fr);
+        gap: .5rem;
+        margin-bottom: 1rem;
+    }
+
+    .remitente-step {
+        border: 1px solid #d8e0ea;
+        border-radius: 8px;
+        background: #fff;
+        color: #64748b;
+        padding: .7rem .8rem;
+        font-size: .82rem;
+        font-weight: 700;
+    }
+
+    .remitente-step.active {
+        border-color: #D9A23D;
+        color: #0B2D59;
+        box-shadow: inset 0 3px 0 #D9A23D;
+    }
+
+    .remitente-panel {
+        border: 1px solid #d8e0ea;
+        border-radius: 8px;
+        background: #fff;
+        padding: 1rem;
+    }
+
+    .remitente-panel-title {
+        color: #0B2D59;
+        font-size: 1rem;
+        font-weight: 800;
+    }
+
+    .remitente-result-list {
+        border: 1px solid #d8e0ea;
+        border-radius: 8px;
+        background: #fff;
+        max-height: 420px;
+        overflow-y: auto;
+    }
+
+    .remitente-result-card {
+        border-bottom: 1px solid #edf2f7;
+        padding: .95rem;
+        transition: background-color .15s ease, box-shadow .15s ease;
+    }
+
+    .remitente-result-card:hover {
+        background: #f8fbff;
+        box-shadow: inset 3px 0 0 #D9A23D;
+    }
+
+    .remitente-selected-card {
+        border: 1px solid #b6e3c6;
+        border-left: 4px solid #198754;
+        border-radius: 8px;
+        background: #f7fff9;
+    }
+
+    .remitente-selected-card.selected-confirmed {
+        box-shadow: 0 0 0 .2rem rgba(25, 135, 84, .12);
+    }
+
+    .remitente-form-section {
+        border: 1px solid #e2e8f0;
+        border-radius: 8px;
+        padding: 1rem;
+        margin-bottom: 1rem;
+        background: #fff;
+    }
+
+    .remitente-empty {
+        border: 1px dashed #d6b458;
+        border-radius: 8px;
+        background: #fffaf0;
+        color: #775c17;
+        padding: 1rem;
+    }
+
+    @media (min-width: 992px) {
+        .documento-side-panel {
+            position: sticky;
+            top: 1rem;
+        }
+    }
+
+    @media (max-width: 768px) {
+        .remitente-stepper {
+            grid-template-columns: 1fr;
+        }
+    }
+</style>
 
 <div class="container-fluid">
 
@@ -53,13 +167,13 @@
     @endif
 
     {{-- FORMULARIO --}}
-    <form action="{{ route('documentos.store') }}" method="POST" enctype="multipart/form-data" class="needs-validation" novalidate>
+    <form action="{{ $documentoStoreRoute }}" method="POST" enctype="multipart/form-data" class="needs-validation" novalidate>
         @csrf
 
-        <div class="row">
+        <div class="row g-4 align-items-start">
 
             {{-- COLUMNA PRINCIPAL --}}
-            <div class="col-lg-8">
+            <div class="col-md-8 col-lg-8">
 
                 {{-- DOCUMENTO --}}
                 <div class="card border-0 shadow-sm rounded-4 mb-4">
@@ -119,13 +233,13 @@
                         <div class="mb-4">
                             <label class="form-label fw-semibold">¿Quién es el remitente?</label>
                             <div class="btn-group w-100" role="group">
-                                <input type="radio" class="btn-check" name="opcion_remitente" id="yo_mismo" value="yo_mismo" checked onchange="toggleRemitenteMode()">
+                                <input type="radio" class="btn-check" name="opcion_remitente" id="yo_mismo" value="yo_mismo" @checked($oldOpcionRemitente === 'yo_mismo') onchange="toggleRemitenteMode()">
                                 <label class="btn btn-outline-primary rounded-start-4" for="yo_mismo">
                                     <i class="bi bi-person-circle me-1"></i>
                                     Yo Mismo
                                 </label>
                                 
-                                <input type="radio" class="btn-check" name="opcion_remitente" id="otra_persona" value="otra_persona" onchange="toggleRemitenteMode()">
+                                <input type="radio" class="btn-check" name="opcion_remitente" id="otra_persona" value="otra_persona" @checked($oldOpcionRemitente === 'otra_persona') onchange="toggleRemitenteMode()">
                                 <label class="btn btn-outline-primary rounded-end-4" for="otra_persona">
                                     <i class="bi bi-person me-1"></i>
                                     Otra Persona
@@ -207,107 +321,128 @@
                         </div>
 
                         {{-- BLOQUE: OTRA PERSONA (Oculto por defecto) --}}
-                        <div id="bloque_otra_persona" style="display: none;">
+                        <div id="bloque_otra_persona" class="remitente-flow" style="display: none;">
+                            <div class="remitente-stepper">
+                                <div class="remitente-step" data-step="estado_buscador">
+                                    <i class="bi bi-search me-1"></i>1. Buscar
+                                </div>
+                                <div class="remitente-step" data-step="estado_persona_encontrada">
+                                    <i class="bi bi-person-check me-1"></i>2. Seleccionar
+                                </div>
+                                <div class="remitente-step" data-step="estado_crear_nueva">
+                                    <i class="bi bi-person-plus me-1"></i>3. Nuevo registro
+                                </div>
+                            </div>
 
                             {{-- ========== ESTADO 1: BUSCADOR ========== --}}
-                            <div id="estado_buscador" style="display: block;">
-                                <div class="alert alert-info border-0 rounded-4 mb-4">
-                                    <i class="bi bi-search"></i>
-                                    <strong>Búsqueda Inteligente</strong><br>
-                                    <small>Escriba al menos 2 caracteres para buscar una persona existente. Busque por: nombre, CI, correo, institución, cargo o departamento.</small>
-                                </div>
-
-                                <div class="mb-4">
-                                    <label class="form-label fw-semibold">Buscar Persona <span class="text-danger">*</span></label>
-                                    <input type="text" 
-                                           id="buscar_persona_input" 
-                                           class="form-control form-control-lg rounded-3" 
-                                           placeholder="Ej: Juan García, 1234567-8, juan@ejemplo.com, Dirección Legal..."
-                                           autocomplete="off">
-                                    <small class="text-muted d-block mt-2"><i class="bi bi-info-circle me-1"></i>Búsqueda en tiempo real. Mínimo 2 caracteres.</small>
-                                </div>
-
-                                {{-- BOTÓN PERMANENTE: REGISTRAR NUEVA PERSONA --}}
-                                <div class="mb-4">
-                                    <button type="button" class="btn btn-success w-100 rounded-3 py-2" onclick="irAEstadoCrearNueva(); event.preventDefault();">
-                                        <i class="bi bi-plus-circle me-2"></i>Registrar Nueva Persona
+                            <div id="estado_buscador" class="remitente-panel" style="display: block;">
+                                <div class="d-flex flex-wrap justify-content-between align-items-start gap-3 mb-3">
+                                    <div>
+                                        <div class="remitente-panel-title">
+                                            <i class="bi bi-search me-1"></i>
+                                            Buscar remitente existente
+                                        </div>
+                                        <div class="small text-muted">
+                                            Busque por nombre, CI, correo, institución, cargo o departamento.
+                                        </div>
+                                    </div>
+                                    <button type="button" class="btn btn-outline-primary rounded-3" onclick="irAEstadoCrearNueva(); event.preventDefault();">
+                                        <i class="bi bi-plus-circle me-1"></i>
+                                        Nuevo remitente
                                     </button>
-                                    <small class="text-muted d-block mt-2"><i class="bi bi-info-circle me-1"></i>Si la persona no existe, use este botón para registrarla.</small>
                                 </div>
+
+                                <label class="form-label fw-semibold">Buscar persona <span class="text-danger">*</span></label>
+                                <div class="input-group input-group-lg">
+                                    <span class="input-group-text bg-white">
+                                        <i class="bi bi-search"></i>
+                                    </span>
+                                    <input type="text"
+                                           id="buscar_persona_input"
+                                           class="form-control"
+                                           placeholder="Nombre, CI, correo o institución"
+                                           autocomplete="off">
+                                    <button class="btn btn-outline-secondary" type="button" onclick="limpiarBusquedaPersona(); event.preventDefault();">
+                                        <i class="bi bi-x-lg"></i>
+                                    </button>
+                                </div>
+                                <small class="text-muted d-block mt-2">
+                                    <i class="bi bi-lightning-charge me-1"></i>
+                                    La búsqueda inicia desde 2 caracteres.
+                                </small>
 
                                 {{-- RESULTADOS DE BÚSQUEDA --}}
-                                <div id="resultados_busqueda" class="mb-4" style="display: none;">
-                                    <div class="d-flex justify-content-between align-items-center mb-3">
-                                        <h6 class="fw-semibold mb-0">
-                                            <i class="bi bi-list-check me-2"></i>Coincidencias encontradas
+                                <div id="resultados_busqueda" class="mt-4" style="display: none;">
+                                    <div class="d-flex justify-content-between align-items-center mb-2">
+                                        <h6 class="fw-semibold mb-0" style="color:#0B2D59;">
+                                            Coincidencias encontradas
                                         </h6>
-                                        <span id="contador_resultados" class="badge bg-primary rounded-pill">0</span>
+                                        <span id="contador_resultados" class="badge rounded-pill" style="background-color:#0B2D59;">0</span>
                                     </div>
-                                    <div id="lista_resultados" class="border rounded-3 bg-light" style="max-height: 400px; overflow-y: auto;">
+                                    <div id="lista_resultados" class="remitente-result-list">
                                         <!-- Resultados se cargarán dinámicamente aquí -->
                                     </div>
                                 </div>
 
                                 {{-- NO ENCONTRADO --}}
-                                <div id="no_encontrado" class="alert alert-warning border-0 rounded-4" style="display: none;">
-                                    <i class="bi bi-exclamation-triangle me-2"></i>
-                                    <strong>No encontrado</strong><br>
-                                    <small>No existe una persona registrada con esa información. Use el botón "Registrar Nueva Persona" arriba para crear una.</small>
+                                <div id="no_encontrado" class="remitente-empty mt-4" style="display: none;">
+                                    <div class="d-flex flex-wrap justify-content-between align-items-center gap-3">
+                                        <div>
+                                            <strong><i class="bi bi-exclamation-triangle me-1"></i>No se encontraron coincidencias</strong>
+                                            <div class="small">Puede registrar a la persona como nuevo remitente.</div>
+                                        </div>
+                                        <button type="button" class="btn btn-sm btn-primary rounded-3" onclick="irAEstadoCrearNueva(); event.preventDefault();">
+                                            <i class="bi bi-plus-circle me-1"></i>Registrar nuevo
+                                        </button>
+                                    </div>
                                 </div>
 
-                                <button type="button" class="btn btn-outline-primary w-100 rounded-3" onclick="irAEstadoCrearNueva(); event.preventDefault();" style="display: none;" id="btn_crear_nueva_desde_busqueda">
+                                <button type="button" class="btn btn-outline-primary w-100 rounded-3 mt-3" onclick="irAEstadoCrearNueva(); event.preventDefault();" style="display: none;" id="btn_crear_nueva_desde_busqueda">
                                     <i class="bi bi-plus-circle me-2"></i>Crear Nueva Persona
                                 </button>
                             </div>
 
                             {{-- ========== ESTADO 2: PERSONA ENCONTRADA ========== --}}
                             <div id="estado_persona_encontrada" style="display: none;">
-                                <div class="card border-success bg-light rounded-4 mb-4">
-                                    <div class="card-header bg-success text-white rounded-top-4">
-                                        <i class="bi bi-check-circle-fill me-2"></i>
-                                        PERSONA SELECCIONADA
-                                    </div>
-                                    <div class="card-body">
-                                        <div class="row">
-                                            <div class="col-md-6 mb-3">
-                                                <small class="text-muted">Nombre</small>
-                                                <div id="sel_nombre" class="fw-semibold"></div>
-                                            </div>
-                                            <div class="col-md-6 mb-3">
-                                                <small class="text-muted">CI</small>
-                                                <div id="sel_ci" class="fw-semibold"></div>
-                                            </div>
+                                <div id="persona_confirmada_card" class="remitente-selected-card p-3 mb-3">
+                                    <div class="d-flex align-items-start gap-3">
+                                        <div class="rounded-circle bg-success text-white d-flex align-items-center justify-content-center flex-shrink-0"
+                                             style="width:48px;height:48px;">
+                                            <i class="bi bi-person-check-fill fs-4"></i>
                                         </div>
-                                        <div class="row">
-                                            <div class="col-md-6 mb-3">
-                                                <small class="text-muted">Tipo</small>
+                                        <div class="flex-grow-1">
+                                            <div class="d-flex flex-wrap justify-content-between gap-2">
+                                                <div>
+                                                    <div class="small text-success fw-semibold" id="persona_confirmada_hint">
+                                                        Persona encontrada en el sistema
+                                                    </div>
+                                                    <h5 id="sel_nombre" class="fw-bold mb-1" style="color:#0B2D59;"></h5>
+                                                    <div class="small text-muted">CI: <span id="sel_ci" class="fw-semibold"></span></div>
+                                                </div>
                                                 <div><span id="sel_tipo" class="badge"></span></div>
                                             </div>
-                                            <div class="col-md-6 mb-3">
-                                                <small class="text-muted">Correo</small>
-                                                <div id="sel_correo" class="small"></div>
+
+                                            <div class="row g-3 mt-2">
+                                                <div class="col-md-6">
+                                                    <small class="text-muted d-block">Correo</small>
+                                                    <div id="sel_correo" class="small fw-semibold"></div>
+                                                </div>
+                                                <div class="col-md-6">
+                                                    <small class="text-muted d-block">Teléfono celular</small>
+                                                    <div id="sel_celular" class="small fw-semibold"></div>
+                                                </div>
+                                                <div class="col-12">
+                                                    <small class="text-muted d-block" id="label_interno_externo"></small>
+                                                    <div id="sel_departamento_cargo" class="small fw-semibold"></div>
+                                                </div>
                                             </div>
-                                        </div>
-                                        <div class="row">
-                                            <div class="col-md-6 mb-3">
-                                                <small class="text-muted" id="label_interno_externo"></small>
-                                                <div id="sel_departamento_cargo"></div>
-                                            </div>
-                                            <div class="col-md-6 mb-3">
-                                                <small class="text-muted">Teléfono Celular</small>
-                                                <div id="sel_celular" class="small"></div>
-                                            </div>
-                                        </div>
-                                        <div class="alert alert-success mb-0 small">
-                                            <i class="bi bi-info-circle me-1"></i>
-                                            Esta persona ya existe en el sistema.
                                         </div>
                                     </div>
                                 </div>
                                 
-                                <div class="d-flex gap-2">
+                                <div class="d-flex flex-wrap gap-2">
                                     <button type="button" class="btn btn-primary flex-grow-1 rounded-3" onclick="finalizarSeleccionPersona(); event.preventDefault();">
-                                        <i class="bi bi-check-circle-fill me-2"></i>Usar esta persona
+                                        <i class="bi bi-check-circle-fill me-2"></i>Confirmar remitente
                                     </button>
                                     <button type="button" class="btn btn-outline-secondary flex-grow-1 rounded-3" onclick="volverAlBuscador(); event.preventDefault();">
                                         <i class="bi bi-arrow-counterclockwise me-2"></i>Buscar otra
@@ -317,129 +452,158 @@
 
                             {{-- ========== ESTADO 3: CREAR NUEVA PERSONA ========== --}}
                             <div id="estado_crear_nueva" style="display: none;">
-                                <div class="alert alert-warning border-0 rounded-4 mb-4">
-                                    <i class="bi bi-pencil-square me-2"></i>
-                                    <strong>Registrar Nueva Persona</strong><br>
-                                    <small>Complete todos los campos para crear un nuevo registro.</small>
-                                </div>
-
-                                <div class="mb-3">
-                                    <label class="form-label fw-semibold">Nombre Completo <span class="text-danger">*</span></label>
-                                    <input type="text" 
-                                           id="nombre_remitente_otra" 
-                                           name="nombre_remitente" 
-                                           class="form-control @error('nombre_remitente') is-invalid @enderror" 
-                                           placeholder="Ej: Juan Carlos García López" 
-                                           value="{{ old('nombre_remitente') }}">
-                                    @error('nombre_remitente')
-                                        <div class="invalid-feedback d-block"><i class="bi bi-exclamation-circle me-1"></i>{{ $message }}</div>
-                                    @enderror
-                                </div>
-
-                                <div class="row">
-                                    <div class="col-md-6 mb-3">
-                                        <label class="form-label fw-semibold">Carnet de Identidad <span class="text-danger">*</span></label>
-                                        <input type="text" 
-                                               id="ci_remitente_otra" 
-                                               name="ci_remitente" 
-                                               class="form-control @error('ci_remitente') is-invalid @enderror" 
-                                               placeholder="Ej: 1234567-8" 
-                                               value="{{ old('ci_remitente') }}"
-                                               onblur="verificarCI()">
-                                        @error('ci_remitente')
-                                            <div class="invalid-feedback d-block"><i class="bi bi-exclamation-circle me-1"></i>{{ $message }}</div>
-                                        @enderror
-                                    </div>
-                                    <div class="col-md-6 mb-3">
-                                        <label class="form-label fw-semibold">Teléfono Celular <span class="text-danger">*</span></label>
-                                        <input type="text" 
-                                               id="telefono_celular_otra" 
-                                               name="telefono_celular" 
-                                               class="form-control @error('telefono_celular') is-invalid @enderror" 
-                                               placeholder="Ej: +591 71234567" 
-                                               value="{{ old('telefono_celular') }}">
-                                        @error('telefono_celular')
-                                            <div class="invalid-feedback d-block"><i class="bi bi-exclamation-circle me-1"></i>{{ $message }}</div>
-                                        @enderror
-                                    </div>
-                                </div>
-
-                                <div class="row">
-                                    <div class="col-md-6 mb-3">
-                                        <label class="form-label fw-semibold">Teléfono Fijo</label>
-                                        <input type="text" 
-                                               id="telefono_fijo_otra" 
-                                               name="telefono_fijo" 
-                                               class="form-control" 
-                                               value="{{ old('telefono_fijo') }}">
-                                    </div>
-                                    <div class="col-md-6 mb-3">
-                                        <label class="form-label fw-semibold">Correo</label>
-                                        <input type="email" 
-                                               id="correo_remitente_otra" 
-                                               name="correo_remitente" 
-                                               class="form-control @error('correo_remitente') is-invalid @enderror" 
-                                               placeholder="usuario@ejemplo.com" 
-                                               value="{{ old('correo_remitente') }}">
-                                        @error('correo_remitente')
-                                            <div class="invalid-feedback d-block"><i class="bi bi-exclamation-circle me-1"></i>{{ $message }}</div>
-                                        @enderror
-                                    </div>
-                                </div>
-
-                                <div class="mb-3">
-                                    <label class="form-label fw-semibold">Tipo de Remitente <span class="text-danger">*</span></label>
-                                    <select id="tipo_remitente_otra" 
-                                            name="tipo_remitente" 
-                                            class="form-select @error('tipo_remitente') is-invalid @enderror"
-                                            onchange="actualizarCamposTipo()">
-                                        <option value="">-- Seleccione tipo --</option>
-                                        <option value="INTERNO" @selected(old('tipo_remitente') == 'INTERNO')>INTERNO (Dentro de la institución)</option>
-                                        <option value="EXTERNO" @selected(old('tipo_remitente') == 'EXTERNO')>EXTERNO (De afuera)</option>
-                                    </select>
-                                    @error('tipo_remitente')
-                                        <div class="invalid-feedback d-block"><i class="bi bi-exclamation-circle me-1"></i>{{ $message }}</div>
-                                    @enderror
-                                </div>
-
-                                {{-- CAMPOS CONDICIONALES PARA INTERNO --}}
-                                <div id="campos_interno" style="display: none;">
-                                    <div class="row">
-                                        <div class="col-md-6 mb-3">
-                                            <label class="form-label fw-semibold">Departamento</label>
-                                            <input type="text" 
-                                                   id="departamento_nueva" 
-                                                   name="departamento_nueva" 
-                                                   class="form-control" 
-                                                   placeholder="Auto completado (no editable)"
-                                                   readonly>
+                                <div class="remitente-panel mb-3">
+                                    <div class="d-flex flex-wrap justify-content-between align-items-start gap-3 mb-3">
+                                        <div>
+                                            <div class="remitente-panel-title">
+                                                <i class="bi bi-person-plus-fill me-1"></i>
+                                                Registrar nuevo remitente
+                                            </div>
+                                            <div class="small text-muted">
+                                                Complete los datos necesarios para identificar y contactar a la persona.
+                                            </div>
                                         </div>
-                                        <div class="col-md-6 mb-3">
-                                            <label class="form-label fw-semibold">Cargo</label>
-                                            <input type="text" 
-                                                   id="cargo_remitente_otra" 
-                                                   name="cargo_remitente" 
-                                                   class="form-control" 
-                                                   value="{{ old('cargo_remitente') }}">
+                                        <button type="button" class="btn btn-outline-secondary rounded-3" onclick="volverAlBuscador(); event.preventDefault();">
+                                            <i class="bi bi-arrow-left me-1"></i>Volver a buscar
+                                        </button>
+                                    </div>
+
+                                    <div class="remitente-form-section">
+                                        <h6 class="fw-bold mb-3" style="color:#0B2D59;">
+                                            <i class="bi bi-person-vcard me-1"></i>Identificación
+                                        </h6>
+                                        <div class="mb-3">
+                                            <label class="form-label fw-semibold">Nombre completo <span class="text-danger">*</span></label>
+                                            <input type="text"
+                                                   id="nombre_remitente_otra"
+                                                   name="nombre_remitente"
+                                                   class="form-control @error('nombre_remitente') is-invalid @enderror"
+                                                   placeholder="Ej: Juan Carlos García López"
+                                                   value="{{ old('nombre_remitente') }}">
+                                            @error('nombre_remitente')
+                                                <div class="invalid-feedback d-block"><i class="bi bi-exclamation-circle me-1"></i>{{ $message }}</div>
+                                            @enderror
+                                        </div>
+
+                                        <div class="row">
+                                            <div class="col-md-6 mb-3">
+                                                <label class="form-label fw-semibold">Carnet de identidad <span class="text-danger">*</span></label>
+                                                <input type="text"
+                                                       id="ci_remitente_otra"
+                                                       name="ci_remitente"
+                                                       class="form-control @error('ci_remitente') is-invalid @enderror"
+                                                       placeholder="Ej: 1234567-8"
+                                                       value="{{ old('ci_remitente') }}"
+                                                       onblur="verificarCI()">
+                                                @error('ci_remitente')
+                                                    <div class="invalid-feedback d-block"><i class="bi bi-exclamation-circle me-1"></i>{{ $message }}</div>
+                                                @enderror
+                                            </div>
+                                            <div class="col-md-6 mb-3">
+                                                <label class="form-label fw-semibold">Tipo de remitente <span class="text-danger">*</span></label>
+                                                <select id="tipo_remitente_otra"
+                                                        name="tipo_remitente"
+                                                        class="form-select @error('tipo_remitente') is-invalid @enderror"
+                                                        onchange="actualizarCamposTipo()">
+                                                    <option value="">-- Seleccione tipo --</option>
+                                                    <option value="INTERNO" @selected(old('tipo_remitente') == 'INTERNO')>INTERNO (Dentro de la institución)</option>
+                                                    <option value="EXTERNO" @selected(old('tipo_remitente') == 'EXTERNO')>EXTERNO (De afuera)</option>
+                                                </select>
+                                                @error('tipo_remitente')
+                                                    <div class="invalid-feedback d-block"><i class="bi bi-exclamation-circle me-1"></i>{{ $message }}</div>
+                                                @enderror
+                                            </div>
                                         </div>
                                     </div>
-                                </div>
 
-                                {{-- CAMPOS CONDICIONALES PARA EXTERNO --}}
-                                <div id="campos_externo" style="display: none;">
-                                    <div class="mb-3">
-                                        <label class="form-label fw-semibold">Institución</label>
-                                        <input type="text" 
-                                               id="institucion_remitente_otra" 
-                                               name="institucion_remitente" 
-                                               class="form-control @error('institucion_remitente') is-invalid @enderror" 
-                                               placeholder="Ej: Ministerio de Educación" 
-                                               value="{{ old('institucion_remitente') }}">
-                                        @error('institucion_remitente')
-                                            <div class="invalid-feedback d-block"><i class="bi bi-exclamation-circle me-1"></i>{{ $message }}</div>
-                                        @enderror
+                                    <div class="remitente-form-section">
+                                        <h6 class="fw-bold mb-3" style="color:#0B2D59;">
+                                            <i class="bi bi-telephone-fill me-1"></i>Contacto
+                                        </h6>
+                                        <div class="row">
+                                            <div class="col-md-6 mb-3">
+                                                <label class="form-label fw-semibold">Teléfono celular <span class="text-danger">*</span></label>
+                                                <input type="text"
+                                                       id="telefono_celular_otra"
+                                                       name="telefono_celular"
+                                                       class="form-control @error('telefono_celular') is-invalid @enderror"
+                                                       placeholder="Ej: +591 71234567"
+                                                       value="{{ old('telefono_celular') }}">
+                                                @error('telefono_celular')
+                                                    <div class="invalid-feedback d-block"><i class="bi bi-exclamation-circle me-1"></i>{{ $message }}</div>
+                                                @enderror
+                                            </div>
+                                            <div class="col-md-6 mb-3">
+                                                <label class="form-label fw-semibold">Teléfono fijo</label>
+                                                <input type="text"
+                                                       id="telefono_fijo_otra"
+                                                       name="telefono_fijo"
+                                                       class="form-control"
+                                                       value="{{ old('telefono_fijo') }}">
+                                            </div>
+                                        </div>
+                                        <div class="mb-0">
+                                            <label class="form-label fw-semibold">Correo</label>
+                                            <input type="email"
+                                                   id="correo_remitente_otra"
+                                                   name="correo_remitente"
+                                                   class="form-control @error('correo_remitente') is-invalid @enderror"
+                                                   placeholder="usuario@ejemplo.com"
+                                                   value="{{ old('correo_remitente') }}">
+                                            @error('correo_remitente')
+                                                <div class="invalid-feedback d-block"><i class="bi bi-exclamation-circle me-1"></i>{{ $message }}</div>
+                                            @enderror
+                                        </div>
                                     </div>
-                                </div>
+
+                                    <div class="remitente-form-section">
+                                        <h6 class="fw-bold mb-3" style="color:#0B2D59;">
+                                            <i class="bi bi-building-fill me-1"></i>Contexto institucional
+                                        </h6>
+
+                                        {{-- CAMPOS CONDICIONALES PARA INTERNO --}}
+                                        <div id="campos_interno" style="display: none;">
+                                            <div class="row">
+                                                <div class="col-md-6 mb-3">
+                                                    <label class="form-label fw-semibold">Departamento</label>
+                                                    <input type="text"
+                                                           id="departamento_nueva"
+                                                           name="departamento_nueva"
+                                                           class="form-control"
+                                                           placeholder="Auto completado (no editable)"
+                                                           readonly>
+                                                </div>
+                                                <div class="col-md-6 mb-3">
+                                                    <label class="form-label fw-semibold">Cargo</label>
+                                                    <input type="text"
+                                                           id="cargo_remitente_otra"
+                                                           name="cargo_remitente"
+                                                           class="form-control"
+                                                           value="{{ old('cargo_remitente') }}">
+                                                </div>
+                                            </div>
+                                        </div>
+
+                                        {{-- CAMPOS CONDICIONALES PARA EXTERNO --}}
+                                        <div id="campos_externo" style="display: none;">
+                                            <div class="mb-3">
+                                                <label class="form-label fw-semibold">Institución</label>
+                                                <input type="text"
+                                                       id="institucion_remitente_otra"
+                                                       name="institucion_remitente"
+                                                       class="form-control @error('institucion_remitente') is-invalid @enderror"
+                                                       placeholder="Ej: Ministerio de Educación"
+                                                       value="{{ old('institucion_remitente') }}">
+                                                @error('institucion_remitente')
+                                                    <div class="invalid-feedback d-block"><i class="bi bi-exclamation-circle me-1"></i>{{ $message }}</div>
+                                                @enderror
+                                            </div>
+                                        </div>
+
+                                        <div class="small text-muted">
+                                            Seleccione el tipo de remitente para mostrar los campos correspondientes.
+                                        </div>
+                                    </div>
 
                                 {{-- ALERTA DUPLICADOS --}}
                                 <div id="alerta_duplicados" class="alert alert-danger border-0 rounded-4" style="display: none;">
@@ -451,7 +615,7 @@
                                             <div id="lista_duplicados" class="border rounded-2 bg-white p-2" style="max-height: 250px; overflow-y: auto;">
                                                 <!-- Se cargarán dinámicamente -->
                                             </div>
-                                            <div class="mt-3 d-flex gap-2">
+                                            <div class="mt-3 d-flex flex-wrap gap-2">
                                                 <button type="button" class="btn btn-sm btn-danger" onclick="confirmarCrearDuplicado()">
                                                     <i class="bi bi-plus-circle me-1"></i>Crear de todos modos
                                                 </button>
@@ -464,9 +628,9 @@
                                 </div>
 
                                 {{-- BOTONES DE ACCIÓN --}}
-                                <div class="d-flex gap-2">
+                                <div class="d-flex flex-wrap gap-2">
                                     <button type="button" class="btn btn-primary flex-grow-1 rounded-3" onclick="guardarNuevaPersona(); event.preventDefault();">
-                                        <i class="bi bi-check-circle-fill me-2"></i>Registrar Nueva Persona
+                                        <i class="bi bi-check-circle-fill me-2"></i>Registrar nueva persona
                                     </button>
                                     <button type="button" class="btn btn-outline-secondary flex-grow-1 rounded-3" onclick="volverAlBuscador(); event.preventDefault();">
                                         <i class="bi bi-arrow-left me-2"></i>Volver a Buscar
@@ -475,9 +639,11 @@
                             </div>
 
                             {{-- CAMPOS OCULTOS (se enviarán al backend) --}}
-                            <input type="hidden" id="persona_seleccionada_id" name="idPersona_seleccionada" value="">
+                            <input type="hidden" id="persona_seleccionada_id" name="idPersona_seleccionada" value="{{ old('idPersona_seleccionada') }}">
 
                         </div>
+                        </div>
+                        {{-- FIN BLOQUE: OTRA PERSONA --}}
 
                     </div>
                 </div>
@@ -485,7 +651,8 @@
             </div>
 
             {{-- COLUMNA DERECHA --}}
-            <div class="col-lg-4">
+            <div class="col-md-4 col-lg-4">
+                <div class="documento-side-panel">
 
                 {{-- DESTINO --}}
                 <div class="card border-0 shadow-sm rounded-4">
@@ -583,10 +750,12 @@
                         <i class="bi bi-check-circle-fill"></i>
                         Registrar Documento
                     </button>
-                    <a href="{{ Auth::user()->idRol == 1 ? route('admin.dashboard') : route('user.dashboard') }}" class="btn btn-outline-secondary w-100 rounded-4 py-3">
+                    <a href="{{ Auth::user()->idRol == 1 ? route('admin.documentos.index') : route('user.dashboard') }}" class="btn btn-outline-secondary w-100 rounded-4 py-3">
                         <i class="bi bi-arrow-left"></i>
                         Cancelar
                     </a>
+                </div>
+
                 </div>
 
             </div>
@@ -599,14 +768,21 @@
 
 <script>
 
+const documentosResponsablesEndpoint = @json($responsablesEndpoint);
+const personasBuscarEndpoint = @json($personasBuscarEndpoint);
+const personasDuplicadosEndpoint = @json($duplicadosEndpoint);
+const oldOpcionRemitente = @json(old('opcion_remitente', 'yo_mismo'));
+const oldResponsableDestino = @json(old('responsable_destino'));
+
 // Almacenar responsables por departamento
 let responsablesPorDepartamento = {};
 
 // Cargar responsables cuando se selecciona un departamento
-function cargarResponsables() {
+function cargarResponsables(responsableSeleccionado = null) {
     const departamentoId = document.getElementById('departamento').value;
     const selectResponsable = document.getElementById('responsable_destino');
     const flujoDerivacion = document.getElementById('flujo_derivacion');
+    const responsableActual = responsableSeleccionado ? String(responsableSeleccionado) : '';
     
     if (!departamentoId) {
         selectResponsable.innerHTML = '<option value="">-- Seleccione departamento primero --</option>';
@@ -619,7 +795,7 @@ function cargarResponsables() {
     const departamentoNombre = document.querySelector(`#departamento option[value="${departamentoId}"]`).textContent;
     
     // Obtener responsables del departamento
-    fetch(`/documentos/responsables-departamento/${departamentoId}`)
+    fetch(`${documentosResponsablesEndpoint}/${departamentoId}`)
         .then(response => response.json())
         .then(data => {
             responsablesPorDepartamento = data;
@@ -631,15 +807,21 @@ function cargarResponsables() {
             } else {
                 data.forEach(responsable => {
                     html += `<option value="${responsable.idPersona}" data-nombre="${responsable.nombre}" data-ci="${responsable.ci}">
-                        ${responsable.nombre} (${responsable.ci})
+                        ${responsable.nombre} (${responsable.ci}) - ${responsable.rol || 'Usuario'}
                     </option>`;
                 });
             }
             
             selectResponsable.innerHTML = html;
-            selectResponsable.value = '';
+            selectResponsable.value = responsableActual;
             document.getElementById('buscar_responsable').value = '';
             flujoDerivacion.innerHTML = `<span class="badge bg-info">${departamentoNombre} → Selecciona responsable</span>`;
+            if (selectResponsable.value) {
+                const option = selectResponsable.options[selectResponsable.selectedIndex];
+                const responsableNombre = option?.getAttribute('data-nombre') || 'Responsable seleccionado';
+                flujoDerivacion.innerHTML = `<span class="badge bg-success">${departamentoNombre} â†’ ${responsableNombre}</span>`;
+                flujoDerivacion.innerHTML = `<span class="badge bg-success">${departamentoNombre} -> ${responsableNombre}</span>`;
+            }
         })
         .catch(error => {
             console.error('Error:', error);
@@ -715,6 +897,10 @@ function irAEstado(estado) {
     if (elementoEstado) {
         elementoEstado.style.display = 'block';
     }
+
+    document.querySelectorAll('.remitente-step').forEach(step => {
+        step.classList.toggle('active', step.dataset.step === estado);
+    });
     
     // Acciones específicas por estado
     if (estado === ESTADOS.BUSCADOR) {
@@ -754,6 +940,20 @@ function volverAlBuscador() {
     irAEstado(ESTADOS.BUSCADOR);
 }
 
+function limpiarBusquedaPersona() {
+    const input = document.getElementById('buscar_persona_input');
+
+    if (input) {
+        input.value = '';
+        input.focus();
+    }
+
+    document.getElementById('resultados_busqueda').style.display = 'none';
+    document.getElementById('no_encontrado').style.display = 'none';
+    document.getElementById('lista_resultados').innerHTML = '';
+    document.getElementById('contador_resultados').textContent = '0';
+}
+
 /**
  * Transición al estado "Persona Encontrada"
  * Cuando el usuario presiona "Usar esta persona", se rellenan los campos y se prepara el formulario
@@ -790,22 +990,12 @@ function finalizarSeleccionPersona() {
         // Guardar ID para envío (campo hidden que usará la API)
         document.getElementById('persona_seleccionada_id').value = personaSeleccionadaActual.idPersona;
         
-        // Cerrar el bloque de búsqueda
-        document.getElementById('bloque_otra_persona').style.display = 'none';
-        
-        // Mostrar confirmación visual
-        const alertaExito = document.createElement('div');
-        alertaExito.className = 'alert alert-success alert-dismissible fade show border-0 shadow-sm rounded-4 mb-3';
-        alertaExito.role = 'alert';
-        alertaExito.innerHTML = `
-            <i class="bi bi-check-circle-fill me-2"></i>
-            <strong>Remitente seleccionado:</strong> ${personaSeleccionadaActual.nombre} (${personaSeleccionadaActual.tipo})
-            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
-        `;
-        
-        // Insertar la alerta al inicio del formulario
-        const formElement = document.querySelector('form');
-        formElement.insertBefore(alertaExito, formElement.firstChild.nextSibling);
+        document.getElementById('persona_confirmada_card')?.classList.add('selected-confirmed');
+        const hint = document.getElementById('persona_confirmada_hint');
+
+        if (hint) {
+            hint.textContent = 'Remitente confirmado para este documento';
+        }
     }
 }
 
@@ -821,7 +1011,7 @@ function irAEstadoCrearNueva() {
 // TOGGLE REMITENTE MODE
 // ============================================================================
 
-function toggleRemitenteMode() {
+function toggleRemitenteMode(preserveValues = false) {
     const yoMismo = document.getElementById('yo_mismo').checked;
     const bloqueYoMismo = document.getElementById('bloque_yo_mismo');
     const bloqueOtra = document.getElementById('bloque_otra_persona');
@@ -830,7 +1020,9 @@ function toggleRemitenteMode() {
         // Seleccionado: "Yo Mismo"
         bloqueYoMismo.style.display = 'block';
         bloqueOtra.style.display = 'none';
-        limpiarFormularioOtraPersona();
+        if (!preserveValues) {
+            limpiarFormularioOtraPersona();
+        }
         
         // Limpiar los campos de formulario que se enviarán
         // De esta manera, cuando se valide, no habrá conflicto con los campos
@@ -839,9 +1031,78 @@ function toggleRemitenteMode() {
         // Seleccionado: "Otra Persona"
         bloqueYoMismo.style.display = 'none';
         bloqueOtra.style.display = 'block';
-        // Iniciar en estado buscador
-        volverAlBuscador();
+        if (preserveValues) {
+            prepararOtraPersonaConValoresPrevios();
+        } else {
+            // Iniciar en estado buscador
+            volverAlBuscador();
+        }
     }
+}
+
+function prepararOtraPersonaConValoresPrevios() {
+    const personaSeleccionadaId = document.getElementById('persona_seleccionada_id').value;
+    const tieneDatosPersona =
+        document.getElementById('nombre_remitente_otra').value ||
+        document.getElementById('ci_remitente_otra').value ||
+        document.getElementById('telefono_celular_otra').value ||
+        document.getElementById('telefono_fijo_otra').value ||
+        document.getElementById('correo_remitente_otra').value ||
+        document.getElementById('tipo_remitente_otra').value ||
+        document.getElementById('cargo_remitente_otra').value ||
+        document.getElementById('institucion_remitente_otra').value ||
+        personaSeleccionadaId;
+
+    document.getElementById('buscar_persona_input').value = '';
+    document.getElementById('resultados_busqueda').style.display = 'none';
+    document.getElementById('no_encontrado').style.display = 'none';
+    document.getElementById('lista_resultados').innerHTML = '';
+    document.getElementById('contador_resultados').textContent = '0';
+    document.getElementById('alerta_duplicados').style.display = 'none';
+
+    if (personaSeleccionadaId) {
+        restaurarPersonaSeleccionadaConValoresPrevios();
+        return;
+    }
+
+    if (tieneDatosPersona) {
+        irAEstado(ESTADOS.CREAR_NUEVA);
+        actualizarCamposTipo();
+        return;
+    }
+
+    irAEstado(ESTADOS.BUSCADOR);
+}
+
+function restaurarPersonaSeleccionadaConValoresPrevios() {
+    const nombre = document.getElementById('nombre_remitente_otra').value || 'Remitente seleccionado';
+    const ci = document.getElementById('ci_remitente_otra').value || 'Sin CI';
+    const tipo = document.getElementById('tipo_remitente_otra').value || 'INTERNO';
+    const correo = document.getElementById('correo_remitente_otra').value || 'Sin correo';
+    const celular = document.getElementById('telefono_celular_otra').value || 'Sin telefono';
+    const cargo = document.getElementById('cargo_remitente_otra').value || 'Sin cargo';
+    const institucion = document.getElementById('institucion_remitente_otra').value || 'Sin institucion';
+
+    document.getElementById('sel_nombre').textContent = nombre;
+    document.getElementById('sel_ci').textContent = ci;
+    document.getElementById('sel_correo').textContent = correo;
+    document.getElementById('sel_celular').textContent = celular;
+
+    const tipoBadge = document.getElementById('sel_tipo');
+    tipoBadge.textContent = tipo;
+    tipoBadge.className = tipo === 'INTERNO' ? 'badge bg-success' : 'badge bg-warning text-dark';
+
+    if (tipo === 'INTERNO') {
+        document.getElementById('label_interno_externo').textContent = 'Cargo';
+        document.getElementById('sel_departamento_cargo').innerHTML = `<div class="small">${cargo}</div>`;
+    } else {
+        document.getElementById('label_interno_externo').textContent = 'Institucion';
+        document.getElementById('sel_departamento_cargo').innerHTML = `<div class="small">${institucion}</div>`;
+    }
+
+    document.getElementById('persona_confirmada_card')?.classList.add('selected-confirmed');
+    document.getElementById('persona_confirmada_hint').textContent = 'Remitente recuperado despues de la validacion';
+    irAEstado(ESTADOS.PERSONA_ENCONTRADA);
 }
 
 // ============================================================================
@@ -869,7 +1130,7 @@ document.getElementById('buscar_persona_input')?.addEventListener('input', funct
 });
 
 function buscarPersonasAvanzado(buscar) {
-    fetch(`/personas/buscar-avanzado?q=${encodeURIComponent(buscar)}`)
+    fetch(`${personasBuscarEndpoint}?q=${encodeURIComponent(buscar)}`)
         .then(response => response.json())
         .then(data => {
             const resultados = data.resultados || [];
@@ -901,40 +1162,42 @@ function buscarPersonasAvanzado(buscar) {
 
 function crearTarjetaPersona(persona) {
     const div = document.createElement('div');
-    div.className = 'p-3 border-bottom';
+    div.className = 'remitente-result-card';
     
     let infoAdicional = '';
     if (persona.tipo === 'INTERNO') {
         infoAdicional = `
-            <div class="small text-muted">
-                <i class="bi bi-briefcase me-1"></i>${persona.cargo || 'Sin cargo'}<br>
-                <i class="bi bi-building me-1"></i>${persona.departamento || 'Sin departamento'}
+            <div class="small text-muted mt-1">
+                <span class="me-3"><i class="bi bi-briefcase me-1"></i>${persona.cargo || 'Sin cargo'}</span>
+                <span><i class="bi bi-building me-1"></i>${persona.departamento || 'Sin departamento'}</span>
             </div>
         `;
     } else {
         infoAdicional = `
-            <div class="small text-muted">
+            <div class="small text-muted mt-1">
                 <i class="bi bi-globe me-1"></i>${persona.institucion || 'Sin institución'}
             </div>
         `;
     }
     
     div.innerHTML = `
-        <div class="d-flex justify-content-between align-items-start">
+        <div class="d-flex flex-wrap justify-content-between align-items-start gap-3">
             <div class="flex-grow-1">
-                <div class="fw-semibold">${persona.nombre}</div>
-                <div class="small text-muted">
+                <div class="d-flex flex-wrap align-items-center gap-2 mb-1">
+                    <div class="fw-bold" style="color:#0B2D59;">${persona.nombre}</div>
                     <span class="badge ${persona.tipo === 'INTERNO' ? 'bg-success' : 'bg-warning text-dark'} me-2">
                         ${persona.tipo}
                     </span>
-                    <strong>CI:</strong> ${persona.ci}
                 </div>
+                <div class="small text-muted"><strong>CI:</strong> ${persona.ci}</div>
                 ${infoAdicional}
-                ${persona.correo ? `<div class="small text-muted"><i class="bi bi-envelope me-1"></i>${persona.correo}</div>` : ''}
-                ${persona.telefono_celular ? `<div class="small text-muted"><i class="bi bi-telephone me-1"></i>${persona.telefono_celular}</div>` : ''}
+                <div class="small text-muted mt-1">
+                    ${persona.correo ? `<span class="me-3"><i class="bi bi-envelope me-1"></i>${persona.correo}</span>` : ''}
+                    ${persona.telefono_celular ? `<span><i class="bi bi-telephone me-1"></i>${persona.telefono_celular}</span>` : ''}
+                </div>
             </div>
-            <button type="button" class="btn btn-sm btn-success rounded-2 ms-2" onclick="seleccionarPersona(${persona.idPersona})">
-                <i class="bi bi-check-circle me-1"></i>Seleccionar
+            <button type="button" class="btn btn-sm btn-outline-primary rounded-3" onclick="seleccionarPersona(${persona.idPersona})">
+                <i class="bi bi-check-circle me-1"></i>Usar
             </button>
         </div>
     `;
@@ -945,7 +1208,7 @@ function crearTarjetaPersona(persona) {
 function seleccionarPersona(idPersona) {
     const buscar = document.getElementById('buscar_persona_input').value.trim();
     
-    fetch(`/personas/buscar-avanzado?q=${encodeURIComponent(buscar)}`)
+    fetch(`${personasBuscarEndpoint}?q=${encodeURIComponent(buscar)}`)
         .then(response => response.json())
         .then(data => {
             const persona = data.resultados.find(p => p.idPersona === idPersona);
@@ -1031,7 +1294,7 @@ function guardarNuevaPersona() {
     const cargo = document.getElementById('cargo_remitente_otra').value.trim();
     
     // Verificar duplicados
-    fetch('/personas/verificar-duplicados', {
+    fetch(personasDuplicadosEndpoint, {
         method: 'POST',
         headers: {
             'Content-Type': 'application/json',
@@ -1104,7 +1367,12 @@ document.getElementById('archivo_pdf')?.addEventListener('change', function() {
 
 // Inicializar al cargar la página
 document.addEventListener('DOMContentLoaded', function() {
-    toggleRemitenteMode();
+    toggleRemitenteMode(true);
+    actualizarCamposTipo();
+
+    if (document.getElementById('departamento')?.value) {
+        cargarResponsables(oldResponsableDestino);
+    }
 });
 
 </script>

@@ -171,7 +171,7 @@ public function index(Request $request)
         |--------------------------------------------------------------------------
         */
 
-        if ($user->idRol != 1) {
+        if ($user->idRol != 1 || $request->boolean('solo_mis')) {
             $query->whereHas('ultimaDerivacion',
                 fn($q) => $q->where('idUsuarioAsignado', $user->id)
             );
@@ -370,6 +370,16 @@ public function index(Request $request)
                 ->first();
 
             // ÚNICA RESTRICCIÓN: No puede derivarse a sí mismo
+            if (!$idUsuarioAsignado)
+            {
+                return back()
+                    ->withInput()
+                    ->with(
+                        'error',
+                        'La persona seleccionada no tiene una cuenta activa para recibir documentos.'
+                    );
+            }
+
             if ($idUsuarioAsignado && $idUsuarioAsignado->id == Auth::id()) {
                 return back()
                     ->withInput()
@@ -379,7 +389,7 @@ public function index(Request $request)
                     );
             }
 
-            $idUsuarioAsignado = $idUsuarioAsignado?->id;
+            $idUsuarioAsignado = $idUsuarioAsignado->id;
         }
 
         /*

@@ -38,6 +38,9 @@
                         <x-nav-link :href="route('admin.auditoria')" :active="request()->routeIs('admin.auditoria*')">
                             {{ __('Auditoría') }}
                         </x-nav-link>
+                        <x-nav-link :href="route('admin.configuracion')" :active="request()->routeIs('admin.configuracion')">
+                            {{ __('ConfiguraciÃ³n') }}
+                        </x-nav-link>
                     @else
                         <!-- MENÚ USUARIO -->
                         <x-nav-link :href="route('envios.bandeja')" :active="request()->routeIs('envios.bandeja') || request()->routeIs('bandeja.*')">
@@ -124,6 +127,9 @@
 
                 <x-responsive-nav-link :href="route('admin.auditoria')" :active="request()->routeIs('admin.auditoria*')">
                     {{ __('Auditoría') }}
+                </x-responsive-nav-link>
+                <x-responsive-nav-link :href="route('admin.configuracion')" :active="request()->routeIs('admin.configuracion')">
+                    {{ __('ConfiguraciÃ³n') }}
                 </x-responsive-nav-link>
             @else
                 <!-- MENÚ USUARIO (Mobile) -->

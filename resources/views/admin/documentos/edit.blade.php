@@ -31,13 +31,23 @@
 
                     </h5>
 
-                    <p class="mb-0">
+                    <p class="mb-3">
 
                         Este documento se encuentra archivado o finalizado.
                         Para modificar su contenido primero debe cambiar
                         su estado documental.
 
                     </p>
+
+                    <button type="button"
+                            class="btn btn-warning rounded-3 fw-semibold"
+                            data-bs-toggle="modal"
+                            data-bs-target="#modalReactivarDocumento"
+                            data-reactivar-url="{{ route('admin.documentos.reactivar', $documento->idDocumento) }}"
+                            data-documento-titulo="{{ $documento->cite }} - {{ \Illuminate\Support\Str::limit($documento->asunto, 70) }}">
+                        <i class="bi bi-arrow-counterclockwise me-1"></i>
+                        Reactivar documento
+                    </button>
 
                 </div>
 
@@ -407,5 +417,7 @@
     </div>
 
 </div>
+
+@include('admin.documentos.partials.reactivar-modal')
 
 @endsection

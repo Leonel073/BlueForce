@@ -180,6 +180,12 @@ class CorrespondenciaController extends Controller
             ? 'admin.correspondencia.index' 
             : 'correspondencia.index';
 
+        $pageTitle = 'Mi Correspondencia';
+        $pageSubtitle = 'Documentos registrados y seguimiento personal';
+        $tableTitle = 'Correspondencia Registrada';
+        $emptyMessage = 'No existen documentos registrados.';
+        $detalleRoute = 'correspondencia.show';
+
         return view(
             $vista,
             compact(
@@ -189,7 +195,12 @@ class CorrespondenciaController extends Controller
                 'finalizados',
                 'urgentes',
                 'estados',
-                'urgencias'
+                'urgencias',
+                'pageTitle',
+                'pageSubtitle',
+                'tableTitle',
+                'emptyMessage',
+                'detalleRoute'
             )
         );
     }

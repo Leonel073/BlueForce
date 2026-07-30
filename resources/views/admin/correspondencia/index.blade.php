@@ -127,6 +127,54 @@
 
     </div>
 
+    {{-- FILTROS --}}
+    <div class="card border-0 shadow-sm rounded-4 mb-4">
+        <div class="card-body">
+            <form method="GET" action="{{ route('admin.correspondencia') }}" class="row g-3 align-items-end">
+                <div class="col-lg-4">
+                    <label class="form-label small text-muted mb-1">Buscar</label>
+                    <input type="text"
+                           name="buscar"
+                           value="{{ request('buscar') }}"
+                           class="form-control rounded-3"
+                           placeholder="Cite o asunto">
+                </div>
+                <div class="col-lg-3 col-md-6">
+                    <label class="form-label small text-muted mb-1">Estado</label>
+                    <select name="estado" class="form-select rounded-3">
+                        <option value="">Todos</option>
+                        @foreach($estados as $estado)
+                            <option value="{{ $estado->idEstado }}" @selected(request('estado') == $estado->idEstado)>
+                                {{ $estado->nombre }}
+                            </option>
+                        @endforeach
+                    </select>
+                </div>
+                <div class="col-lg-3 col-md-6">
+                    <label class="form-label small text-muted mb-1">Urgencia</label>
+                    <select name="urgencia" class="form-select rounded-3">
+                        <option value="">Todas</option>
+                        @foreach($urgencias as $urgencia)
+                            <option value="{{ $urgencia->idUrgencia }}" @selected(request('urgencia') == $urgencia->idUrgencia)>
+                                {{ $urgencia->nombre }}
+                            </option>
+                        @endforeach
+                    </select>
+                </div>
+                <div class="col-lg-2">
+                    <div class="d-flex gap-2">
+                        <button type="submit" class="btn btn-primary rounded-3 flex-fill">
+                            <i class="bi bi-funnel-fill me-1"></i>Filtrar
+                        </button>
+                        <a href="{{ route('admin.correspondencia') }}" class="btn btn-outline-secondary rounded-3">
+                            <i class="bi bi-x-lg"></i>
+                        </a>
+                    </div>
+                </div>
+            </form>
+        </div>
+    </div>
+
     {{-- TABLA --}}
     <div class="card border-0 shadow-lg rounded-4">
 
@@ -347,13 +395,25 @@
 
                                     <div class="d-flex justify-content-center gap-2">
 
-                                        <a href="{{ route('correspondencia.show', $doc->idDocumento) }}?volver=admin"
+                                        <a href="{{ route('admin.correspondencia.show', $doc->idDocumento) }}?volver=admin"
                                            class="btn btn-sm btn-doc btn-doc-view"
                                            title="Ver documento">
 
                                             <i class="bi bi-eye-fill"></i>
 
                                         </a>
+
+                                        @if(in_array($doc->estado->nombre ?? '', ['Archivado', 'Finalizado'], true))
+                                            <button type="button"
+                                                    class="btn btn-sm btn-doc btn-doc-restore"
+                                                    title="Reactivar documento"
+                                                    data-bs-toggle="modal"
+                                                    data-bs-target="#modalReactivarDocumento"
+                                                    data-reactivar-url="{{ route('admin.documentos.reactivar', $doc->idDocumento) }}"
+                                                    data-documento-titulo="{{ $doc->cite }} - {{ \Illuminate\Support\Str::limit($doc->asunto, 70) }}">
+                                                <i class="bi bi-arrow-counterclockwise"></i>
+                                            </button>
+                                        @endif
 
                                     </div>
 
@@ -399,5 +459,7 @@
     </div>
 
 </div>
+
+@include('admin.documentos.partials.reactivar-modal')
 
 @endsection

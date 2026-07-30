@@ -6,6 +6,7 @@ use App\Models\Anuncio;
 use App\Models\Correspondencia;
 use App\Models\Derivacion;
 use App\Models\EstadoDocumento;
+use Carbon\Carbon;
 use Illuminate\Support\Facades\Auth;
 
 class UserDashboardController extends Controller
@@ -60,14 +61,7 @@ class UserDashboardController extends Controller
             ->get();
 
         // DOCUMENTOS POR MES (últimos 6 meses - personal)
-        $documentosPorMes = Correspondencia::where('idUsuario', $userId)
-            ->selectRaw('DATE_FORMAT(fecha, "%Y-%m") as mes, COUNT(*) as cantidad')
-            ->groupByRaw('DATE_FORMAT(fecha, "%Y-%m")')
-            ->orderBy('mes', 'desc')
-            ->take(6)
-            ->get()
-            ->reverse()
-            ->values();
+        $documentosPorMes = $this->documentosPorMes($userId);
 
         // DOCUMENTOS POR TIPO (personal)
         $documentosPorTipo = Correspondencia::where('idUsuario', $userId)
@@ -112,5 +106,42 @@ class UserDashboardController extends Controller
             'documentosPendientes',
             'anuncioPendiente'
         ) + ['totalDocumentos' => $totalMis]);
+    }
+
+    private function documentosPorMes(int $userId)
+    {
+        $inicio = Carbon::now()->startOfMonth()->subMonths(5);
+        $fin = Carbon::now()->endOfMonth();
+
+        $registros = Correspondencia::where('idUsuario', $userId)
+            ->whereBetween('fecha', [$inicio, $fin])
+            ->selectRaw('DATE_FORMAT(fecha, "%Y-%m") as periodo, COUNT(*) as cantidad')
+            ->groupByRaw('DATE_FORMAT(fecha, "%Y-%m")')
+            ->pluck('cantidad', 'periodo');
+
+        $nombresMes = [
+            1 => 'Ene',
+            2 => 'Feb',
+            3 => 'Mar',
+            4 => 'Abr',
+            5 => 'May',
+            6 => 'Jun',
+            7 => 'Jul',
+            8 => 'Ago',
+            9 => 'Sep',
+            10 => 'Oct',
+            11 => 'Nov',
+            12 => 'Dic',
+        ];
+
+        return collect(range(0, 5))->map(function ($offset) use ($inicio, $registros, $nombresMes) {
+            $mes = $inicio->copy()->addMonths($offset);
+            $periodo = $mes->format('Y-m');
+
+            return [
+                'mes' => $nombresMes[(int) $mes->month] . ' ' . $mes->format('Y'),
+                'cantidad' => (int) ($registros[$periodo] ?? 0),
+            ];
+        });
     }
 }

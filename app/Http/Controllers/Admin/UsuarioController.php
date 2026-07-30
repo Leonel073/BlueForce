@@ -9,6 +9,7 @@ use Illuminate\Support\Facades\Hash;
 use App\Models\User;
 use App\Models\Persona;
 use App\Models\Rol;
+use App\Models\Derivacion;
 use Illuminate\Validation\Rules\Password;
 
 /**
@@ -168,9 +169,58 @@ class UsuarioController extends Controller
             'correspondencias.urgencia',
             'correspondencias.tipoDocumento',
             'correspondencias.seguimientos',
+            'correspondencias.ultimaDerivacion.departamentoDestino',
         ])->findOrFail($id);
 
-        return view('admin.usuarios.show', compact('usuario'));
+        $documentos = $usuario->correspondencias
+            ->sortByDesc(fn ($documento) => $documento->fecha ?? '0000-00-00')
+            ->values();
+
+        $derivacionesEnviadas = Derivacion::with([
+            'documento.estado',
+            'documento.urgencia',
+            'documento.tipoDocumento',
+            'departamentoOrigen',
+            'departamentoDestino',
+            'usuarioAsignado.persona',
+        ])
+            ->where('idUsuarioEnvio', $usuario->id)
+            ->orderByDesc('fechaEnvio')
+            ->get();
+
+        $derivacionesAsignadas = Derivacion::with([
+            'documento.estado',
+            'documento.urgencia',
+            'documento.tipoDocumento',
+            'departamentoOrigen',
+            'departamentoDestino',
+            'usuarioEnvio.persona',
+        ])
+            ->where('idUsuarioAsignado', $usuario->id)
+            ->orderByDesc('fechaEnvio')
+            ->get();
+
+        $metricas = [
+            'documentos' => $documentos->count(),
+            'pendientes' => $documentos->filter(fn ($doc) => str_contains(strtolower($doc->estado?->nombre ?? ''), 'pendiente'))->count(),
+            'atendidosArchivados' => $documentos->filter(function ($doc) {
+                $estado = strtolower($doc->estado?->nombre ?? '');
+
+                return str_contains($estado, 'atendido') || str_contains($estado, 'archivado');
+            })->count(),
+            'conPdf' => $documentos->whereNotNull('ruta_pdf')->count(),
+            'derivacionesEnviadas' => $derivacionesEnviadas->count(),
+            'derivacionesAsignadas' => $derivacionesAsignadas->count(),
+            'derivacionesPendientes' => $derivacionesAsignadas->whereNull('fechaRecepcion')->count(),
+        ];
+
+        return view('admin.usuarios.show', compact(
+            'usuario',
+            'documentos',
+            'derivacionesEnviadas',
+            'derivacionesAsignadas',
+            'metricas'
+        ));
     }
 
     /*

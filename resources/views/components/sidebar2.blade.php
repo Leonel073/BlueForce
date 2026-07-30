@@ -205,8 +205,8 @@
         Configuración
     </div>
 
-    <a href="{{ route('user.configuracion') }}"
-       class="nav-link {{ request()->routeIs('user.configuracion') ? 'active' : '' }}">
+    <a href="{{ Auth::user()->idRol == 1 ? route('admin.configuracion') : route('user.configuracion') }}"
+       class="nav-link {{ request()->routeIs('admin.configuracion') || request()->routeIs('user.configuracion') ? 'active' : '' }}">
 
         <span class="nav-icon">
             <i class="bi bi-gear-fill"></i>

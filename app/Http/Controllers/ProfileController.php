@@ -77,7 +77,7 @@ class ProfileController extends Controller
         if ($user->idRol == 1) {
 
             return Redirect::route(
-                'admin.dashboard'
+                'admin.configuracion'
             )->with(
                 'status',
                 'Perfil actualizado correctamente.'

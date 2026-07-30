@@ -9,6 +9,7 @@
     $volverUrl = request()->query('volver')
         ? route(request()->query('volver'))
         : route('admin.documentos.index');
+    $documentoCerrado = in_array($documento->estado->nombre ?? '', ['Archivado', 'Finalizado'], true);
 
 @endphp
 
@@ -54,6 +55,31 @@
         </div>
 
     </div>
+
+    @if($documentoCerrado)
+        <div class="alert alert-warning border-0 shadow-sm rounded-4 mb-4">
+            <div class="d-flex flex-wrap justify-content-between align-items-start gap-3">
+                <div>
+                    <h5 class="fw-bold mb-1">
+                        <i class="bi bi-archive-fill me-1"></i>
+                        Documento cerrado
+                    </h5>
+                    <p class="mb-0">
+                        Este documento esta {{ $documento->estado->nombre }}. Como administrador puede reactivarlo para devolverlo a Pendiente.
+                    </p>
+                </div>
+                <button type="button"
+                        class="btn btn-warning rounded-3 fw-semibold"
+                        data-bs-toggle="modal"
+                        data-bs-target="#modalReactivarDocumento"
+                        data-reactivar-url="{{ route('admin.documentos.reactivar', $documento->idDocumento) }}"
+                        data-documento-titulo="{{ $documento->cite }} - {{ \Illuminate\Support\Str::limit($documento->asunto, 70) }}">
+                    <i class="bi bi-arrow-counterclockwise me-1"></i>
+                    Reactivar documento
+                </button>
+            </div>
+        </div>
+    @endif
 
     <div class="row">
 
@@ -618,5 +644,7 @@
     </div>
 
 </div>
+
+@include('admin.documentos.partials.reactivar-modal')
 
 @endsection

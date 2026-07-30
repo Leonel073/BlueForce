@@ -196,10 +196,10 @@
 
     </div>
 
-    <a href="{{ route('user.configuracion') }}"
+    <a href="{{ Auth::user()->idRol == 1 ? route('admin.configuracion') : route('user.configuracion') }}"
 
        class="nav-link
-       {{ request()->routeIs('user.configuracion')
+       {{ request()->routeIs('admin.configuracion') || request()->routeIs('user.configuracion')
             ? 'active'
             : '' }}"
 

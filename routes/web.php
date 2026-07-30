@@ -207,7 +207,17 @@ Route::middleware(['auth', 'verified', 'nocache', 'admin'])->prefix('admin')->na
     Route::get('/dashboard', [DashboardController::class, 'index'])->name('dashboard');
     Route::get('/api/dashboard-estadisticas', [DashboardController::class, 'estadisticasDashboard'])->name('api.estadisticas.dashboard');
     Route::get('/api/dashboard-departamentos', [DashboardController::class, 'estadisticasDepartamentos'])->name('api.estadisticas.departamentos');
+    Route::get('/configuracion', function () {
+        return view('user.configuracion');
+    })->name('configuracion');
     Route::get('/documentos', [DocumentoController::class, 'adminIndex'])->name('documentos.index');
+    Route::get('/documentos/crear', [DocumentoController::class, 'show'])->name('documentos.crear');
+    Route::post('/documentos', [DocumentoController::class, 'store'])->name('documentos.store');
+    Route::get('/documentos/departamento/{idDepartamento}/personas', [DocumentoController::class, 'obtenerPersonasPorDepartamento'])->name('documentos.departamento.personas');
+    Route::get('/documentos/responsables-departamento/{idDepartamento}', [DocumentoController::class, 'cargarResponsablesPorDepartamento'])->name('documentos.responsables-departamento');
+    Route::get('/persona/buscar/{ci}', [DocumentoController::class, 'buscarPersona'])->name('persona.buscar');
+    Route::get('/personas/buscar-avanzado', [DocumentoController::class, 'buscarPersonasAvanzado'])->name('personas.buscar-avanzado');
+    Route::post('/personas/verificar-duplicados', [DocumentoController::class, 'verificarDuplicados'])->name('personas.verificar-duplicados');
     
     /*
     |--------------------------------------------------------------------------
@@ -217,6 +227,7 @@ Route::middleware(['auth', 'verified', 'nocache', 'admin'])->prefix('admin')->na
     
     Route::get('/documentos/{id}/edit', [DocumentoController::class, 'edit'])->name('documentos.edit');
     Route::put('/documentos/{id}', [DocumentoController::class, 'update'])->name('documentos.update');
+    Route::put('/documentos/{id}/reactivar', [DocumentoController::class, 'reactivar'])->name('documentos.reactivar');
     /*
     |--------------------------------------------------------------------------
     | GESTIÓN DE USUARIOS
@@ -292,6 +303,10 @@ Route::middleware(['auth', 'verified', 'nocache', 'admin'])->prefix('admin')->na
     Route::get('/bandeja', [EnvioController::class, 'bandeja'])->name('bandeja');
     Route::get('/bandeja/{id}', [EnvioController::class, 'derivarForm'])->name('bandeja.derivar.form');
     Route::post('/bandeja/{id}/derivar', [EnvioController::class, 'derivar'])->name('bandeja.derivar');
+    Route::post('/recibidas/{id}/recibir', [RecibidasController::class, 'recibir'])->name('recibidas.recibir');
+    Route::post('/recibidas/{id}/atender', [RecibidasController::class, 'atender'])->name('recibidas.atender');
+    Route::post('/recibidas/{id}/archivar', [RecibidasController::class, 'archivar'])->name('recibidas.archivar');
+    Route::post('/recibidas/{id}/finalizar', [RecibidasController::class, 'finalizar'])->name('recibidas.finalizar');
 
     /*
     |--------------------------------------------------------------------------

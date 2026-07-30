@@ -98,6 +98,12 @@ public function index()
         ? 'admin.documentos.index'
         : 'correspondencia.index';
 
+    $pageTitle = 'Mis Documentos';
+    $pageSubtitle = 'Documentos registrados por tu usuario';
+    $tableTitle = 'Mis Documentos Registrados';
+    $emptyMessage = 'No tienes documentos registrados.';
+    $detalleRoute = 'documentos.detalle';
+
     return view(
         $viewName,
         compact(
@@ -105,7 +111,12 @@ public function index()
             'totalDocumentos',
             'pendientes',
             'finalizados',
-            'urgentes'
+            'urgentes',
+            'pageTitle',
+            'pageSubtitle',
+            'tableTitle',
+            'emptyMessage',
+            'detalleRoute'
         )
     );
 }
@@ -564,7 +575,10 @@ public function index()
         $personas = Persona::where('idDepartamento', $idDepartamento)
             ->where('tipo', 'INTERNO')
             ->where('activo', true)
-            ->with('cargo')
+            ->whereHas('usuario', function ($query) {
+                $query->where('activo', true);
+            })
+            ->with(['cargo', 'usuario.rol'])
             ->get([
                 'idPersona',
                 'nombre',
@@ -574,7 +588,8 @@ public function index()
                 return [
                     'idPersona' => $persona->idPersona,
                     'nombre' => $persona->nombre,
-                    'cargo' => $persona->cargos_nombres
+                    'cargo' => $persona->cargos_nombres,
+                    'rol' => $persona->usuario?->rol?->nombre ?? ($persona->usuario?->idRol == 1 ? 'Administrador' : 'Usuario')
                 ];
             });
 
@@ -594,7 +609,10 @@ public function index()
         $responsables = Persona::where('idDepartamento', $idDepartamento)
             ->where('tipo', 'INTERNO')
             ->where('activo', true)
-            ->with('cargo')
+            ->whereHas('usuario', function ($query) {
+                $query->where('activo', true);
+            })
+            ->with(['cargo', 'usuario.rol'])
             ->orderBy('nombre')
             ->get([
                 'idPersona',
@@ -607,30 +625,64 @@ public function index()
                     'idPersona' => $persona->idPersona,
                     'nombre' => $persona->nombre,
                     'ci' => $persona->ci,
-                    'cargo' => $persona->cargos_nombres
+                    'cargo' => $persona->cargos_nombres,
+                    'rol' => $persona->usuario?->rol?->nombre ?? ($persona->usuario?->idRol == 1 ? 'Administrador' : 'Usuario')
                 ];
             });
 
         return response()->json($responsables);
     }
 
-    public function adminIndex()
+    public function adminIndex(Request $request)
     {
         $documentos = Correspondencia::with([
 
             'remitente',
             'tipoDocumento',
             'urgencia',
-            'estado'
+            'estado',
+            'ultimaDerivacion.departamentoDestino',
 
-        ])
-        ->orderByDesc('idDocumento')
-        ->paginate(10)
-        ->withQueryString();
+        ]);
+
+        if ($request->filled('buscar')) {
+            $buscar = trim($request->buscar);
+
+            $documentos->where(function ($query) use ($buscar) {
+                $query->where('cite', 'LIKE', "%{$buscar}%")
+                    ->orWhere('asunto', 'LIKE', "%{$buscar}%")
+                    ->orWhereHas('remitente', function ($q) use ($buscar) {
+                        $q->where('nombre', 'LIKE', "%{$buscar}%")
+                            ->orWhere('ci', 'LIKE', "%{$buscar}%");
+                    });
+            });
+        }
+
+        if ($request->filled('idEstado')) {
+            $documentos->where('idEstado', $request->idEstado);
+        }
+
+        if ($request->estado_grupo === 'cerrados') {
+            $documentos->whereHas('estado', function ($query) {
+                $query->whereIn('nombre', ['Archivado', 'Finalizado']);
+            });
+        }
+
+        if ($request->filled('idUrgencia')) {
+            $documentos->where('idUrgencia', $request->idUrgencia);
+        }
+
+        $documentos = $documentos
+            ->orderByDesc('idDocumento')
+            ->paginate(10)
+            ->withQueryString();
+
+        $estados = EstadoDocumento::orderBy('nombre')->get();
+        $urgencias = NivelUrgencia::orderBy('nombre')->get();
 
         return view(
             'admin.documentos.index',
-            compact('documentos')
+            compact('documentos', 'estados', 'urgencias')
         );
     }
     public function edit($id)
@@ -682,6 +734,102 @@ public function index()
      * BÚSQUEDA INTELIGENTE DE PERSONAS
      * Búsqueda avanzada y multicampo con debounce
      */
+    public function reactivar(Request $request, $id)
+    {
+        $documento = Correspondencia::with(['estado', 'ultimaDerivacion'])
+            ->findOrFail($id);
+
+        $estadoActual = $documento->estado->nombre ?? '';
+
+        if (!in_array($estadoActual, ['Archivado', 'Finalizado'], true)) {
+            return back()->with(
+                'error',
+                'Solo se pueden reactivar documentos archivados o finalizados.'
+            );
+        }
+
+        $request->validate([
+            'observacion' => 'nullable|string|max:500',
+        ]);
+
+        $estadoPendiente = EstadoDocumento::where('nombre', 'Pendiente')->first();
+
+        if (!$estadoPendiente) {
+            return back()->with(
+                'error',
+                'No existe el estado Pendiente. Verifique los estados documentales.'
+            );
+        }
+
+        DB::transaction(function () use ($documento, $estadoPendiente, $estadoActual, $request) {
+            $estadoAnteriorId = $documento->idEstado;
+            $observacion = trim((string) $request->input('observacion'));
+            $observacion = $observacion !== ''
+                ? $observacion
+                : "Reactivacion administrativa desde estado {$estadoActual}.";
+
+            $documento->update([
+                'idEstado' => $estadoPendiente->idEstado,
+                'activo' => true,
+            ]);
+
+            $ultimaDerivacion = $documento->ultimaDerivacion;
+
+            if ($ultimaDerivacion && $ultimaDerivacion->idUsuarioAsignado) {
+                Derivacion::create([
+                    'idDocumento' => $documento->idDocumento,
+                    'orden' => ((int) Derivacion::where('idDocumento', $documento->idDocumento)->max('orden')) + 1,
+                    'idDepartamentoOrigen' => $ultimaDerivacion->idDepartamentoDestino ?? $ultimaDerivacion->idDepartamentoOrigen,
+                    'idDepartamentoDestino' => $ultimaDerivacion->idDepartamentoDestino,
+                    'idUsuarioAsignado' => $ultimaDerivacion->idUsuarioAsignado,
+                    'idUsuarioEnvio' => Auth::id(),
+                    'instruccion' => $observacion,
+                    'fechaEnvio' => now(),
+                    'fechaRecepcion' => null,
+                    'activo' => true,
+                ]);
+            }
+
+            Seguimiento::create([
+                'idDocumento' => $documento->idDocumento,
+                'fecha' => now(),
+                'ubicacion' => 'Reactivacion administrativa',
+                'idEstado' => $estadoPendiente->idEstado,
+                'activo' => true,
+            ]);
+
+            try {
+                \App\Models\Auditoria::create([
+                    'idUsuario' => Auth::id(),
+                    'modelo' => 'Correspondencia',
+                    'idRegistro' => $documento->idDocumento,
+                    'accion' => 'UPDATE',
+                    'datosAnteriores' => [
+                        'idEstado' => $estadoAnteriorId,
+                        'estado' => $estadoActual,
+                    ],
+                    'datosNuevos' => [
+                        'idEstado' => $estadoPendiente->idEstado,
+                        'estado' => 'Pendiente',
+                        'accion' => 'REACTIVACION_DOCUMENTAL',
+                        'observacion' => $observacion,
+                    ],
+                    'ip' => request()->ip(),
+                    'navegador' => request()->userAgent(),
+                    'ruta' => request()->getRequestUri(),
+                    'fecha' => now(),
+                ]);
+            } catch (\Exception $e) {
+                Log::warning('Auditoria de reactivacion documental fallida: ' . $e->getMessage());
+            }
+        });
+
+        return back()->with(
+            'success',
+            'Documento reactivado correctamente. Ahora vuelve a estar Pendiente.'
+        );
+    }
+
     public function buscarPersonasAvanzado(Request $request)
     {
         $buscar = trim($request->input('q', ''));

@@ -512,7 +512,7 @@
                                 {{-- ACCIONES --}}
                                 <td class="text-center">
 
-                                    <a href="{{ route('correspondencia.show', $d->documento->idDocumento) }}?volver=envios"
+                                    <a href="{{ route('admin.correspondencia.show', $d->documento->idDocumento) }}?volver=envios"
                                        class="btn btn-sm btn-doc btn-doc-view"
                                        title="Ver documento">
 

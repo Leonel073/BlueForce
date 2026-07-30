@@ -23,6 +23,11 @@ use Illuminate\Support\Str;
                     </h1>
                     <p class="text-light mb-0">Centro de control administrativo</p>
                 </div>
+                <a href="{{ route('admin.documentos.crear') }}"
+                   class="btn btn-light rounded-3 fw-semibold">
+                    <i class="bi bi-file-earmark-plus-fill me-1"></i>
+                    Registrar documento
+                </a>
             </div>
 
         </div>
@@ -43,6 +48,61 @@ use Illuminate\Support\Str;
             <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
         </div>
     @endif
+
+    {{-- FILTROS --}}
+    <div class="card border-0 shadow-sm rounded-4 mb-4">
+        <div class="card-body">
+            <form method="GET" action="{{ route('admin.documentos.index') }}" class="row g-3 align-items-end">
+                <div class="col-lg-4">
+                    <label class="form-label small text-muted mb-1">Buscar</label>
+                    <input type="text"
+                           name="buscar"
+                           value="{{ request('buscar') }}"
+                           class="form-control rounded-3"
+                           placeholder="Cite, asunto, remitente o CI">
+                </div>
+                <div class="col-lg-2 col-md-4">
+                    <label class="form-label small text-muted mb-1">Estado</label>
+                    <select name="idEstado" class="form-select rounded-3">
+                        <option value="">Todos</option>
+                        @foreach($estados as $estado)
+                            <option value="{{ $estado->idEstado }}" @selected(request('idEstado') == $estado->idEstado)>
+                                {{ $estado->nombre }}
+                            </option>
+                        @endforeach
+                    </select>
+                </div>
+                <div class="col-lg-2 col-md-4">
+                    <label class="form-label small text-muted mb-1">Prioridad</label>
+                    <select name="idUrgencia" class="form-select rounded-3">
+                        <option value="">Todas</option>
+                        @foreach($urgencias as $urgencia)
+                            <option value="{{ $urgencia->idUrgencia }}" @selected(request('idUrgencia') == $urgencia->idUrgencia)>
+                                {{ $urgencia->nombre }}
+                            </option>
+                        @endforeach
+                    </select>
+                </div>
+                <div class="col-lg-2 col-md-4">
+                    <label class="form-label small text-muted mb-1">Grupo</label>
+                    <select name="estado_grupo" class="form-select rounded-3">
+                        <option value="">Todos</option>
+                        <option value="cerrados" @selected(request('estado_grupo') === 'cerrados')>Archivados / Finalizados</option>
+                    </select>
+                </div>
+                <div class="col-lg-2">
+                    <div class="d-flex gap-2">
+                        <button type="submit" class="btn btn-primary rounded-3 flex-fill">
+                            <i class="bi bi-funnel-fill me-1"></i>Filtrar
+                        </button>
+                        <a href="{{ route('admin.documentos.index') }}" class="btn btn-outline-secondary rounded-3">
+                            <i class="bi bi-x-lg"></i>
+                        </a>
+                    </div>
+                </div>
+            </form>
+        </div>
+    </div>
 
     {{-- TABLA PRINCIPAL --}}
     <div class="card border-0 shadow-lg rounded-4">
@@ -181,6 +241,18 @@ use Illuminate\Support\Str;
                                             <i class="bi bi-pencil"></i>
                                         </a>
 
+                                        @if(in_array($doc->estado->nombre ?? '', ['Archivado', 'Finalizado'], true))
+                                            <button type="button"
+                                                    class="btn btn-sm btn-doc btn-doc-restore"
+                                                    title="Reactivar documento"
+                                                    data-bs-toggle="modal"
+                                                    data-bs-target="#modalReactivarDocumento"
+                                                    data-reactivar-url="{{ route('admin.documentos.reactivar', $doc->idDocumento) }}"
+                                                    data-documento-titulo="{{ $doc->cite }} - {{ Str::limit($doc->asunto, 70) }}">
+                                                <i class="bi bi-arrow-counterclockwise"></i>
+                                            </button>
+                                        @endif
+
 
                                     </div>
 
@@ -241,6 +313,8 @@ use Illuminate\Support\Str;
     </div>
   </div>
 </div>
+
+@include('admin.documentos.partials.reactivar-modal')
 
 <script>
     // Inicializar tooltips

@@ -69,7 +69,7 @@
                                                     <h5 class="modal-title">Archivar Documento</h5>
                                                     <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
                                                 </div>
-                                                <form method="POST" action="{{ route('recibidas.archivar', $doc->idCorrespondencia ?? 0) }}">
+                                                <form method="POST" action="{{ route('admin.recibidas.archivar', $doc->idCorrespondencia ?? 0) }}">
                                                     @csrf
                                                     <div class="modal-body">
                                                         <div class="alert alert-info">

@@ -97,7 +97,7 @@
         <div class="card-body">
 
             <form method="GET"
-                  action="{{ route('envios.bandeja') }}"
+                  action="{{ route('admin.bandeja') }}"
                   class="row g-3 align-items-end">
 
                 <div class="col-lg-4 col-md-6">
@@ -184,6 +184,14 @@
 
                 </div>
 
+                <div class="col-lg-1 col-md-6">
+                    <label class="form-label small text-muted mb-1">Vista</label>
+                    <select name="solo_mis" class="form-select rounded-3">
+                        <option value="">Global</option>
+                        <option value="1" @selected(request('solo_mis') === '1')>Asignados a mi</option>
+                    </select>
+                </div>
+
                 <div class="col-lg-1 col-md-6 d-flex gap-2">
 
                     <button type="submit"
@@ -194,7 +202,7 @@
 
                     </button>
 
-                    <a href="{{ route('envios.bandeja') }}"
+                    <a href="{{ route('admin.bandeja') }}"
                        class="btn btn-outline-secondary rounded-3"
                        title="Limpiar">
 
@@ -461,7 +469,7 @@
                                         {{-- DERIVAR --}}
                                         @if(!$bloqueado)
 
-                                            <a href="{{ route('envios.derivar.form', $doc->idDocumento) }}?volver=bandeja"
+                                            <a href="{{ route('admin.bandeja.derivar.form', $doc->idDocumento) }}?volver=bandeja"
                                                class="btn btn-sm btn-doc btn-doc-derive"
                                                title="Derivar documento">
 

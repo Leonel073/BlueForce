@@ -419,6 +419,7 @@
     const personaSelect = document.getElementById('persona_responsable');
     const oldPersonaId = @json(old('idPersonaResponsable'));
     const departamentoActualId = @json($departamentoActual);
+    const personasDepartamentoEndpoint = @json(url('/documentos/departamento'));
 
     if (!departamentoSelect || !destinatarioSection || !personaSelect) {
         return;
@@ -437,7 +438,7 @@
             return;
         }
 
-        fetch('/documentos/departamento/' + encodeURIComponent(idDepartamento) + '/personas')
+        fetch(personasDepartamentoEndpoint + '/' + encodeURIComponent(idDepartamento) + '/personas')
             .then(function (response) { return response.json(); })
             .then(function (personas) {
                 let html = '<option value="">-- Seleccione una persona --</option>';
@@ -445,7 +446,7 @@
                 if (personas.length > 0) {
                     personas.forEach(function (persona) {
                         html += '<option value="' + persona.idPersona + '">' +
-                            persona.nombre + ' (' + persona.cargo + ')</option>';
+                            persona.nombre + ' (' + persona.cargo + ' - ' + persona.rol + ')</option>';
                     });
                     destinatarioSection.style.display = 'block';
                 } else {

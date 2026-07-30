@@ -12,6 +12,76 @@
     ])
 @endif
 
+@if(isset($documentosPendientesAsignados) && $documentosPendientesAsignados->count() > 0 && empty($anuncioPendiente))
+<div class="modal fade" id="adminDocumentosPendientesModal" tabindex="-1" aria-labelledby="adminDocumentosPendientesTitle" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered modal-lg">
+        <div class="modal-content border-0 shadow-lg rounded-4 overflow-hidden">
+            <div class="modal-header border-0 text-white p-4"
+                 style="background:linear-gradient(135deg,#071e3d,#0B2D59 48%,#2E608C); border-bottom:5px solid #D9A23D !important;">
+                <div>
+                    <span class="badge rounded-pill mb-2" style="background:#D9A23D;color:#172033;">Bandeja personal</span>
+                    <h5 class="modal-title fw-bold mb-1" id="adminDocumentosPendientesTitle">
+                        <i class="bi bi-bell-fill me-1"></i>
+                        Documentos pendientes de recepcion
+                    </h5>
+                    <small class="text-white-50">Estos documentos fueron derivados directamente a su usuario administrador.</small>
+                </div>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Cerrar"></button>
+            </div>
+            <div class="modal-body p-4">
+                <div class="alert alert-info border-0 rounded-3 mb-4">
+                    <i class="bi bi-info-circle-fill me-1"></i>
+                    Tiene <strong>{{ $documentosPendientesAsignados->count() }}</strong> documento(s) pendiente(s) de recepcion.
+                </div>
+                <div class="list-group list-group-flush">
+                    @foreach($documentosPendientesAsignados as $doc)
+                        <div class="list-group-item px-0 py-3">
+                            <div class="row align-items-center g-2">
+                                <div class="col-md-8">
+                                    <h6 class="mb-1 fw-bold" style="color:#0B2D59;">{{ $doc->cite }}</h6>
+                                    <p class="mb-1">{{ \Illuminate\Support\Str::limit($doc->asunto, 70) }}</p>
+                                    <small class="text-muted">
+                                        Remitente: <strong>{{ $doc->remitente->nombre ?? 'Desconocido' }}</strong>
+                                        @if($doc->urgencia)
+                                            <span class="badge bg-warning text-dark ms-2">{{ $doc->urgencia->nombre }}</span>
+                                        @endif
+                                    </small>
+                                </div>
+                                <div class="col-md-4 text-md-end">
+                                    <form action="{{ route('admin.recibidas.recibir', $doc->idDocumento) }}" method="POST" class="d-inline">
+                                        @csrf
+                                        <button type="submit" class="btn btn-success btn-sm rounded-3">
+                                            <i class="bi bi-check-circle-fill me-1"></i>
+                                            Aceptar
+                                        </button>
+                                    </form>
+                                </div>
+                            </div>
+                        </div>
+                    @endforeach
+                </div>
+            </div>
+            <div class="modal-footer border-0 p-4">
+                <button type="button" class="btn btn-outline-secondary rounded-3" data-bs-dismiss="modal">Cerrar</button>
+                <a href="{{ route('admin.bandeja', ['solo_mis' => 1]) }}" class="btn btn-primary rounded-3">
+                    <i class="bi bi-inbox-fill me-1"></i>
+                    Ver mi bandeja
+                </a>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+document.addEventListener('DOMContentLoaded', function () {
+    const modal = document.getElementById('adminDocumentosPendientesModal');
+    if (modal) {
+        new bootstrap.Modal(modal).show();
+    }
+});
+</script>
+@endif
+
 <div class="container-fluid py-4">
 
     {{-- ESTILOS --}}

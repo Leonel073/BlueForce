@@ -10,6 +10,7 @@ use App\Models\User;
 use App\Models\Departamento;
 use App\Models\Anuncio;
 
+use Carbon\Carbon;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Cache;
@@ -284,6 +285,14 @@ class DashboardController extends Controller
             ->orderBy('fechaCreacion')
             ->first();
 
+        $documentosPendientesAsignados = Correspondencia::whereHas('ultimaDerivacion',
+                fn($q) => $q->where('idUsuarioAsignado', Auth::id())
+            )
+            ->whereHas('estado', fn($q) => $q->where('nombre', 'Pendiente'))
+            ->with(['ultimaDerivacion.departamentoDestino', 'remitente', 'urgencia'])
+            ->orderByDesc('fecha')
+            ->get();
+
         /*
         |--------------------------------------------------------------------------
         | RETORNO
@@ -310,7 +319,8 @@ class DashboardController extends Controller
 
                 'documentosRecientes',
                 'derivacionesRecientes',
-                'anuncioPendiente'
+                'anuncioPendiente',
+                'documentosPendientesAsignados'
             )
         );
     }
@@ -376,42 +386,49 @@ public function estadisticasDashboard()
     |--------------------------------------------------------------------------
     */
 
-    $meses = Correspondencia::selectRaw('
-            MONTH(fecha) as numero_mes,
-            COUNT(*) as cantidad
-        ')
-        ->whereYear('fecha', now()->year)
-        ->groupBy('numero_mes')
-        ->orderBy('numero_mes')
-        ->get()
-        ->map(function ($item) {
-
-            $mesesNombres = [
-                1 => 'Ene',
-                2 => 'Feb',
-                3 => 'Mar',
-                4 => 'Abr',
-                5 => 'May',
-                6 => 'Jun',
-                7 => 'Jul',
-                8 => 'Ago',
-                9 => 'Sep',
-                10 => 'Oct',
-                11 => 'Nov',
-                12 => 'Dic',
-            ];
-
-            return [
-                'mes'      => $mesesNombres[$item->numero_mes],
-                'cantidad' => $item->cantidad
-            ];
-        });
+    $meses = $this->documentosPorMes();
 
     return response()->json([
         'estados' => $estados,
         'tipos'   => $tipos,
         'meses'   => $meses
     ]);
+}
+
+private function documentosPorMes()
+{
+    $inicio = Carbon::now()->startOfMonth()->subMonths(5);
+    $fin = Carbon::now()->endOfMonth();
+
+    $registros = Correspondencia::whereBetween('fecha', [$inicio, $fin])
+        ->selectRaw('DATE_FORMAT(fecha, "%Y-%m") as periodo, COUNT(*) as cantidad')
+        ->groupByRaw('DATE_FORMAT(fecha, "%Y-%m")')
+        ->pluck('cantidad', 'periodo');
+
+    $mesesNombres = [
+        1 => 'Ene',
+        2 => 'Feb',
+        3 => 'Mar',
+        4 => 'Abr',
+        5 => 'May',
+        6 => 'Jun',
+        7 => 'Jul',
+        8 => 'Ago',
+        9 => 'Sep',
+        10 => 'Oct',
+        11 => 'Nov',
+        12 => 'Dic',
+    ];
+
+    return collect(range(0, 5))->map(function ($offset) use ($inicio, $registros, $mesesNombres) {
+        $mes = $inicio->copy()->addMonths($offset);
+        $periodo = $mes->format('Y-m');
+
+        return [
+            'mes' => $mesesNombres[(int) $mes->month] . ' ' . $mes->format('Y'),
+            'cantidad' => (int) ($registros[$periodo] ?? 0),
+        ];
+    });
 }
  /*
 |--------------------------------------------------------------------------

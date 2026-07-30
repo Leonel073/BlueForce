@@ -1,6 +1,6 @@
 @extends('layouts.app')
 
-@section('title', 'Mi Correspondencia')
+@section('title', $pageTitle ?? 'Mi Correspondencia')
 
 @section('content')
 
@@ -20,13 +20,13 @@
 
                         <i class="bi bi-folder-fill"></i>
 
-                        Mi Correspondencia
+                        {{ $pageTitle ?? 'Mi Correspondencia' }}
 
                     </h1>
 
                     <p class="text-light mb-0">
 
-                        Gestión documental personal
+                        {{ $pageSubtitle ?? 'Gestion documental personal' }}
 
                     </p>
 
@@ -151,7 +151,7 @@
 
                 <i class="bi bi-files"></i>
 
-                Documentos Registrados
+                {{ $tableTitle ?? 'Documentos Registrados' }}
 
             </span>
 
@@ -364,7 +364,7 @@
 
                                         @else
 
-                                            <a href="{{ route('correspondencia.show', $doc->idDocumento) }}?volver=documentos"
+                                            <a href="{{ route($detalleRoute ?? 'correspondencia.show', $doc->idDocumento) }}?volver={{ request()->routeIs('documentos.index') ? 'documentos' : 'correspondencia' }}"
                                                class="btn btn-sm btn-doc btn-doc-view"
                                                title="Ver documento">
 
@@ -391,7 +391,7 @@
 
                                         <i class="bi bi-inbox fs-1 d-block mb-3"></i>
 
-                                        No existen documentos registrados.
+                                        {{ $emptyMessage ?? 'No existen documentos registrados.' }}
 
                                     </div>
 
