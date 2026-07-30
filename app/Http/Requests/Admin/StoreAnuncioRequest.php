@@ -19,7 +19,7 @@ class StoreAnuncioRequest extends FormRequest
             'archivo_pdf' => [
                 'nullable',
                 'file',
-                'mimes:pdf',
+                'mimes:pdf,doc,docx,xls,xlsx',
                 'max:' . config('app.max_pdf_size_kb', 10240),
             ],
         ];
@@ -32,7 +32,7 @@ class StoreAnuncioRequest extends FormRequest
             'titulo.max' => 'El título no puede superar los 255 caracteres.',
             'asunto.required' => 'El contenido del anuncio es obligatorio.',
             'asunto.max' => 'El contenido no puede superar los 5000 caracteres.',
-            'archivo_pdf.mimes' => 'Solo se permiten archivos PDF.',
+            'archivo_pdf.mimes' => 'Solo se permiten archivos PDF, Word o Excel.',
             'archivo_pdf.max' => 'El archivo no puede superar los 10 MB.',
         ];
     }

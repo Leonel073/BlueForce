@@ -49,6 +49,45 @@ class Correspondencia extends Model
         return !is_null($this->ruta_pdf);
     }
 
+    public function getEsPdfAttribute(): bool
+    {
+        return $this->mime_type === 'application/pdf';
+    }
+
+    public function getArchivoIconoAttribute(): string
+    {
+        if ($this->es_pdf) {
+            return 'bi-file-earmark-pdf-fill text-danger';
+        }
+
+        if (str_contains((string) $this->mime_type, 'word')) {
+            return 'bi-file-earmark-word-fill text-primary';
+        }
+
+        if (str_contains((string) $this->mime_type, 'excel') || str_contains((string) $this->mime_type, 'spreadsheet')) {
+            return 'bi-file-earmark-excel-fill text-success';
+        }
+
+        return 'bi-file-earmark-fill text-secondary';
+    }
+
+    public function getArchivoTipoLabelAttribute(): string
+    {
+        if ($this->es_pdf) {
+            return 'PDF';
+        }
+
+        if (str_contains((string) $this->mime_type, 'word')) {
+            return 'Word';
+        }
+
+        if (str_contains((string) $this->mime_type, 'excel') || str_contains((string) $this->mime_type, 'spreadsheet')) {
+            return 'Excel';
+        }
+
+        return 'Archivo';
+    }
+
     /**
      * Tamaño del archivo formateado para mostrar en vistas.
      */

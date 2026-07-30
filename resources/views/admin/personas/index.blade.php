@@ -132,7 +132,7 @@
                                             <strong>{{ $persona->nombre }}</strong>
                                         </td>
                                         <td>
-                                            <code class="bg-light px-2 py-1 rounded">{{ $persona->ci ?? 'N/A' }}</code>
+                                            <code class="bg-light px-2 py-1 rounded">{{ trim(($persona->ci ?? 'N/A') . ' ' . ($persona->complemento_ci ?? '')) }}</code>
                                         </td>
                                         <td>
                                             @if($persona->correo)
@@ -247,7 +247,7 @@
                                             <span class="badge bg-warning text-dark">EXTERNO</span>
                                         </td>
                                         <td>
-                                            <code class="bg-light px-2 py-1 rounded">{{ $persona->ci ?? 'N/A' }}</code>
+                                            <code class="bg-light px-2 py-1 rounded">{{ trim(($persona->ci ?? 'N/A') . ' ' . ($persona->complemento_ci ?? '')) }}</code>
                                         </td>
                                         <td>
                                             @if($persona->institucion)
@@ -393,6 +393,5 @@
 </style>
 
 @endsection
-
 
 

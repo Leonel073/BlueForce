@@ -46,7 +46,7 @@
                             <div class="p-4">
                                 <div class="d-flex justify-content-between align-items-center mb-3 gap-2 flex-wrap">
                                     <strong style="color:#0B2D59;">
-                                        <i class="bi bi-file-earmark-pdf-fill text-danger me-1"></i>
+                                        <i class="bi {{ $anuncioPendiente->archivoIcono() }} me-1"></i>
                                         {{ $anuncioPendiente->archivo_pdf }}
                                     </strong>
                                     <a href="{{ route('anuncios.pdf.descargar', $anuncioPendiente->idAnuncio) }}"
@@ -54,10 +54,17 @@
                                         <i class="bi bi-download me-1"></i> Descargar
                                     </a>
                                 </div>
-                                <iframe src="{{ route('anuncios.pdf.previsualizar', $anuncioPendiente->idAnuncio) }}"
-                                        class="w-100 rounded-3 border"
-                                        style="height:430px;"
-                                        title="PDF del anuncio"></iframe>
+                                @if($anuncioPendiente->esPdf())
+                                    <iframe src="{{ route('anuncios.pdf.previsualizar', $anuncioPendiente->idAnuncio) }}"
+                                            class="w-100 rounded-3 border"
+                                            style="height:430px;"
+                                            title="PDF del anuncio"></iframe>
+                                @else
+                                    <div class="alert alert-light border rounded-3 mb-0">
+                                        <i class="bi bi-info-circle me-1"></i>
+                                        Este tipo de archivo se debe descargar para abrirlo.
+                                    </div>
+                                @endif
                             </div>
                         </div>
                     @endif

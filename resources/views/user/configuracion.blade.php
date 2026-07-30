@@ -214,13 +214,22 @@
 
                             </label>
 
-                            <input
-                                type="password"
-                                name="current_password"
-                                class="form-control rounded-3 border-0 shadow-sm"
-                                style="background-color: #f5f7fa;"
-                                required
-                            >
+                            <div class="input-group">
+                                <input
+                                    type="password"
+                                    name="current_password"
+                                    id="current_password"
+                                    class="form-control border-0 shadow-sm"
+                                    style="background-color: #f5f7fa;"
+                                    required
+                                >
+                                <button type="button"
+                                        class="btn btn-outline-secondary"
+                                        onclick="togglePasswordVisibility('current_password', 'icon-current-password')"
+                                        aria-label="Mostrar contrasena actual">
+                                    <i class="bi bi-eye" id="icon-current-password"></i>
+                                </button>
+                            </div>
 
                             @error('current_password')
 
@@ -242,13 +251,22 @@
 
                             </label>
 
-                            <input
-                                type="password"
-                                name="password"
-                                class="form-control rounded-3 border-0 shadow-sm"
-                                style="background-color: #f5f7fa;"
-                                required
-                            >
+                            <div class="input-group">
+                                <input
+                                    type="password"
+                                    name="password"
+                                    id="password"
+                                    class="form-control border-0 shadow-sm"
+                                    style="background-color: #f5f7fa;"
+                                    required
+                                >
+                                <button type="button"
+                                        class="btn btn-outline-secondary"
+                                        onclick="togglePasswordVisibility('password', 'icon-password')"
+                                        aria-label="Mostrar nueva contrasena">
+                                    <i class="bi bi-eye" id="icon-password"></i>
+                                </button>
+                            </div>
 
                             @error('password')
 
@@ -274,13 +292,22 @@
 
                             </label>
 
-                            <input
-                                type="password"
-                                name="password_confirmation"
-                                class="form-control rounded-3 border-0 shadow-sm"
-                                style="background-color: #f5f7fa;"
-                                required
-                            >
+                            <div class="input-group">
+                                <input
+                                    type="password"
+                                    name="password_confirmation"
+                                    id="password_confirmation"
+                                    class="form-control border-0 shadow-sm"
+                                    style="background-color: #f5f7fa;"
+                                    required
+                                >
+                                <button type="button"
+                                        class="btn btn-outline-secondary"
+                                        onclick="togglePasswordVisibility('password_confirmation', 'icon-password-confirmation')"
+                                        aria-label="Mostrar confirmacion de contrasena">
+                                    <i class="bi bi-eye" id="icon-password-confirmation"></i>
+                                </button>
+                            </div>
 
                         </div>
 
@@ -328,6 +355,17 @@
     actualizarFechaHora();
 
     setInterval(actualizarFechaHora, 1000);
+
+    function togglePasswordVisibility(inputId, iconId) {
+        const input = document.getElementById(inputId);
+        const icon = document.getElementById(iconId);
+        if (!input || !icon) return;
+
+        const visible = input.type === 'text';
+        input.type = visible ? 'password' : 'text';
+        icon.classList.toggle('bi-eye', visible);
+        icon.classList.toggle('bi-eye-slash', !visible);
+    }
 
 </script>
 

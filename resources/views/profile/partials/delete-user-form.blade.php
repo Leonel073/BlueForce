@@ -30,13 +30,21 @@
             <div class="mt-6">
                 <x-input-label for="password" value="{{ __('Password') }}" class="sr-only" />
 
-                <x-text-input
-                    id="password"
-                    name="password"
-                    type="password"
-                    class="mt-1 block w-3/4"
-                    placeholder="{{ __('Password') }}"
-                />
+                <div class="relative mt-1 w-3/4">
+                    <x-text-input
+                        id="delete_user_password"
+                        name="password"
+                        type="password"
+                        class="block w-full pr-12"
+                        placeholder="{{ __('Password') }}"
+                    />
+                    <button type="button"
+                            class="absolute inset-y-0 right-0 px-3 text-gray-500"
+                            onclick="togglePasswordVisibility('delete_user_password', 'icon-delete-user-password')"
+                            aria-label="Mostrar contrasena">
+                        <i class="bi bi-eye" id="icon-delete-user-password"></i>
+                    </button>
+                </div>
 
                 <x-input-error :messages="$errors->userDeletion->get('password')" class="mt-2" />
             </div>
@@ -52,4 +60,17 @@
             </div>
         </form>
     </x-modal>
+
+    <script>
+        function togglePasswordVisibility(inputId, iconId) {
+            const input = document.getElementById(inputId);
+            const icon = document.getElementById(iconId);
+            if (!input || !icon) return;
+
+            const visible = input.type === 'text';
+            input.type = visible ? 'password' : 'text';
+            icon.classList.toggle('bi-eye', visible);
+            icon.classList.toggle('bi-eye-slash', !visible);
+        }
+    </script>
 </section>

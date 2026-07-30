@@ -47,16 +47,32 @@
                     </div>
                     <div class="card-body">
                         {{-- CI --}}
-                        <div class="mb-3">
-                            <label class="form-label fw-semibold">
-                                Carnet de Identidad
-                                <span class="text-danger">*</span>
-                            </label>
-                            <input type="text" name="ci" class="form-control @error('ci') is-invalid @enderror"
-                                   value="{{ old('ci') }}" placeholder="Ej: 1234567-8" required>
-                            @error('ci')
-                                <div class="invalid-feedback d-block">{{ $message }}</div>
-                            @enderror
+                        <div class="row">
+                            <div class="col-md-8 mb-3">
+                                <label class="form-label fw-semibold">
+                                    Carnet de Identidad
+                                    <span class="text-danger">*</span>
+                                </label>
+                                <input type="text" name="ci" inputmode="numeric" pattern="[0-9]+"
+                                       class="form-control @error('ci') is-invalid @enderror"
+                                       value="{{ old('ci') }}" placeholder="Ej: 12345678" required>
+                                @error('ci')
+                                    <div class="invalid-feedback d-block">{{ $message }}</div>
+                                @enderror
+                            </div>
+
+                            <div class="col-md-4 mb-3">
+                                <label class="form-label fw-semibold">
+                                    Complemento
+                                    <span class="text-muted">(Opcional)</span>
+                                </label>
+                                <input type="text" name="complemento_ci" maxlength="10"
+                                       class="form-control text-uppercase @error('complemento_ci') is-invalid @enderror"
+                                       value="{{ old('complemento_ci') }}" placeholder="Ej: LP">
+                                @error('complemento_ci')
+                                    <div class="invalid-feedback d-block">{{ $message }}</div>
+                                @enderror
+                            </div>
                         </div>
 
                         {{-- NOMBRE --}}

@@ -76,7 +76,7 @@
                                     </td>
                                     <td class="text-center">
                                         @if($anuncio->tienePdf())
-                                            <i class="bi bi-file-earmark-pdf-fill text-danger fs-5"></i>
+                                            <i class="bi {{ $anuncio->archivoIcono() }} fs-5"></i>
                                         @else
                                             <span class="text-muted">—</span>
                                         @endif

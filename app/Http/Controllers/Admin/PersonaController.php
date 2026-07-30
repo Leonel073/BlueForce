@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Admin;
 use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Validation\Rule;
 use App\Models\Persona;
 use App\Models\Departamento;
 use App\Models\Cargo;
@@ -31,6 +32,7 @@ class PersonaController extends Controller
             $queryInternas->where(function ($q) use ($search) {
                 $q->where('nombre', 'LIKE', "%{$search}%")
                   ->orWhere('ci', 'LIKE', "%{$search}%")
+                  ->orWhere('complemento_ci', 'LIKE', "%{$search}%")
                   ->orWhere('correo', 'LIKE', "%{$search}%");
             });
         }
@@ -47,6 +49,7 @@ class PersonaController extends Controller
             $queryExternas->where(function ($q) use ($search) {
                 $q->where('nombre', 'LIKE', "%{$search}%")
                   ->orWhere('ci', 'LIKE', "%{$search}%")
+                  ->orWhere('complemento_ci', 'LIKE', "%{$search}%")
                   ->orWhere('correo', 'LIKE', "%{$search}%");
             });
         }
@@ -100,6 +103,7 @@ class PersonaController extends Controller
         $persona = Persona::create([
             'nombre'               => strtoupper(trim($validated['nombre'])),
             'ci'                   => trim($validated['ci']),
+            'complemento_ci'       => $validated['complemento_ci'] ?? null,
             'tipo'                 => $validated['tipo'],
             'telefono_celular'     => $validated['telefono_celular'] ?? null,
             'telefono_fijo'        => $validated['telefono_fijo'] ?? null,
@@ -139,9 +143,22 @@ class PersonaController extends Controller
     {
         $persona = Persona::findOrFail($id);
 
+        $request->merge([
+            'ci' => trim($request->input('ci', '')),
+            'complemento_ci' => strtoupper(trim($request->input('complemento_ci', ''))) ?: null,
+        ]);
+
         $validated = $request->validate([
             'nombre'               => 'required|string|max:200|regex:/^[\pL\s]+$/u',
-            'ci'                   => 'required|string|max:20|unique:PERSONA,ci,' . $persona->idPersona . ',idPersona',
+            'ci'                   => [
+                'required',
+                'string',
+                'regex:/^[0-9]+$/',
+                Rule::unique('PERSONA', 'ci')
+                    ->ignore($persona->idPersona, 'idPersona')
+                    ->where(fn($query) => $query->where('complemento_ci', $request->input('complemento_ci'))),
+            ],
+            'complemento_ci'       => 'nullable|string|max:10|regex:/^[A-Za-z0-9]+$/',
             'correo'               => 'nullable|email|max:150',
             'telefono_celular'     => 'nullable|string|max:20',
             'telefono_fijo'        => 'nullable|string|max:20',
@@ -161,6 +178,7 @@ class PersonaController extends Controller
         $persona->update([
             'nombre'               => strtoupper(trim($validated['nombre'])),
             'ci'                   => trim($validated['ci']),
+            'complemento_ci'       => strtoupper(trim($validated['complemento_ci'] ?? '')) ?: null,
             'correo'               => $validated['correo'] ?? null,
             'telefono_celular'     => $validated['telefono_celular'] ?? null,
             'telefono_fijo'        => $validated['telefono_fijo'] ?? null,
@@ -280,7 +298,8 @@ class PersonaController extends Controller
         $personas = Persona::activas()
             ->where(function ($query) use ($q) {
                 $query->where('nombre', 'LIKE', "%{$q}%")
-                      ->orWhere('ci', 'LIKE', "%{$q}%");
+                      ->orWhere('ci', 'LIKE', "%{$q}%")
+                      ->orWhere('complemento_ci', 'LIKE', "%{$q}%");
             })
             ->with('cargos', 'departamento')
             ->limit(10)
@@ -288,6 +307,7 @@ class PersonaController extends Controller
                 'idPersona',
                 'nombre',
                 'ci',
+                'complemento_ci',
                 'tipo',
                 'idCargo',
                 'idDepartamento',
@@ -298,6 +318,7 @@ class PersonaController extends Controller
                     'idPersona'          => $persona->idPersona,
                     'nombre'             => $persona->nombre,
                     'ci'                 => $persona->ci,
+                    'complemento_ci'     => $persona->complemento_ci,
                     'tipo'               => $persona->tipo,
                     'cargo'              => $persona->cargos_nombres,
                     'departamento'       => $persona->departamento?->nombre ?? null,

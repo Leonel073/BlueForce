@@ -69,7 +69,7 @@ class StoreDocumentoRequest extends FormRequest
             'archivo_pdf' => [
                 'nullable',
                 'file',
-                'mimes:pdf',
+                'mimes:pdf,doc,docx,xls,xlsx',
                 'max:' . config('app.max_pdf_size_kb', 10240),
             ],
         ];
@@ -322,8 +322,8 @@ class StoreDocumentoRequest extends FormRequest
             |--------------------------------------------------------------------------
             */
             'archivo_pdf.file'   => 'El archivo debe ser un fichero válido.',
-            'archivo_pdf.mimes'  => 'Solo se permiten archivos en formato PDF.',
-            'archivo_pdf.max'    => 'El archivo PDF no puede superar los 10 MB.',
+            'archivo_pdf.mimes'  => 'Solo se permiten archivos PDF, Word o Excel.',
+            'archivo_pdf.max'    => 'El archivo no puede superar los 10 MB.',
         ];
     }
 

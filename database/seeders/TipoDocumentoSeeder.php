@@ -14,6 +14,11 @@ class TipoDocumentoSeeder extends Seeder
             ['nombre' => 'Informe'],
             ['nombre' => 'Solicitud'],
             ['nombre' => 'Carta'],
+            ['nombre' => 'Oficio'],
+            ['nombre' => 'Correo Electronicos'],
+            ['nombre' => 'FAX'],
+            ['nombre' => 'Notas de Servicio'],
+            ['nombre' => 'Certificado'],
         ]);
     }
 }

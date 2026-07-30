@@ -47,6 +47,45 @@ class Anuncio extends Model
         return !empty($this->ruta_pdf);
     }
 
+    public function esPdf(): bool
+    {
+        return $this->mime_type === 'application/pdf';
+    }
+
+    public function archivoIcono(): string
+    {
+        if ($this->esPdf()) {
+            return 'bi-file-earmark-pdf-fill text-danger';
+        }
+
+        if (str_contains((string) $this->mime_type, 'word')) {
+            return 'bi-file-earmark-word-fill text-primary';
+        }
+
+        if (str_contains((string) $this->mime_type, 'excel') || str_contains((string) $this->mime_type, 'spreadsheet')) {
+            return 'bi-file-earmark-excel-fill text-success';
+        }
+
+        return 'bi-file-earmark-fill text-secondary';
+    }
+
+    public function archivoTipoLabel(): string
+    {
+        if ($this->esPdf()) {
+            return 'PDF';
+        }
+
+        if (str_contains((string) $this->mime_type, 'word')) {
+            return 'Word';
+        }
+
+        if (str_contains((string) $this->mime_type, 'excel') || str_contains((string) $this->mime_type, 'spreadsheet')) {
+            return 'Excel';
+        }
+
+        return 'Archivo';
+    }
+
     public function scopeActivos($query)
     {
         return $query->where('activo', true);

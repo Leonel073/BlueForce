@@ -45,19 +45,21 @@
                 <div class="card border-0 shadow-lg rounded-4 mb-4">
                     <div class="card-header text-white rounded-top-4 border-0"
                          style="background: linear-gradient(135deg,#0B2D59,#2E608C);">
-                        <i class="bi bi-file-earmark-pdf me-1"></i>
+                        <i class="bi {{ $anuncio->archivoIcono() }} me-1"></i>
                         Documento Adjunto: {{ $anuncio->archivo_pdf }}
                     </div>
-                    <div class="card-body p-0">
-                        <iframe src="{{ route('anuncios.pdf.previsualizar', $anuncio->idAnuncio) }}"
-                                class="w-100 rounded-bottom-4"
-                                style="height:500px; border:none;"
-                                title="PDF del anuncio"></iframe>
-                    </div>
+                    @if($anuncio->esPdf())
+                        <div class="card-body p-0">
+                            <iframe src="{{ route('anuncios.pdf.previsualizar', $anuncio->idAnuncio) }}"
+                                    class="w-100 rounded-bottom-4"
+                                    style="height:500px; border:none;"
+                                    title="PDF del anuncio"></iframe>
+                        </div>
+                    @endif
                     <div class="card-footer bg-white border-0 p-3">
                         <a href="{{ route('anuncios.pdf.descargar', $anuncio->idAnuncio) }}"
                            class="btn btn-outline-primary rounded-3">
-                            <i class="bi bi-download me-1"></i> Descargar PDF
+                            <i class="bi bi-download me-1"></i> Descargar {{ $anuncio->archivoTipoLabel() }}
                         </a>
                     </div>
                 </div>

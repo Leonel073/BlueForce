@@ -720,24 +720,24 @@
                     </div>
                 </div>
 
-                {{-- ARCHIVO PDF (OPCIONAL) --}}
+                {{-- ARCHIVO ADJUNTO (OPCIONAL) --}}
                 <div class="card border-0 shadow-sm rounded-4 mt-4">
                     <div class="card-header text-white rounded-top-4" style="background: linear-gradient(135deg,#0B2D59,#2E608C);">
-                        <i class="bi bi-file-pdf-fill me-1"></i>
-                        ADJUNTAR PDF (OPCIONAL)
+                        <i class="bi bi-paperclip me-1"></i>
+                        ADJUNTAR ARCHIVO (OPCIONAL)
                     </div>
                     <div class="card-body">
                         <div class="mb-2">
-                            <label class="form-label fw-semibold">Archivo PDF</label>
-                            <input type="file" name="archivo_pdf" id="archivo_pdf" class="form-control @error('archivo_pdf') is-invalid @enderror" accept=".pdf,application/pdf">
+                            <label class="form-label fw-semibold">Archivo adjunto</label>
+                            <input type="file" name="archivo_pdf" id="archivo_pdf" class="form-control @error('archivo_pdf') is-invalid @enderror" accept=".pdf,.doc,.docx,.xls,.xlsx,application/pdf,application/msword,application/vnd.openxmlformats-officedocument.wordprocessingml.document,application/vnd.ms-excel,application/vnd.openxmlformats-officedocument.spreadsheetml.sheet">
                             @error('archivo_pdf')
                                 <div class="invalid-feedback d-block"><i class="bi bi-exclamation-circle me-1"></i>{{ $message }}</div>
                             @enderror
-                            <small class="text-muted"><i class="bi bi-info-circle me-1"></i>Solo archivos PDF. Tamaño máximo: 10 MB.</small>
+                            <small class="text-muted"><i class="bi bi-info-circle me-1"></i>PDF, Word o Excel. Tamaño máximo: 10 MB.</small>
                         </div>
                         <div id="pdf-preview-name" class="d-none mt-2">
                             <span class="badge bg-danger px-3 py-2">
-                                <i class="bi bi-file-pdf me-1"></i>
+                                <i class="bi bi-paperclip me-1"></i>
                                 <span id="pdf-filename"></span>
                             </span>
                         </div>

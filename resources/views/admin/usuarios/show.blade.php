@@ -206,7 +206,7 @@
                     </div>
                     <i class="bi bi-file-earmark-text fs-3 text-muted"></i>
                 </div>
-                <div class="small text-muted mt-2">{{ $metricas['conPdf'] }} con PDF adjunto</div>
+                <div class="small text-muted mt-2">{{ $metricas['conPdf'] }} con archivo adjunto</div>
             </div>
         </div>
 

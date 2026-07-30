@@ -42,7 +42,7 @@ class DocumentoPdfController extends Controller
         return Storage::disk('local')->download(
             $documento->ruta_pdf,
             $nombreDescarga,
-            ['Content-Type' => 'application/pdf']
+            ['Content-Type' => $documento->mime_type ?? 'application/octet-stream']
         );
     }
 
@@ -58,7 +58,7 @@ class DocumentoPdfController extends Controller
         $documento = Correspondencia::findOrFail($id);
 
         $this->verificarAcceso($documento);
-        $this->verificarArchivoExiste($documento);
+        $this->verificarArchivoExiste($documento, true);
 
         $contenido = Storage::disk('local')->get($documento->ruta_pdf);
 
@@ -116,22 +116,22 @@ class DocumentoPdfController extends Controller
     /**
      * Verifica que el archivo exista en disco y sea PDF real.
      */
-    private function verificarArchivoExiste(Correspondencia $documento): void
+    private function verificarArchivoExiste(Correspondencia $documento, bool $soloPdf = false): void
     {
         if (!$documento->tiene_archivo || !$documento->ruta_pdf) {
-            abort(404, 'Este documento no tiene un archivo PDF adjunto.');
+            abort(404, 'Este documento no tiene un archivo adjunto.');
         }
 
         if (!Storage::disk('local')->exists($documento->ruta_pdf)) {
-            abort(404, 'El archivo PDF no se encuentra en el servidor.');
+            abort(404, 'El archivo no se encuentra en el servidor.');
         }
 
         $ruta     = Storage::disk('local')->path($documento->ruta_pdf);
         $finfo    = new \finfo(FILEINFO_MIME_TYPE);
         $mimeReal = $finfo->file($ruta);
 
-        if ($mimeReal !== 'application/pdf') {
-            abort(403, 'El archivo almacenado no es un PDF válido.');
+        if ($soloPdf && $mimeReal !== 'application/pdf') {
+            abort(403, 'Este archivo no se puede previsualizar. Descarguelo para abrirlo.');
         }
     }
 

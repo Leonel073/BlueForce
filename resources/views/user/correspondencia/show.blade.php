@@ -598,17 +598,17 @@
 
             </div>
 
-            {{-- ARCHIVO PDF ADJUNTO --}}
+            {{-- ARCHIVO ADJUNTO --}}
             @if($documento->tiene_archivo)
             <div class="card border-0 shadow-sm rounded-4 mt-3">
                 <div class="card-header text-white rounded-top-4"
                      style="background-color:#c0392b;">
-                    <i class="bi bi-file-pdf-fill me-1"></i>
-                    Documento PDF Adjunto
+                    <i class="bi {{ $documento->archivo_icono }} me-1"></i>
+                    Documento Adjunto
                 </div>
                 <div class="card-body">
                     <p class="mb-1">
-                        <i class="bi bi-paperclip me-1 text-danger"></i>
+                        <i class="bi {{ $documento->archivo_icono }} me-1"></i>
                         <strong>{{ $documento->archivo_pdf }}</strong>
                     </p>
                     <p class="small text-muted mb-3">
@@ -621,14 +621,16 @@
                         <a href="{{ route('documentos.pdf.descargar', $documento->idDocumento) }}"
                            class="btn btn-danger btn-sm rounded-3">
                             <i class="bi bi-download me-1"></i>
-                            Descargar PDF
+                            Descargar {{ $documento->archivo_tipo_label }}
                         </a>
-                        <a href="{{ route('documentos.pdf.previsualizar', $documento->idDocumento) }}"
-                           target="_blank"
-                           class="btn btn-outline-danger btn-sm rounded-3">
-                            <i class="bi bi-eye me-1"></i>
-                            Ver PDF
-                        </a>
+                        @if($documento->es_pdf)
+                            <a href="{{ route('documentos.pdf.previsualizar', $documento->idDocumento) }}"
+                               target="_blank"
+                               class="btn btn-outline-danger btn-sm rounded-3">
+                                <i class="bi bi-eye me-1"></i>
+                                Ver PDF
+                            </a>
+                        @endif
                     </div>
                 </div>
             </div>

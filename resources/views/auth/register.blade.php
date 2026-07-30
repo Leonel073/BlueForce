@@ -63,6 +63,12 @@
                 <div class="input-group">
                     <span class="input-group-text bg-light"><i class="bi bi-lock"></i></span>
                     <input id="password" class="form-control @error('password') is-invalid @enderror" type="password" name="password" required placeholder="Escribe tu contraseña segura">
+                    <button type="button"
+                            class="btn btn-outline-secondary"
+                            aria-label="Mostrar contrasena"
+                            onclick="togglePasswordVisibility('password', 'icon-password')">
+                        <i class="bi bi-eye" id="icon-password"></i>
+                    </button>
                     @error('password')<div class="invalid-feedback">{{ $message }}</div>@enderror
                 </div>
                 <!-- Lista de Requisitos -->
@@ -79,6 +85,12 @@
                 <div class="input-group">
                     <span class="input-group-text bg-light"><i class="bi bi-shield-lock"></i></span>
                     <input id="password_confirmation" class="form-control" type="password" name="password_confirmation" required placeholder="Repite tu contraseña">
+                    <button type="button"
+                            class="btn btn-outline-secondary"
+                            aria-label="Mostrar confirmacion de contrasena"
+                            onclick="togglePasswordVisibility('password_confirmation', 'icon-password-confirmation')">
+                        <i class="bi bi-eye" id="icon-password-confirmation"></i>
+                    </button>
                 </div>
                 <div id="req-match" class="small mt-1 text-danger" style="display: none;">
                     <i class="bi bi-exclamation-circle"></i> Las contraseñas no coinciden
@@ -157,6 +169,17 @@
             password.addEventListener('input', validatePassword);
             confirmPassword.addEventListener('input', validatePassword);
         });
+
+        function togglePasswordVisibility(inputId, iconId) {
+            const input = document.getElementById(inputId);
+            const icon = document.getElementById(iconId);
+            if (!input || !icon) return;
+
+            const visible = input.type === 'text';
+            input.type = visible ? 'password' : 'text';
+            icon.classList.toggle('bi-eye', visible);
+            icon.classList.toggle('bi-eye-slash', !visible);
+        }
     </script>
 </body>
 </html>

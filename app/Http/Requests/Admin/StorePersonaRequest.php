@@ -4,7 +4,6 @@ namespace App\Http\Requests\Admin;
 
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Validation\Rule;
-use App\Rules\ValidarCIBoliviano;
 use App\Rules\ValidarTelefonoBoliviano;
 
 /**
@@ -54,8 +53,17 @@ class StorePersonaRequest extends FormRequest
             'ci' => [
                 'required',
                 'string',
-                new ValidarCIBoliviano(),
-                Rule::unique('PERSONA', 'ci'),
+                'regex:/^[0-9]+$/',
+                Rule::unique('PERSONA', 'ci')->where(function ($query) {
+                    return $query->where('complemento_ci', $this->input('complemento_ci'));
+                }),
+            ],
+
+            'complemento_ci' => [
+                'nullable',
+                'string',
+                'max:10',
+                'regex:/^[A-Za-z0-9]+$/',
             ],
 
             'tipo' => [
@@ -147,7 +155,11 @@ class StorePersonaRequest extends FormRequest
             // CI
             'ci.required' => 'El carnet de identidad es obligatorio.',
             'ci.string' => 'El CI debe ser un texto válido.',
-            'ci.unique' => 'Este CI ya está registrado en el sistema.',
+            'ci.regex' => 'El CI solo puede contener numeros.',
+            'ci.unique' => 'Este CI con el mismo complemento ya esta registrado en el sistema.',
+
+            'complemento_ci.max' => 'El complemento no puede exceder 10 caracteres.',
+            'complemento_ci.regex' => 'El complemento solo puede contener letras o numeros.',
 
             // Tipo
             'tipo.required' => 'El tipo de persona es obligatorio.',
@@ -183,6 +195,7 @@ class StorePersonaRequest extends FormRequest
         $this->merge([
             'nombre' => trim($this->nombre ?? ''),
             'ci' => trim($this->ci ?? ''),
+            'complemento_ci' => strtoupper(trim($this->complemento_ci ?? '')) ?: null,
             'correo' => strtolower(trim($this->correo ?? '')),
             'institucion' => trim($this->institucion ?? ''),
             'activo' => filter_var($this->activo ?? true, FILTER_VALIDATE_BOOLEAN),

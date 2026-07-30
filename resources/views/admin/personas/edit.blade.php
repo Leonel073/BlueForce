@@ -46,17 +46,27 @@
 
                 <div class="row">
                     {{-- NOMBRE --}}
-                    <div class="col-md-6 mb-3">
+                    <div class="col-md-5 mb-3">
                         <label class="form-label fw-semibold">Nombre Completo</label>
                         <input type="text" name="nombre" class="form-control"
                                value="{{ old('nombre', $persona->nombre) }}" required>
                     </div>
 
                     {{-- CI --}}
-                    <div class="col-md-6 mb-3">
+                    <div class="col-md-4 mb-3">
                         <label class="form-label fw-semibold">Carnet de Identidad</label>
-                        <input type="text" name="ci" class="form-control"
+                        <input type="text" name="ci" inputmode="numeric" pattern="[0-9]+" class="form-control"
                                value="{{ old('ci', $persona->ci) }}" required>
+                    </div>
+
+                    {{-- COMPLEMENTO CI --}}
+                    <div class="col-md-3 mb-3">
+                        <label class="form-label fw-semibold">
+                            Complemento
+                            <span class="text-muted">(Opcional)</span>
+                        </label>
+                        <input type="text" name="complemento_ci" maxlength="10" class="form-control text-uppercase"
+                               value="{{ old('complemento_ci', $persona->complemento_ci) }}" placeholder="Ej: LP">
                     </div>
                 </div>
 

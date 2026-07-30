@@ -303,21 +303,21 @@
 
     </div>
 
-    {{-- GESTIÓN DE PDF --}}
+    {{-- GESTION DE ARCHIVO ADJUNTO --}}
     <div class="card border-0 shadow-lg rounded-4 mt-4">
         <div class="card-header text-white rounded-top-4"
              style="background-color:#c0392b;">
-            <i class="bi bi-file-pdf-fill me-1"></i>
-            Archivo PDF Adjunto
+            <i class="bi bi-paperclip me-1"></i>
+            Archivo Adjunto
         </div>
         <div class="card-body">
 
             @if($documento->tiene_archivo)
 
-                {{-- PDF ACTUAL --}}
+                {{-- ARCHIVO ACTUAL --}}
                 <div class="alert alert-light border rounded-3 mb-4">
                     <div class="d-flex align-items-center gap-3 flex-wrap">
-                        <i class="bi bi-file-pdf-fill text-danger fs-2"></i>
+                        <i class="bi {{ $documento->archivo_icono }} fs-2"></i>
                         <div class="flex-grow-1">
                             <div class="fw-semibold">{{ $documento->archivo_pdf }}</div>
                             <small class="text-muted">
@@ -335,42 +335,44 @@
                                class="btn btn-danger btn-sm rounded-3">
                                 <i class="bi bi-download"></i> Descargar
                             </a>
-                            <a href="{{ route('documentos.pdf.previsualizar', $documento->idDocumento) }}"
-                               target="_blank"
-                               class="btn btn-outline-danger btn-sm rounded-3">
-                                <i class="bi bi-eye"></i> Ver
-                            </a>
+                            @if($documento->es_pdf)
+                                <a href="{{ route('documentos.pdf.previsualizar', $documento->idDocumento) }}"
+                                   target="_blank"
+                                   class="btn btn-outline-danger btn-sm rounded-3">
+                                    <i class="bi bi-eye"></i> Ver PDF
+                                </a>
+                            @endif
                         </div>
                     </div>
                 </div>
 
-                {{-- ELIMINAR PDF --}}
+                {{-- ELIMINAR ARCHIVO --}}
                 <form action="{{ route('admin.documentos.pdf.eliminar', $documento->idDocumento) }}"
                       method="POST" class="mb-4">
                     @csrf
                     @method('DELETE')
                     <button type="submit"
                             class="btn btn-outline-danger btn-sm rounded-3"
-                            onclick="return confirm('¿Eliminar el PDF adjunto? Esta acción no se puede deshacer.')">
+                            onclick="return confirm('¿Eliminar el archivo adjunto? Esta accion no se puede deshacer.')">
                         <i class="bi bi-trash3-fill me-1"></i>
-                        Eliminar PDF actual
+                        Eliminar archivo actual
                     </button>
                 </form>
 
                 <hr>
                 <p class="fw-semibold text-muted mb-3">
                     <i class="bi bi-arrow-repeat me-1"></i>
-                    Reemplazar PDF actual:
+                    Reemplazar archivo actual:
                 </p>
 
             @else
                 <div class="alert alert-info rounded-3 mb-4">
                     <i class="bi bi-info-circle me-2"></i>
-                    Este documento no tiene un archivo PDF adjunto.
+                    Este documento no tiene un archivo adjunto.
                 </div>
             @endif
 
-            {{-- SUBIR / REEMPLAZAR PDF --}}
+            {{-- SUBIR / REEMPLAZAR ARCHIVO --}}
             <form action="{{ route('admin.documentos.pdf.subir', $documento->idDocumento) }}"
                   method="POST"
                   enctype="multipart/form-data">
@@ -392,23 +394,23 @@
 
                 <div class="mb-3">
                     <label class="form-label fw-semibold">
-                        {{ $documento->tiene_archivo ? 'Nuevo archivo PDF (reemplaza el actual)' : 'Archivo PDF' }}
+                        {{ $documento->tiene_archivo ? 'Nuevo archivo adjunto (reemplaza el actual)' : 'Archivo adjunto' }}
                         <span class="text-danger">*</span>
                     </label>
                     <input type="file"
                            name="archivo_pdf"
                            class="form-control rounded-3 @error('archivo_pdf') is-invalid @enderror"
-                           accept=".pdf,application/pdf"
+                           accept=".pdf,.doc,.docx,.xls,.xlsx,application/pdf,application/msword,application/vnd.openxmlformats-officedocument.wordprocessingml.document,application/vnd.ms-excel,application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
                            required>
                     @error('archivo_pdf')
                         <div class="invalid-feedback">{{ $message }}</div>
                     @enderror
-                    <small class="text-muted">Solo PDF. Máximo 10 MB.</small>
+                    <small class="text-muted">PDF, Word o Excel. Maximo 10 MB.</small>
                 </div>
 
                 <button type="submit" class="btn btn-danger rounded-3">
                     <i class="bi bi-upload me-1"></i>
-                    {{ $documento->tiene_archivo ? 'Reemplazar PDF' : 'Subir PDF' }}
+                    {{ $documento->tiene_archivo ? 'Reemplazar archivo' : 'Subir archivo' }}
                 </button>
 
             </form>

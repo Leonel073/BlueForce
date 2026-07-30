@@ -53,7 +53,7 @@
                                 <div>
                                     @if($anuncio->tienePdf())
                                         <span class="badge bg-light text-dark">
-                                            <i class="bi bi-file-earmark-pdf text-danger me-1"></i>PDF adjunto
+                                            <i class="bi {{ $anuncio->archivoIcono() }} me-1"></i>{{ $anuncio->archivoTipoLabel() }} adjunto
                                         </span>
                                     @endif
                                 </div>

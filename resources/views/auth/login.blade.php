@@ -51,6 +51,12 @@
                 <div class="input-group">
                     <span class="input-group-text bg-light"><i class="bi bi-lock"></i></span>
                     <input id="password" class="form-control @error('password') is-invalid @enderror" type="password" name="password" required placeholder="••••••••">
+                    <button type="button"
+                            class="btn btn-outline-secondary"
+                            aria-label="Mostrar contrasena"
+                            onclick="togglePasswordVisibility('password', 'icon-password')">
+                        <i class="bi bi-eye" id="icon-password"></i>
+                    </button>
                     @error('password')
                         <div class="invalid-feedback">{{ $message }}</div>
                     @enderror
@@ -72,5 +78,17 @@
         </form>
     </div>
     <script src="{{ asset('js/bootstrap.bundle.min.js') }}"></script>
+    <script>
+        function togglePasswordVisibility(inputId, iconId) {
+            const input = document.getElementById(inputId);
+            const icon = document.getElementById(iconId);
+            if (!input || !icon) return;
+
+            const visible = input.type === 'text';
+            input.type = visible ? 'password' : 'text';
+            icon.classList.toggle('bi-eye', visible);
+            icon.classList.toggle('bi-eye-slash', !visible);
+        }
+    </script>
 </body>
 </html>

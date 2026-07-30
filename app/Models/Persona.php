@@ -27,6 +27,7 @@ class Persona extends Model
         'telefono_celular',
         'telefono_fijo',
         'ci',
+        'complemento_ci',
         'institucion',
         'tipo',
         'idDepartamento',

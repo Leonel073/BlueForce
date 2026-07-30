@@ -12,7 +12,7 @@ class AnuncioPdfController extends Controller
     {
         $anuncio = Anuncio::findOrFail($id);
         $this->verificarAcceso($anuncio);
-        $this->verificarArchivo($anuncio);
+        $this->verificarArchivo($anuncio, true);
 
         $contenido = Storage::disk('local')->get($anuncio->ruta_pdf);
 
@@ -35,7 +35,7 @@ class AnuncioPdfController extends Controller
         return Storage::disk('local')->download(
             $anuncio->ruta_pdf,
             $anuncio->archivo_pdf ?? 'anuncio.pdf',
-            ['Content-Type' => 'application/pdf']
+            ['Content-Type' => $anuncio->mime_type ?? 'application/octet-stream']
         );
     }
 
@@ -54,22 +54,22 @@ class AnuncioPdfController extends Controller
         }
     }
 
-    private function verificarArchivo(Anuncio $anuncio): void
+    private function verificarArchivo(Anuncio $anuncio, bool $soloPdf = false): void
     {
         if (!$anuncio->tienePdf()) {
-            abort(404, 'Este anuncio no tiene un PDF adjunto.');
+            abort(404, 'Este anuncio no tiene un archivo adjunto.');
         }
 
         if (!Storage::disk('local')->exists($anuncio->ruta_pdf)) {
-            abort(404, 'El archivo PDF no se encuentra en el servidor.');
+            abort(404, 'El archivo no se encuentra en el servidor.');
         }
 
         $ruta = Storage::disk('local')->path($anuncio->ruta_pdf);
         $finfo = new \finfo(FILEINFO_MIME_TYPE);
         $mimeReal = $finfo->file($ruta);
 
-        if ($mimeReal !== 'application/pdf') {
-            abort(403, 'El archivo almacenado no es un PDF válido.');
+        if ($soloPdf && $mimeReal !== 'application/pdf') {
+            abort(403, 'Este archivo no se puede previsualizar. Descarguelo para abrirlo.');
         }
     }
 }

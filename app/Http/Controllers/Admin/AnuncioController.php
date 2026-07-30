@@ -10,6 +10,17 @@ use Illuminate\Support\Facades\Storage;
 
 class AnuncioController extends Controller
 {
+    private const ALLOWED_ATTACHMENT_MIMES = [
+        'application/pdf',
+        'application/msword',
+        'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
+        'application/vnd.ms-excel',
+        'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+        'application/zip',
+    ];
+
+    private const ALLOWED_ATTACHMENT_EXTENSIONS = ['pdf', 'doc', 'docx', 'xls', 'xlsx'];
+
     public function index()
     {
         $anuncios = Anuncio::with('creador')
@@ -38,7 +49,7 @@ class AnuncioController extends Controller
         $anuncio = Anuncio::create($data);
 
         if ($request->hasFile('archivo_pdf')) {
-            $this->guardarPdf($request->file('archivo_pdf'), $anuncio);
+            $this->guardarArchivo($request->file('archivo_pdf'), $anuncio);
         }
 
         return redirect()
@@ -80,18 +91,18 @@ class AnuncioController extends Controller
             ->with('success', 'Anuncio eliminado correctamente.');
     }
 
-    private function guardarPdf($file, Anuncio $anuncio): void
+    private function guardarArchivo($file, Anuncio $anuncio): void
     {
         $finfo = new \finfo(FILEINFO_MIME_TYPE);
         $mimeReal = $finfo->file($file->getRealPath());
 
-        if ($mimeReal !== 'application/pdf') {
+        if (!$this->archivoPermitido($file, $mimeReal)) {
             return;
         }
 
         // Guardar con nombre basado en ID y título del anuncio para fácil identificación
         $nombreLimpio = preg_replace('/[^a-zA-Z0-9_-]/', '', substr($anuncio->titulo, 0, 30));
-        $nombreArchivo = 'anuncio_' . $anuncio->idAnuncio . '_' . $nombreLimpio . '.pdf';
+        $nombreArchivo = 'anuncio_' . $anuncio->idAnuncio . '_' . $nombreLimpio . '.' . $file->getClientOriginalExtension();
         $ruta = $file->storeAs('anuncios', $nombreArchivo, 'local');
 
         $anuncio->update([
@@ -100,5 +111,13 @@ class AnuncioController extends Controller
             'mime_type' => $mimeReal,
             'tamano_archivo' => $file->getSize(),
         ]);
+    }
+
+    private function archivoPermitido($file, string $mimeReal): bool
+    {
+        $extension = strtolower($file->getClientOriginalExtension());
+
+        return in_array($extension, self::ALLOWED_ATTACHMENT_EXTENSIONS, true)
+            && in_array($mimeReal, self::ALLOWED_ATTACHMENT_MIMES, true);
     }
 }

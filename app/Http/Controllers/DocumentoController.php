@@ -21,6 +21,17 @@ use Illuminate\Support\Facades\Storage;
 
 class DocumentoController extends Controller
 {
+    private const ALLOWED_ATTACHMENT_MIMES = [
+        'application/pdf',
+        'application/msword',
+        'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
+        'application/vnd.ms-excel',
+        'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+        'application/zip',
+    ];
+
+    private const ALLOWED_ATTACHMENT_EXTENSIONS = ['pdf', 'doc', 'docx', 'xls', 'xlsx'];
+
     /*
     |--------------------------------------------------------------------------
     | LISTADO DOCUMENTOS
@@ -460,12 +471,12 @@ public function index()
                 $finfo = new \finfo(FILEINFO_MIME_TYPE);
                 $mimeReal = $finfo->file($file->getRealPath());
 
-                if ($mimeReal !== 'application/pdf') {
-                    throw new \Exception('El archivo adjunto no es un PDF válido.');
+                if (!$this->archivoPermitido($file, $mimeReal)) {
+                    throw new \Exception('El archivo adjunto debe ser PDF, Word o Excel.');
                 }
 
                 // Guardar con el nombre del CITE para fácil identificación
-                $nombreArchivo = $cite . '.pdf';
+                $nombreArchivo = $cite . '.' . $file->getClientOriginalExtension();
                 $ruta = $file->storeAs('documentos', $nombreArchivo, 'local');
 
                 $documento->update([
@@ -1041,12 +1052,12 @@ public function index()
             'archivo_pdf' => [
                 'required',
                 'file',
-                'mimes:pdf',
+                'mimes:pdf,doc,docx,xls,xlsx',
                 'max:' . config('app.max_pdf_size_kb', 10240),
             ],
         ], [
-            'archivo_pdf.required' => 'Debe seleccionar un archivo PDF.',
-            'archivo_pdf.mimes'    => 'Solo se permiten archivos PDF.',
+            'archivo_pdf.required' => 'Debe seleccionar un archivo.',
+            'archivo_pdf.mimes'    => 'Solo se permiten archivos PDF, Word o Excel.',
             'archivo_pdf.max'      => 'El archivo no puede superar los 10 MB.',
         ]);
 
@@ -1056,8 +1067,8 @@ public function index()
         $finfo    = new \finfo(FILEINFO_MIME_TYPE);
         $mimeReal = $finfo->file($file->getRealPath());
 
-        if ($mimeReal !== 'application/pdf') {
-            return back()->with('error', 'El archivo no es un PDF válido (verificación de contenido fallida).');
+        if (!$this->archivoPermitido($file, $mimeReal)) {
+            return back()->with('error', 'El archivo debe ser PDF, Word o Excel (verificacion de contenido fallida).');
         }
 
         // Eliminar PDF anterior si existe
@@ -1066,7 +1077,7 @@ public function index()
         }
 
         // Guardar con el nombre del CITE para fácil identificación
-        $nombreArchivo = $documento->cite . '.pdf';
+        $nombreArchivo = $documento->cite . '.' . $file->getClientOriginalExtension();
         $ruta = $file->storeAs('documentos', $nombreArchivo, 'local');
 
         $documento->update([
@@ -1100,7 +1111,7 @@ public function index()
             Log::warning('Auditoría subida PDF fallida: ' . $e->getMessage());
         }
 
-        return back()->with('success', 'Archivo PDF actualizado correctamente.');
+        return back()->with('success', 'Archivo adjunto actualizado correctamente.');
     }
 
     /*
@@ -1296,5 +1307,13 @@ public function index()
             'success',
             'Documento actualizado correctamente.'
         );
+}
+
+private function archivoPermitido($file, string $mimeReal): bool
+{
+    $extension = strtolower($file->getClientOriginalExtension());
+
+    return in_array($extension, self::ALLOWED_ATTACHMENT_EXTENSIONS, true)
+        && in_array($mimeReal, self::ALLOWED_ATTACHMENT_MIMES, true);
 }
 }
